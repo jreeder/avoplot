@@ -27,12 +27,13 @@ import wx
 import sys
 
 from avoplot.gui import main
+import avoplot.plugins
 
 
 if __name__ == '__main__':
         
     app = wx.PySimpleApp()
-    
+    avoplot.plugins.load_all_plugins()
     main.MainFrame()
        
     app.MainLoop()

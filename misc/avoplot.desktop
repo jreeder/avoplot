@@ -1,3 +1,4 @@
+
 [Desktop Entry]
 Version=1.2
 Type=Application
@@ -7,3 +8,4 @@ NoDisplay=false
 Categories=Science;Education;Geology;
 Icon=avoplot
 Name=AvoPlot
+Comment[en_GB.utf8]=Analyse spectral data

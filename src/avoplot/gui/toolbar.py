@@ -64,16 +64,20 @@ class MainToolbar(wx.ToolBar):
     
     def onZoom(self,evnt):
         self.ToggleTool(self.move_tool.GetId(),False) 
-        p = self.parent.get_active_plot()
-        if p is not None:
+        for p in self.parent.get_all_pages():
             p.zoom()
+        #p = self.parent.get_active_plot()
+        #if p is not None:
+        #    p.zoom()
 
     
     def onMove(self,evnt):
         self.ToggleTool(self.zoom_tool.GetId(),False) 
-        p = self.parent.get_active_plot()
-        if p is not None:
+        for p in self.parent.get_all_pages():
             p.pan()
+        #p = self.parent.get_active_plot()
+        #if p is not None:
+        #    p.pan()
     
     def onGrid(self, evnt):     
         gridstate = self.GetToolState(self.grid_tool.GetId())

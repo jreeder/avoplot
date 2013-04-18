@@ -1,5 +1,6 @@
 import wx
 import avoplot
+import avoplot.plugins
 
 #TODO - add keyboard shortcuts
 
@@ -8,7 +9,7 @@ class MainMenu(wx.MenuBar):
         wx.MenuBar.__init__(self)
         self.parent=parent
         self.create_file_menu()
-        
+        self.create_view_menu()
         self.create_help_menu()
         
                 
@@ -17,11 +18,25 @@ class MainMenu(wx.MenuBar):
         
         #create submenu for creating new plots of different types.
         new_submenu = wx.Menu()      
-        new_spectrum_plot = new_submenu.Append(-1, "&Spectrum plot", "Plot a spectrum file.")
-        new_time_plot = new_submenu.Append(-1, "&Time plot", "Create a new time series plot.")
-        new_realtime_time_plot = new_submenu.Append(-1, "&Realtime time plot", "Create a new realtime time series plot.")
-        new_scatter_plot = new_submenu.Append(-1, "S&catter plot", "Create a new scatter plot.")
-        new_realtime_scatter_plot = new_submenu.Append(-1, "R&ealtime scatter plot", "Create a new realtime scatter plot.")
+        
+        sub_menus = {}
+        for p in avoplot.plugins.get_plugins().values():
+            menu_data = p.get_onNew_handler()
+            
+            if sub_menus.has_key(menu_data[0]):
+                sub_menus[menu_data[0]].append(menu_data)
+            else:
+                sub_menus[menu_data[0]] = [menu_data]
+        
+        for menu_name in sorted(sub_menus.keys()):
+            temp_submenu = wx.Menu()
+            
+            for junk, name, desc, handler in sub_menus[menu_name]:
+                temp_menu_item = temp_submenu.Append(-1, name, desc)
+                wx.EVT_MENU(self.parent,temp_menu_item.GetId(), handler)
+            
+            new_submenu.AppendSubMenu(temp_submenu, menu_name)
+     
         self.new_menu = new_submenu      
         file_menu.AppendSubMenu(new_submenu, "New")
         
@@ -29,14 +44,10 @@ class MainMenu(wx.MenuBar):
         save_data = file_menu.Append(-1, "&Export Data", "Save the current plot data.")
         save_plot = file_menu.Append(wx.ID_SAVE, "&Save Plot", "Save the current plot.")
 
-        
         exit = file_menu.Append(wx.ID_EXIT, "&Exit", "Exit AvoPlot.")
         
         #register the event handlers
         wx.EVT_MENU(self.parent,exit.GetId(), self.parent.onClose)
-        wx.EVT_MENU(self.parent,new_spectrum_plot.GetId(), self.parent.onSpectrumPlot)
-        wx.EVT_MENU(self.parent,new_time_plot.GetId(), self.parent.onTimePlot)
-        wx.EVT_MENU(self.parent,new_realtime_time_plot.GetId(), self.parent.onRealtimeTimePlot)
         wx.EVT_MENU(self.parent,save_plot.GetId(), self.parent.onSavePlot)
                 
         #add the menu item to the MenuBar (self)
@@ -52,6 +63,17 @@ class MainMenu(wx.MenuBar):
         wx.EVT_MENU(self.parent,about.GetId(), self.onAbout)
         
         self.Append(help_menu, "&Help")
+    
+    
+    def create_view_menu(self):
+        view_menu = wx.Menu()
+        h_split = view_menu.Append(-1, "Split &Horizontal", "Split the current plot into a new pane")
+        v_split = view_menu.Append(-1, "Split &Vertical", "Split the current plot into a new pane")
+        unsplit = view_menu.Append(-1, "&Unsplit", "Collapse all tabs into a single pane")
+        wx.EVT_MENU(self.parent, h_split.GetId(), self.parent.split_plot_horiz)
+        wx.EVT_MENU(self.parent, v_split.GetId(), self.parent.split_plot_vert)
+        wx.EVT_MENU(self.parent, unsplit.GetId(), self.parent.unsplit_panes)
+        self.Append(view_menu, '&View')
     
     
     def onAbout(self, evnt):

@@ -5,114 +5,27 @@ import matplotlib
 import datetime
 import time
 
-from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
-from matplotlib.backends.backend_wx import NavigationToolbar2Wx
-from matplotlib.figure import Figure
-
 from doas.spectrum_loader import SpectrumIO
 from doas import spectra_dir
 from doas import spectrum_loader
 from doas import spectrum_maths
 
+from avoplot.persist import PersistantStorage
+from avoplot.gui.plots import PlotPanelBase
+from avoplot.plugins import AvoPlotPluginBase
+from spectrometers import SpectrometerManager
+
 from std_ops.os_ import find_files
-
-def invalid_user_input(message):
-        wx.MessageBox(message, "AvoPlot", wx.ICON_ERROR)
-
-
-
-class PlotPanelBase(wx.ScrolledWindow):
-    
-    def __init__(self, parent):
-        wx.ScrolledWindow.__init__(self, parent, wx.ID_ANY)
-        self.SetScrollRate(2,2)
-        self._is_panned = False
-        self._is_zoomed = False
-        self._gridlines = False
-        
-        self.parent = parent
-        self.v_sizer = wx.BoxSizer(wx.VERTICAL)
-        self.h_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        
-        self.h_sizer.Add(self.v_sizer, 1, wx.EXPAND)
-        
-        #the figure size is a bit arbitrary, but seems to work ok on my small screen - 
-        #all this does is to set the minSize size hints for the sizer anyway.
-        self.fig = Figure(figsize=(4,2))
-        
-        #set figure background to white
-        #TODO - would this look better in default wx colour
-        self.fig.set_facecolor((1,1,1))
-        
-        #try:
-            #TODO - test this actually works on an up to date version of mpl
-        #    matplotlib.pyplot.tight_layout()
-        #except AttributeError:
-            #probably an old version of mpl that does not have this function
-        #    pass
-        
-        self.canvas = FigureCanvasWxAgg(self, -1, self.fig)
-        
-        self.tb = NavigationToolbar2Wx(self.canvas)
-        self.tb.Show(False)
-
-        self.v_sizer.Add(self.canvas, 1, wx.ALIGN_LEFT|wx.ALIGN_TOP|wx.EXPAND)
-        
-        self.SetSizer(self.h_sizer)
-        self.h_sizer.Fit(self)
-        self.SetAutoLayout(True)
-                
-        self.axes = self.fig.add_subplot(111)
-        
-        #self.plotting_thread = threading.Thread(target=self._create_plot)
-        #self.plotting_thread.start()
-    
-    
-    def close(self):
-        #don't explicitly delete the window since it is managed by a notebook
-        #self.plotting_thread.join()
-        pass
-
-        
-    
-    def go_home(self):
-        self.axes.relim()
-        self.axes.autoscale(enable=True)
-        self.axes.autoscale_view()
-        self.canvas.draw()
-        self.canvas.gui_repaint()
- 
-    
-    def zoom(self):
-        self.tb.zoom()
-        self._is_zoomed = not self._is_zoomed
-        self._is_panned = False
-    
-    
-    def pan(self):
-        self.tb.pan()
-        self._is_panned = not self._is_panned
-        self._is_zoomed = False
-    
-    
-    def gridlines(self, state):
-        self.axes.grid(state)
-        self._gridlines = state
-        self.canvas.draw()
-        self.canvas.gui_repaint()
-    
-    
-    def save_plot(self):
-        self.tb.save(None)
 
 
 class TimePlotSettingsFrame(wx.Dialog):
-    def __init__(self,parent, persistant, spectrometer_manager, name="Time plot settings"):
-        wx.Dialog.__init__(self, None, wx.ID_ANY, name)
+    def __init__(self,parent, name="Time plot settings"):
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, name)
         
         self.parent = parent
-        self.persist = persistant
-        self.spectrometer_manager = spectrometer_manager
+        self.persist = PersistantStorage()
+        self.spectrometer_manager = SpectrometerManager()
+        self.spectrometer = None
         
         self.spec_dir = None
         self.recursive = None
@@ -138,6 +51,11 @@ class TimePlotSettingsFrame(wx.Dialog):
         self.recursive_check_box = wx.CheckBox(top_panel, wx.ID_ANY, "Search directory recursively")      
         self.vsizer.Add(self.recursive_check_box,1, wx.ALL|wx.ALIGN_LEFT, border=10)
         
+        #add a realtime checkbox
+        self.realtime_check_box = wx.CheckBox(top_panel, wx.ID_ANY, "Watch directory for new files")      
+        self.realtime_check_box.SetValue(True)
+        self.vsizer.Add(self.realtime_check_box,1, wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.ALIGN_LEFT, border=10)
+       
         #add spectra info text fields
         self.spectrometer_id_txt = wx.StaticText(top_panel, wx.ID_ANY, "Spectrometer ID:")
         self.num_of_spectra_txt = wx.StaticText(top_panel, wx.ID_ANY, "Number of spectra:")
@@ -194,11 +112,16 @@ class TimePlotSettingsFrame(wx.Dialog):
     def get_plot(self):
         if None in (self.recursive, self.inband, self.outband, self.name):
             raise RuntimeError("get_plot called before values have been set")
-        return TimePlot(self.parent, self.spec_dir, self.inband, self.outband, self.recursive)
+        
+        if self.realtime_check_box.GetValue():
+            return RealtimeRatioTimePlot(self.parent, self.spec_dir, self.inband, self.outband, self.recursive)
+        else:
+            return RatioTimePlot(self.parent, self.spec_dir, self.inband, self.outband, self.recursive)
     
     
     def get_name(self):
         return self.name
+    
     
     def onOK(self,evnt):
         self.recursive = self.recursive_check_box.IsChecked()
@@ -238,6 +161,28 @@ class TimePlotSettingsFrame(wx.Dialog):
             invalid_user_input("Invalid value for out of band wavelength.")
             return
         
+        #if the spectrometer settings have been changed - then see if the user wants to save them
+        if self.spectrometer is not None:
+            
+            try:
+                prev_inband = float(self.spectrometer.get_value("inband_wavelength"))
+            except KeyError:
+                prev_inband = None
+            
+            try:
+                prev_outband = float(self.spectrometer.get_value("outband_wavelength"))
+            except KeyError:
+                prev_outband = None
+            
+            if (prev_inband != self.inband) or (prev_outband != self.outband):
+                dialog = wx.MessageDialog(self, "Save these values for the spectrometer %s?"%self.spectrometer.name, style=wx.YES_NO)
+                
+                if dialog.ShowModal() == wx.ID_YES:
+                    self.spectrometer.set_value("inband_wavelength", str(self.inband))
+                    self.spectrometer.set_value("outband_wavelength", str(self.outband))
+                    self.spectrometer_manager.update(self.spectrometer)
+        
+        
         self.EndModal(wx.OK)
         self.Destroy()
 
@@ -259,14 +204,16 @@ class TimePlotSettingsFrame(wx.Dialog):
 
         if spec_dir == "":
             return
+        
+        #set the name to the directory name
+        self.name = os.path.basename(spec_dir)
+        
         wx.BeginBusyCursor()
         wx.Yield()
         try:
             self.persist.set_value("spectra_dir", spec_dir)
             self.dir_box.SetValue(spec_dir)
             
-            #TODO - don't use a spectrum iterator here - use a metadata parser
-            #TODO - spectrum iterator should only be updated if the spec_dir has changed
             if self.recursive_check_box.IsChecked():
                 spec_files = find_files(spec_dir, recursive=True)
             else:
@@ -287,10 +234,10 @@ class TimePlotSettingsFrame(wx.Dialog):
             if first_spec is None:
                 return
             
-            spectrometer = self.spectrometer_manager.get_spectrometer(first_spec.spectrometer_id)
+            self.spectrometer = self.spectrometer_manager.get_spectrometer(first_spec.spectrometer_id)
               
             self.spectrometer_id_txt.Enable()
-            self.spectrometer_id_txt.SetLabel("Spectrometer ID: %s" %spectrometer.name)
+            self.spectrometer_id_txt.SetLabel("Spectrometer ID: %s" %self.spectrometer.name)
             
             self.start_time_txt.Enable()
             self.start_time_txt.SetLabel(first_spec.capture_time.strftime("Start Time: %H:%M:%S"))
@@ -308,12 +255,12 @@ class TimePlotSettingsFrame(wx.Dialog):
             self.num_of_spectra_txt.SetLabel("Number of spectra: %d" %(last_spec_index - first_spec_index))
             
             try:
-                self.inband_box.SetValue(spectrometer.get_value("inband_wavelength"))
+                self.inband_box.SetValue(self.spectrometer.get_value("inband_wavelength"))
             except KeyError:
                 pass
             
             try:
-                self.outband_box.SetValue(spectrometer.get_value("outband_wavelength"))
+                self.outband_box.SetValue(self.spectrometer.get_value("outband_wavelength"))
             except KeyError:
                 pass
             
@@ -321,14 +268,14 @@ class TimePlotSettingsFrame(wx.Dialog):
                 return
             
             self.end_time_txt.Enable()
-            self.end_time_txt.SetLabel(last_spec.capture_time.strftime("Start Time: %H:%M:%S"))            
+            self.end_time_txt.SetLabel(last_spec.capture_time.strftime("End Time: %H:%M:%S"))            
 
             #TODO - if the user changes the spectrometer properties - save the changes.
         finally:
             wx.EndBusyCursor()
-    
+ 
 
-class TimePlot(PlotPanelBase):
+class RatioTimePlot(PlotPanelBase):
     
     def __init__(self, parent, dir_name, inband, outband, recursive):
         self.dir_name = dir_name
@@ -337,9 +284,22 @@ class TimePlot(PlotPanelBase):
         self.recursive = recursive
         self._spec_iter = None
         self._stay_alive = True
+        self._found_dark_lock = threading.Lock()
+        self._found_dark_lock.acquire() #lock is released when dark spectrum is found
         
-        #self._create_plot is called by the PlotPanelBase constructor in a new thread
         PlotPanelBase.__init__(self,parent)
+        
+        self.plotting_thread = threading.Thread(target=self._create_plot)
+        self.plotting_thread.start()
+    
+    
+    def wait_for_dark(self):
+        """
+        Blocks until a dark spectrum is found.
+        """
+        self._found_dark_lock.acquire()
+        self._found_dark_lock.release()
+        print "exited wait_for_dark"
     
     
     def close(self):
@@ -351,9 +311,35 @@ class TimePlot(PlotPanelBase):
             time.sleep(0.001)
             
         self._spec_iter.close()
+        if self._found_dark_lock.locked():
+                self._found_dark_lock.release()
+        self.plotting_thread.join()
         PlotPanelBase.close(self)
-            
-  
+        
+    
+    def draw_plot(self):
+        try:
+            wx.MutexGuiEnter()
+            self.canvas.draw()
+            self.canvas.gui_repaint()
+        finally:
+            wx.MutexGuiLeave()
+    
+    
+    def set_dark_spectra(self, spectra):
+        loader = spectrum_loader.SpectrumIO()
+        
+        spectra_objs = [loader.load(f) for f in spectra]
+        spectra_objs = [s for s in spectra_objs if s is not None]
+        if self._spec_iter is not None:
+            print spectra_objs
+            self._spec_iter.set_dark_spectra(spectra_objs)
+            print "finished calling self._spec_iter.set_dark_spectra"
+        else:
+            #TODO - handle this properly
+            raise RuntimeError("Call to set_darks before iterator is initialised")
+    
+    
     def _create_plot(self):
         ratios = []
         ratio_calc = spectrum_maths.WavelengthRatioCalc(self.outband, self.inband)
@@ -364,7 +350,10 @@ class TimePlot(PlotPanelBase):
         j = 0
         self._spec_iter = spectra_dir.DarkSubtractedSpectra(self.dir_name, recursive=self.recursive)
         for s in self._spec_iter:
-            
+            if self._found_dark_lock.locked():
+                print "_create_plot released lock"
+                self._found_dark_lock.release()
+                
             ratios.append(ratio_calc.get_ratio(s))
             if i > 30:
                 i = 0
@@ -383,9 +372,10 @@ class TimePlot(PlotPanelBase):
             if not self._is_zoomed and not self._is_panned:
                     l.axes.autoscale_view()
             self.draw_plot()
-        
-        
-class RealtimeTimePlot(TimePlot):
+ 
+ 
+            
+class RealtimeRatioTimePlot(RatioTimePlot):
     
     def _create_plot(self):
         ratios = []
@@ -397,6 +387,10 @@ class RealtimeTimePlot(TimePlot):
         j = 0
         self._spec_iter = spectra_dir.DarkSubtractedSpectra(self.dir_name, recursive=self.recursive, realtime=True)
         for s in self._spec_iter:
+            if self._found_dark_lock.locked():
+                print "_create_plot released lock"
+                self._found_dark_lock.release()
+            
             ratios.append(ratio_calc.get_ratio(s))
             if datetime.datetime.now() - t > datetime.timedelta(seconds=1):
                 t = datetime.datetime.now()
@@ -416,15 +410,94 @@ class RealtimeTimePlot(TimePlot):
             
             if not self._is_zoomed and not self._is_panned:
                     l.axes.autoscale_view()
-            self.draw_plot()
+            self.draw_plot()            
 
-
-class RealtimeTimePlotSettingsFrame(TimePlotSettingsFrame):
-    #TODO - implement the extra controls on a realtime plot
-    
-    def get_plot(self):
-        if None in (self.recursive, self.inband, self.outband, self.name):
-            raise RuntimeError("get_plot called before values have been set")
-        return RealtimeTimePlot(self.parent, self.spec_dir, self.inband, self.outband, self.recursive)
- 
+class DarkSelectDialog(wx.Dialog):
+    def __init__(self, plot_obj):
+        self._wait_for_dark_thread = threading.Thread(target=self.__wait_for_dark)
+        self.plot_obj = plot_obj
+        wx.Dialog.__init__(self,plot_obj, wx.ID_ANY)
+        vsizer = wx.BoxSizer(wx.VERTICAL)
         
+        vsizer.Add(wx.StaticText(self, wx.ID_ANY, "Waiting for dark spectrum..."),0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL, border=10)
+        
+        self.manual_select_button = wx.Button(self, wx.ID_ANY, "Select manually")
+        vsizer.Add( self.manual_select_button, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL, border=10)   
+        self._wait_for_dark_thread.start()
+        
+        self.SetSizer(vsizer)
+        vsizer.Fit(self)
+        self.SetAutoLayout(True)
+        
+        wx.EVT_BUTTON(self, self.manual_select_button.GetId(), self.onSelect)
+        wx.EVT_CLOSE(self, self.onClose)
+    
+    def onClose(self, evnt):
+        #TODO - this should probably close the plot as well - difficult since it is handled 
+        #by a notebook
+        self.plot_obj.close()
+        self._wait_for_dark_thread.join()
+        self.Destroy()
+    
+    
+    def onSelect(self, evnt):
+        persist = PersistantStorage()
+        try:
+            default_dir = persist.get_value("spectra_dir")
+            default_dir = os.path.join(default_dir, os.path.pardir)
+        except KeyError:
+            default_dir =""
+        
+        dialog = wx.FileDialog(self, "Choose dark spectrum file(s)", defaultDir=default_dir,style=wx.FD_OPEN|wx.FD_FILE_MUST_EXIST|wx.FD_MULTIPLE)
+        if dialog.ShowModal() == wx.ID_OK:
+            darks = dialog.GetPaths()
+            self.plot_obj.set_dark_spectra(darks)
+
+    
+    def __wait_for_dark(self):
+        self.plot_obj.wait_for_dark()
+        while not self.IsModal():
+            time.sleep(0.01)
+        print "DarkSelectDialog - finished waiting for dark"
+        wx.CallAfter(self.EndModal,wx.ID_OK)
+        #self.EndModal(wx.ID_OK)
+            
+            
+class RatioTimePlugin(AvoPlotPluginBase):
+    
+    def __init__(self):
+        AvoPlotPluginBase.__init__(self, "DOAS Ratio time series")
+    
+    
+    def get_onNew_handler(self):
+        return ("DOAS", "Ratio Time Plot", "Plot time series of ratios", self.plot_ratio_timeseries)
+    
+    
+    def plot_ratio_timeseries(self, evnt):
+        # TODO - open a time plot and select the zoom tool while it is plotting.
+        # now open a second time plot (the zoom tool is disabled), but if you switch
+        # back to the first time plot once it has finished plotting, then the axes are
+        # not autoscaled. This is not a major issue, but should be fixed.
+        parent = self.get_parent()
+        dialog = TimePlotSettingsFrame(parent)
+        if (dialog.ShowModal() == wx.OK):
+            time_plot = dialog.get_plot()
+            
+            if parent.toolbar.GetToolState(parent.toolbar.zoom_tool.GetId()):
+                #then diasble the zoom (so that the plot gets autoscaled as data is added)
+                parent.toolbar.ToggleTool(parent.toolbar.zoom_tool.GetId(), False)
+                
+            elif parent.toolbar.GetToolState(parent.toolbar.move_tool.GetId()):
+                #then disable the panning (again so that the plot gets autoscaled as data is added)
+                parent.toolbar.ToggleTool(parent.toolbar.move_tool.GetId(), False)
+            
+            self.add_plot_to_main_window(time_plot, dialog.get_name())
+            
+            wx.CallAfter(self.create_manual_dark_select_frame, time_plot)
+    
+    
+    def create_manual_dark_select_frame(self, plot_obj):
+        dialog = DarkSelectDialog(plot_obj)
+        dialog.ShowModal()
+        
+           

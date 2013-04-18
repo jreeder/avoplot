@@ -4,6 +4,17 @@ import os.path
 import avoscan
 
 
+_spectrometer_manager = None
+
+def SpectrometerManager():
+    """
+    Returns a reference to the global spectrometer manager class. Which can be 
+    used for storing spectrometer settings across program restarts.
+    """
+    if globals()['_spectrometer_manager'] is None:
+        globals()['_spectrometer_manager'] = __SpectrometerManager()
+    return globals()['_spectrometer_manager']
+
 class Spectrometer:
     def __init__(self, name):
         self.name = name
@@ -16,7 +27,7 @@ class Spectrometer:
         self._properties[name] = value
 
 
-class SpectrometerManager:
+class __SpectrometerManager:
     
     def __init__(self):
         
