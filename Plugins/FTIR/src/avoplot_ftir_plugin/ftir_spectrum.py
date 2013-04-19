@@ -33,15 +33,19 @@ class FTIRFittingPanel(wx.Panel):
         sizer = wx.BoxSizer(wx.VERTICAL)
         
         h2o_button = wx.Button(self, wx.ID_ANY, "Fit H2O")
-        
+        self.peak_height_text = wx.StaticText(self, -1, "Peak Height:\n")
         sizer.Add(h2o_button, 0, wx.ALIGN_TOP|wx.ALL,border=10)
         sizer.Add(wx.StaticText(self, -1, "Spec Type:\n%s"%spec_type), 0, wx.ALIGN_TOP|wx.ALL,border=10)
+        sizer.Add(self.peak_height_text,0, wx.ALIGN_TOP|wx.ALL,border=10)
         wx.EVT_BUTTON(self, h2o_button.GetId(), parent.fit_h2o)
         
         self.SetSizer(sizer)
         sizer.Fit(self)
         self.SetAutoLayout(True)
-        
+    
+    def set_peak_height(self, height):
+        self.peak_height_text.SetLabel("Peak Height:\n%f"%height)
+            
 #def fit_h2o_peak(xdata, ydata, axes, amplitude_guess=None, mean_guess=None, sigma_guess=None, y_offset_guess=None, plot_fit=False):
 #    """
 #    Fits a gaussian to some data using a least squares fit method. Returns a named tuple
@@ -231,6 +235,27 @@ def fit_h2o_peak(xdata, ydata, axes, plot_fit=True):
     bkgd_xdata = numpy.arange(fit_xdata[0], fit_xdata[-1])
     axes.plot(bkgd_xdata, bkgd_function(bkgd_xdata))
     
+    return bkgd_function
+
+
+def calc_h2o_peak_height(xdata, ydata, bkgd_func):
+    l_crop = 2200
+    r_crop = 4000
+    
+    master_xdata = numpy.array(xdata)
+    master_ydata = numpy.array(ydata)   
+     
+    data_mask = numpy.where(numpy.logical_and(master_xdata > l_crop, master_xdata <=r_crop))
+    xdata = master_xdata[data_mask]
+    ydata = master_ydata[data_mask]
+    peak_idx = numpy.argmax(ydata)
+    global_peak_idx = peak_idx + numpy.argmin(numpy.abs(master_xdata-l_crop))
+    print "peak index = %d, global index = %d"%(peak_idx, global_peak_idx)
+    return master_ydata[global_peak_idx] - bkgd_func(master_xdata[global_peak_idx])
+    
+    
+    
+    
 
 class FTIRSpecPlot(PlotPanelBase):
     
@@ -238,8 +263,8 @@ class FTIRSpecPlot(PlotPanelBase):
         self.wavenumber, self.absorbance = load_ftir_file(filename)        
         #print classify_spectrum(self.wavenumber, self.absorbance)
         PlotPanelBase.__init__(self,parent)
-        
-        self.h_sizer.Insert(0, FTIRFittingPanel(self, classify_spectrum(self.wavenumber, self.absorbance)), flag=wx.ALIGN_LEFT)
+        self.control_panel = FTIRFittingPanel(self, classify_spectrum(self.wavenumber, self.absorbance))
+        self.h_sizer.Insert(0,self.control_panel, flag=wx.ALIGN_LEFT)
         
         self.create_plot()
         
@@ -247,7 +272,10 @@ class FTIRSpecPlot(PlotPanelBase):
     def fit_h2o(self, evnt):
         try:
             wx.BeginBusyCursor()
-            fit_h2o_peak(self.wavenumber, self.absorbance, self.axes, plot_fit=True)
+            bkgd = fit_h2o_peak(self.wavenumber, self.absorbance, self.axes, plot_fit=True)
+            peak_height = calc_h2o_peak_height(self.wavenumber, self.absorbance, bkgd)
+            self.control_panel.set_peak_height(peak_height)
+            
             self.canvas.draw()
             self.canvas.gui_repaint()
         finally:

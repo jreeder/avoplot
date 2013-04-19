@@ -1,3 +1,4 @@
+import sys
 required_modules = [("doas", "the Python DOAS library"),
                     ("avoplot", "AvoPlot"),
                     ("matplotlib", "the Matplotlib plotting library"),
