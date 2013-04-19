@@ -97,10 +97,10 @@ class AvoPlotPluginInstaller(install):
         install path to be the AvoPlot plugins directory (as returned by 
         get_plugin_install_path())
         """
+        print self.__dict__
         ignored_opts = [self.prefix,
                         self.exec_prefix,
                         self.home,
-                        self.prefix_option,
                         self.install_base,
                         self.install_platbase,
                         self.root,
@@ -109,15 +109,21 @@ class AvoPlotPluginInstaller(install):
                         self.install_lib,
                         self.install_scripts]
         
+        if self.__dict__.has_key('prefix_option'):
+            #slightly older versions of distutils don't have this
+            ignored_opts.append(self.prefix_option)
+        
         for opt in ignored_opts:
             if opt is not None:
                 self.warn("All installation path options are being ignored.")
                 break
         
+        if self.__dict__.has_key('prefix_option'):
+            self.prefix_option = None
+            
         self.prefix = None
         self.exec_prefix  = None
         self.home = None
-        self.prefix_option = None
         self.install_base = None
         self.install_platbase = None
         self.root = None
