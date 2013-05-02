@@ -20,18 +20,31 @@ class MainMenu(wx.MenuBar):
         new_submenu = wx.Menu()      
         
         sub_menus = {}
+        menu_items = {}
+        
         for p in avoplot.plugins.get_plugins().values():
             menu_data = p.get_onNew_handler()
             
-            if sub_menus.has_key(menu_data[0]):
-                sub_menus[menu_data[0]].append(menu_data)
+            if not menu_data[1] or menu_data[1].isspace():
+                if menu_items.has_key(menu_data[0]):
+                    raise RuntimeError("Two or more plugins have tried to register different callbacks for the same menu entry.")
+                menu_items[menu_data[0]] = menu_data
             else:
-                sub_menus[menu_data[0]] = [menu_data]
+                if sub_menus.has_key(menu_data[0]):
+                    sub_menus[menu_data[0]].append(menu_data)
+                else:
+                    sub_menus[menu_data[0]] = [menu_data]
+        
+        #put menu items above submenus
+        for item_name in sorted(menu_items.keys()):
+            name, junk, desc, handler = menu_items[item_name]
+            temp_item = new_submenu.Append(-1, item_name, desc)
+            wx.EVT_MENU(self.parent,temp_item.GetId(), handler)
         
         for menu_name in sorted(sub_menus.keys()):
-            temp_submenu = wx.Menu()
-            
+            temp_submenu = wx.Menu()            
             for junk, name, desc, handler in sub_menus[menu_name]:
+                    
                 temp_menu_item = temp_submenu.Append(-1, name, desc)
                 wx.EVT_MENU(self.parent,temp_menu_item.GetId(), handler)
             

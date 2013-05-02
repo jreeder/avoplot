@@ -90,7 +90,13 @@ class MainFrame(wx.Frame):
     
     
     def get_active_plot(self):
-        return self.notebook.GetPage(self.notebook.GetSelection())
+        selection = self.notebook.GetSelection()
+
+        if selection == -1:
+            #means that no plots are open
+            return None
+        
+        return self.notebook.GetPage(selection)
 
     
     def get_all_pages(self):

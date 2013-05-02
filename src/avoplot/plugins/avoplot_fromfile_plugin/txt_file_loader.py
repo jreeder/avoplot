@@ -1,7 +1,12 @@
 import magic
+import wx
 import re
 import StringIO
+import os.path
 from std_ops.iter_ import multi_sort, tuple_compare
+from avoplot.plugins import AvoPlotPluginBase
+from avoplot.persist import PersistantStorage
+from column_selector import TxtFileDataSeriesSelectFrame
 #from avoplot.plugins.avoplot_fromfile_plugin.loader import FileLoaderBase
 import loader
 def load(filename):
@@ -9,12 +14,40 @@ def load(filename):
         s = ifp.read()
     return StringIO.StringIO(s)
 
-
+class TextFilePlugin(AvoPlotPluginBase):
+    def __init__(self):
+        AvoPlotPluginBase.__init__(self, "Text File")
+        
+    def get_onNew_handler(self):
+        return ("From file", "", "Plot data from a file", self.on_new)
+    
+    def on_new(self,evnt):
+        persistant_storage = PersistantStorage()
+        
+        try:
+            last_path_used = persistant_storage.get_value("fromfile_last_dir_used")
+        except KeyError:
+            last_path_used = ""
+        
+        #get filename to open
+        file_to_open = wx.FileSelector("Choose file to open", default_path=last_path_used)
+        if file_to_open == "":
+            return
+        
+        persistant_storage.set_value("fromfile_last_dir_used", os.path.dirname(file_to_open))
+        
+        wx.BeginBusyCursor()
+        try:
+            contents = loader.load_file(file_to_open)
+            TxtFileDataSeriesSelectFrame(self.get_parent(), contents)
+        finally:
+            wx.EndBusyCursor()
+        
 class TextFileLoader(loader.FileLoaderBase):
     
     def __init__(self):
         self.name = "Text file loader"
-    def test(self, ifp):
+    def test(self, filename, ifp):
         
         try:
             file_type = magic.from_buffer(ifp.read(),mime=True)
@@ -30,14 +63,14 @@ class TextFileLoader(loader.FileLoaderBase):
             return False
     
     
-    def load(self, ifp):
+    def load(self, filename,ifp):
         comment = self.guess_comment_symbol(ifp)
         n_cols = self.guess_number_of_columns(ifp)
         start_idx, end_idx, lines_to_skip = self.guess_data_lines(ifp, n_cols, comment)
         headings = self.guess_column_titles(ifp, n_cols, start_idx)
         columns = self.get_columns(ifp, n_cols, start_idx, end_idx, lines_to_skip, headings)
         
-        return loader.FileContents(columns, header=None, comment_symbols=[comment], skipped_rows=[(i,l) for i,l in lines_to_skip], footer=None)
+        return loader.FileContents(filename, columns, header="some header", comment_symbols=[comment], skipped_rows=[(i,l) for i,l in lines_to_skip], footer="Some footer")
         
     
     

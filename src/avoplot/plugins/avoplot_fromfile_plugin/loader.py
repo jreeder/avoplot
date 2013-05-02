@@ -17,29 +17,31 @@ def load_file(filename):
     flag=False
     for loader in __available_loaders:
         print "Trying %s"%loader.name
-        flag = loader.test(ifp)
+        flag = loader.test(filename, ifp)
         if flag:
             break
     if flag:
-        return loader.load(ifp)
+        return loader.load(filename, ifp)
     raise IOError('Cannot load the file %s'%filename)
 
 
 class FileLoaderBase:
     
-    def test(self, ifp):
+    def test(self, filename, ifp):
         return False
     
-    def load(self,ifp):
+    def load(self,filename, ifp):
         raise NotImplementedError
 
 
 class FileContents:
-    def __init__(self, columns, header=None, comment_symbols=[], skipped_rows=[], footer=None):
+    def __init__(self, filename, columns, header=None, comment_symbols=[], skipped_rows=[], footer=None):
+        self.filename = filename
         self.header = header
         self.columns = columns
         self.comment_symbols = comment_symbols
         self.skipped_rows = skipped_rows
+        self.footer = footer
     
     def print_summary(self):
         print "\n\n----------------------------------------"
@@ -59,6 +61,9 @@ class ColumnData:
         self.d_type = None
         self.data = None
         self.title = title
+    
+    def get_number_of_rows(self):
+        return len(self.raw_data)
     
     
     def get_data_type(self):
