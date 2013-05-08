@@ -39,9 +39,14 @@ class TextFilePlugin(AvoPlotPluginBase):
         wx.BeginBusyCursor()
         try:
             contents = loader.load_file(file_to_open)
-            TxtFileDataSeriesSelectFrame(self.get_parent(), contents)
+            series_select_dialog = TxtFileDataSeriesSelectFrame(self.get_parent(), contents)
         finally:
             wx.EndBusyCursor()
+        
+        if series_select_dialog.ShowModal() == wx.ID_OK:
+            plt = series_select_dialog.get_plot()
+            self.add_plot_to_main_window(plt, "New Plot")
+        
         
 class TextFileLoader(loader.FileLoaderBase):
     
@@ -68,9 +73,9 @@ class TextFileLoader(loader.FileLoaderBase):
         n_cols = self.guess_number_of_columns(ifp)
         start_idx, end_idx, lines_to_skip = self.guess_data_lines(ifp, n_cols, comment)
         headings = self.guess_column_titles(ifp, n_cols, start_idx)
-        columns = self.get_columns(ifp, n_cols, start_idx, end_idx, lines_to_skip, headings)
+        header,columns,footer = self.get_columns(ifp, n_cols, start_idx, end_idx, lines_to_skip, headings)
         
-        return loader.FileContents(filename, columns, header="some header", comment_symbols=[comment], skipped_rows=[(i,l) for i,l in lines_to_skip], footer="Some footer")
+        return loader.FileContents(filename, columns, header=header, comment_symbols=[comment], skipped_rows=[(i,l) for i,l in lines_to_skip], footer=footer)
         
     
     
@@ -147,6 +152,14 @@ class TextFileLoader(loader.FileLoaderBase):
         
         lines = ifp.readlines()
         ifp.seek(0)
+        
+        header = ''.join(lines[:start_idx])
+        
+        if len(lines) == end_idx + 1:
+            footer=''
+        else:
+            footer = ''.join(lines[end_idx+1:])
+        
         lines = lines[start_idx:end_idx+1]
         for idx in [i[0]-start_idx for i in reversed(sorted(lines_to_skip, cmp=tuple_compare))]:
             print "popped",lines.pop(idx)
@@ -157,7 +170,7 @@ class TextFileLoader(loader.FileLoaderBase):
             for i in range(n_cols):
                 columns[i].append(vals[i])
 
-        return [loader.ColumnData(c, title=headings[i]) for i,c in enumerate(columns)]
+        return header,[loader.ColumnData(c, title=headings[i]) for i,c in enumerate(columns)],footer
         
         
         

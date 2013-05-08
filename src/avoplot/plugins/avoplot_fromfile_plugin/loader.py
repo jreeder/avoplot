@@ -1,5 +1,6 @@
 import StringIO
 import datetime
+import numpy
 
 __available_loaders = []
 
@@ -62,6 +63,10 @@ class ColumnData:
         self.data = None
         self.title = title
     
+    def get_data_mask(self):
+        #TODO - mask out invalid values
+        return numpy.ones((self.get_number_of_rows(),1))
+    
     def get_number_of_rows(self):
         return len(self.raw_data)
     
@@ -107,8 +112,9 @@ class ColumnData:
         self.data = _converters[self.get_data_type()](self.raw_data)
         return self.data
         
-    
-_converters = {}
+def to_float(data):
+    return numpy.array([float(i) for i in data])    
+_converters = {'float':to_float}
 
     
     

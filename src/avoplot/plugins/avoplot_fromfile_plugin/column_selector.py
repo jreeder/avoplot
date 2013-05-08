@@ -1,9 +1,11 @@
-from avoplot.gui.artwork import AvoplotArtProvider
 import wx
-import wx.lib.agw
+import wx.lib.buttons
 import wx.grid
+import numpy
+from avoplot.gui.plots import PlotPanelBase
 
-
+class InvalidSelectionError(ValueError):
+    pass
 
 class FileContentsPanel(wx.Panel):
     def __init__(self, parent, file_contents):
@@ -30,8 +32,8 @@ class FileContentsPanel(wx.Panel):
         
         #add a drop-down panel for displaying the file header contents (if there is any)
         if file_contents.header:
-            header_pane = wx.CollapsiblePane(self, wx.ID_ANY, "File Header")
-            win = header_pane.GetPane()
+            self.header_pane = wx.CollapsiblePane(self, wx.ID_ANY, "File Header")
+            win = self.header_pane.GetPane()
             header_txt_ctrl = wx.TextCtrl(win, wx.ID_ANY, value=file_contents.header,
                                           style=wx.TE_MULTILINE | wx.TE_READONLY | wx.HSCROLL)
             
@@ -40,19 +42,21 @@ class FileContentsPanel(wx.Panel):
             
             win.SetSizer(header_pane_sizer)
             header_pane_sizer.SetSizeHints(win)
-            wx.EVT_COLLAPSIBLEPANE_CHANGED(self, header_pane.GetId(), self.on_expand)
+            wx.EVT_COLLAPSIBLEPANE_CHANGED(self, self.header_pane.GetId(), self.on_expand)
             
-            vsizer.Add(header_pane, 0, wx.GROW)
+            vsizer.Add(self.header_pane, 0, wx.GROW)
+        else:
+            self.header_pane = None
         
         
         #add the grid panel for data selection
-        grid_panel = ColumnDataPanel(self, file_contents)
-        vsizer.Add(grid_panel, 1, wx.EXPAND)
+        self.grid_panel = ColumnDataPanel(self, file_contents)
+        vsizer.Add(self.grid_panel, 1, wx.EXPAND)
 
         #add a drop-down panel for displaying the file footer contents (if there is any)
         if file_contents.footer:
-            footer_pane = wx.CollapsiblePane(self, wx.ID_ANY, "File Footer")
-            win = footer_pane.GetPane()
+            self.footer_pane = wx.CollapsiblePane(self, wx.ID_ANY, "File Footer")
+            win = self.footer_pane.GetPane()
             footer_txt_ctrl = wx.TextCtrl(win, wx.ID_ANY, value=file_contents.footer,
                                           style=wx.TE_MULTILINE | wx.TE_READONLY | wx.HSCROLL)
             
@@ -61,10 +65,11 @@ class FileContentsPanel(wx.Panel):
             
             win.SetSizer(footer_pane_sizer)
             footer_pane_sizer.SetSizeHints(win)
-            wx.EVT_COLLAPSIBLEPANE_CHANGED(self, footer_pane.GetId(), self.on_expand)
+            wx.EVT_COLLAPSIBLEPANE_CHANGED(self, self.footer_pane.GetId(), self.on_expand)
             
-            vsizer.Add(footer_pane, 0, wx.GROW)
-        
+            vsizer.Add(self.footer_pane, 0, wx.GROW)
+        else:
+            self.footer_pane = None
         self.SetSizer(vsizer)
         vsizer.Fit(self)
         self.SetAutoLayout(True)
@@ -79,25 +84,44 @@ class FileContentsPanel(wx.Panel):
     def on_rows_chkbox(self, evnt):
         status = self.rows_checkbox.IsChecked()
         self.cols_checkbox.SetValue(not status)
-
-
-
-class ColumnDataPanel(wx.Panel):
-    def __init__(self, parent, file_contents):
-        wx.Panel.__init__(self, parent, wx.ID_ANY)
+    
+    
+    def enable_select_mode(self, val, data_series):
+        self.grid_panel.enable_select_mode(val, data_series)
         
+        if val:
+            self.cols_checkbox.Disable()
+            self.rows_checkbox.Disable()
+            if self.header_pane is not None:
+                self.header_pane.Disable()
+            if self.footer_pane is not None:
+                self.footer_pane.Disable()
+        else:
+            self.cols_checkbox.Enable()
+            self.rows_checkbox.Enable()
+            if self.header_pane is not None:
+                self.header_pane.Enable()
+            if self.footer_pane is not None:
+                self.footer_pane.Enable()
+
+
+class ColumnDataPanel(wx.ScrolledWindow):
+    def __init__(self, parent, file_contents):
+        wx.ScrolledWindow.__init__(self, parent, wx.ID_ANY)
+        self.SetScrollRate(5,5)
+        self.file_contents = file_contents
         n_cols = len(file_contents.columns)
         n_rows = file_contents.columns[0].get_number_of_rows()
         
         vsizer = wx.BoxSizer(wx.VERTICAL)
-        
+     
         #create cells
         self.grid = wx.grid.Grid(self, wx.ID_ANY)
-
         self.grid.CreateGrid(n_rows, n_cols)
-        vsizer.Add(self.grid, 1, wx.EXPAND)
-        
+        self.col_letter_names = []
+                
         for c, col in enumerate(file_contents.columns):
+            self.col_letter_names.append(self.grid.GetColLabelValue(c))
             if col.title and not col.title.isspace():
                 self.grid.SetColLabelValue(c, col.title)
             
@@ -105,44 +129,338 @@ class ColumnDataPanel(wx.Panel):
                 self.grid.SetCellValue(r, c, data)
         
         self.grid.AutoSize() 
+        
+        #create choice boxes for data types
+        self.data_type_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        text = wx.StaticText(self, wx.ID_ANY,"Data type:")
+        self.data_type_sizer.Add(text,0,wx.ALIGN_LEFT| wx.ALIGN_CENTER_VERTICAL)
+        self.data_type_sizer.AddSpacer(self.grid.GetRowLabelSize()-text.GetSize()[0])
+        self.data_type_choices = []
+        for col in file_contents.columns:
+            choice = wx.Choice(self, wx.ID_ANY,choices=["Float", "String"])
+            self.data_type_choices.append(choice)
+            self.data_type_sizer.Add(choice,0,wx.ALIGN_CENTER_VERTICAL|wx.GROW)
+                
+        #match the data type choice box sizes to the grid column sizes
+        for idx in range(len(self.data_type_choices)):
+            choice_size = self.data_type_choices[idx].GetSize()[0]
+            col_size = self.grid.GetColSize(idx)
+            
+            if choice_size < col_size:
+                self.data_type_choices[idx].SetMinSize((col_size,-1))
+            else:
+                self.grid.SetColSize(idx,choice_size)
+                self.grid.SetColMinimalWidth(idx,choice_size)
+        wx.grid.EVT_GRID_CMD_COL_SIZE(self, self.grid.GetId(), self.on_column_resize)
+        
+        vsizer.Add(self.data_type_sizer, 0, wx.EXPAND)
+        vsizer.Add(self.grid, 1, wx.EXPAND)
+
         self.SetSizer(vsizer)
         vsizer.Fit(self)
-   
-   
+
+    
+    def get_selection(self):
+        """
+        Returns a tuple (selection string, col_idx, data mask) where selection string is 
+        a human readable string of the selection made, col_idx is the index of the column that the mask relates to and data mask is a numpy 
+        mask array where True indicates a selection and False indicates a value to
+        mask out.
+        """
+        
+        cols_selected = self.grid.GetSelectedCols()
+        cells_selected = self.grid.GetSelectedCells()
+        blocks_TL_selected = self.grid.GetSelectionBlockTopLeft()
+        blocks_BR_selected = self.grid.GetSelectionBlockBottomRight()
+        
+        if cols_selected:
+            #only complete columns have been selected (or at least if other cells have also been
+            #selected then they are invalid)
+            if (len(cols_selected) > 1 or blocks_TL_selected or cells_selected):
+                raise InvalidSelectionError("You cannot select data from more than one column for an axis data series.")
+            
+            col_idx = cols_selected[0]
+            mask = self.file_contents.columns[col_idx].get_data_mask()
+            selection_str = '%s[:]'%self.col_letter_names[col_idx]
+            return selection_str,col_idx,mask
+        
+        if not (cells_selected or blocks_BR_selected):
+            #No selection made
+            return "",None,None
+        
+        #otherwise we have a selection of blocks of cells and individual cells to sort out       
+        #first check that they are all from the same column
+        cols = set([c for r,c in cells_selected] + [c for r,c in blocks_TL_selected] + 
+                   [c for r,c in blocks_BR_selected])
+        
+        if len(cols) != 1:
+            raise InvalidSelectionError("You cannot select data from more than one column for an axis data series.")
+        
+        col_idx = cols.pop()
+        
+        #create a list of (start_row, end_row) tuples for all the cells and blocks selected
+        start_idxs = [r for r,c in blocks_TL_selected] + [r for r,c in cells_selected]
+        end_idxs = [r for r,c in blocks_BR_selected] + [r for r,c in cells_selected]       
+        selections = zip(start_idxs, end_idxs)
+        
+        #sort them into row order
+        tuple_compare = lambda x1,x2: cmp(x1[0], x2[0])
+        selections.sort(cmp=tuple_compare)
+        
+        #we +1 to the row numbers because numbering starts at 1 for the row labels but at 0
+        #for their indices
+        selection_str = ', '.join(['%s[%d:%d]'%(self.col_letter_names[col_idx], 
+                                                start+1, end+1) for start,end in selections])
+        
+        mask = self.file_contents.columns[col_idx].get_data_mask()
+        selection_mask = numpy.zeros_like(mask)
+        
+        for start,end in selections:
+            selection_mask[start:end+1] = True
+        mask = numpy.logical_and(mask, selection_mask)
+        
+        return selection_str, col_idx, mask
+        
+            
+                
+    def enable_select_mode(self, val, data_series):
+        self.set_editable(not val)
+        if val:
+            #self.grid.GetGridWindow().SetCursor(wx.StockCursor(wx.CURSOR_CROSS))
+            self.grid.ClearSelection()
+            for choice in self.data_type_choices:
+                choice.Disable()
+        else:
+            #self.grid.GetGridWindow().SetCursor(wx.StockCursor(wx.CURSOR_DEFAULT))
+            for choice in self.data_type_choices:
+                choice.Enable()
+            try:
+                selection = self.get_selection()
+            except InvalidSelectionError,e:
+                wx.MessageBox(e.args[0], "AvoPlot", wx.ICON_EXCLAMATION)
+                selection = ("",None, None)
+            data_series.set_selection(*selection)
+        
+        
     def set_editable(self, value):
         self.grid.EnableDragGridSize(value)  
         self.grid.EnableDragColSize(value)
         self.grid.EnableDragRowSize(value)
         self.grid.EnableEditing(value)
+
+    
+    def on_column_resize(self, evnt):
+        """
+        Handle column resize events - this requires all the data_type choices
+        to be resized to match the columns
+        """
+        for idx in range(len(self.data_type_choices)):
+            col_size = self.grid.GetColSize(idx)
+            self.data_type_choices[idx].SetMinSize((col_size,-1))
+        
+        self.data_type_sizer.Layout()
             
    
-   
-        
-class DataSeriesPanel(wx.Panel):
-    def __init__(self, parent):
+class XYDataSeriesPanel(wx.Panel):
+    def __init__(self, parent, file_contents, main_frame):
+        self.__selecting_x = False
+        self.file_contents = file_contents        
         wx.Panel.__init__(self, parent, wx.ID_ANY)
+        self.hsizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.main_frame = main_frame
+        
+        self.xseries_box = wx.TextCtrl(self, wx.ID_ANY)
+        self.yseries_box = wx.TextCtrl(self, wx.ID_ANY)
+        button_sz = self.yseries_box.GetSize()[1]
+        self.add_button = wx.BitmapButton(self, wx.ID_ANY, wx.ArtProvider.GetBitmap("add",wx.ART_BUTTON))
+        self.remove_button = wx.BitmapButton(self, wx.ID_ANY, wx.ArtProvider.GetBitmap("remove",wx.ART_BUTTON))
+        
+        self.select_x_button = wx.lib.buttons.ThemedGenBitmapToggleButton(self, wx.ID_ANY, wx.ArtProvider.GetBitmap("select_cols",wx.ART_BUTTON), size=(button_sz,button_sz))
+        self.select_y_button = wx.lib.buttons.ThemedGenBitmapToggleButton(self, wx.ID_ANY, wx.ArtProvider.GetBitmap("select_cols",wx.ART_BUTTON), size=(button_sz,button_sz))
+        wx.EVT_BUTTON(self, self.select_x_button.GetId(), self.on_select_x_series)
+        wx.EVT_BUTTON(self, self.select_y_button.GetId(), self.on_select_y_series)
+        
+        self.hsizer.Add(wx.StaticText(self, wx.ID_ANY, "x data: "),0, wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_LEFT)
+        self.hsizer.Add(self.xseries_box, 1, wx.ALIGN_CENTER_VERTICAL| wx.ALIGN_LEFT)
+        self.hsizer.Add(self.select_x_button,0,wx.ALIGN_CENTER_VERTICAL| wx.ALIGN_LEFT)
+        self.hsizer.AddSpacer(10)
+        
+        self.hsizer.Add(wx.StaticText(self, wx.ID_ANY, "y data: "),0, wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_LEFT)
+        self.hsizer.Add(self.yseries_box, 1, wx.ALIGN_CENTER_VERTICAL| wx.ALIGN_LEFT)
+        self.hsizer.Add(self.select_y_button,0,wx.ALIGN_CENTER_VERTICAL| wx.ALIGN_LEFT)
+        self.hsizer.AddSpacer(10)
+        
+        self.hsizer.Add(self.remove_button,0, wx.ALIGN_CENTER_VERTICAL| wx.ALIGN_LEFT| wx.RESERVE_SPACE_EVEN_IF_HIDDEN)
+        self.hsizer.Add(self.add_button,0, wx.ALIGN_CENTER_VERTICAL| wx.ALIGN_LEFT| wx.RESERVE_SPACE_EVEN_IF_HIDDEN)      
+        
+        self.SetSizer(self.hsizer)
+        self.hsizer.Fit(self)
+        self.SetAutoLayout(True)
+
+    
+    def enable_select_mode(self, val, series):
+        if val:
+            self.xseries_box.Disable()
+            self.yseries_box.Disable()
+            self.select_x_button.Disable()
+            self.select_y_button.Disable()
+            self.add_button.Disable()
+            self.remove_button.Disable()
+        else:
+            self.xseries_box.Enable()
+            self.yseries_box.Enable()
+            self.select_x_button.Enable()
+            self.select_y_button.Enable()
+            self.add_button.Enable()
+            self.remove_button.Enable()
+            
+    
+    def plot_into_axes(self, axes):
+        
+        xdata = self.get_x_series_data()
+        ydata = self.get_y_series_data()
+        
+        if xdata is None and ydata is None:
+            return
+        
+        if xdata is None:
+            axes.plot(numpy.arange(len(ydata)),ydata)
+        elif ydata is None:
+            axes.plot(xdata,numpy.arange(len(xdata)))
+        else:
+            print xdata, ydata
+            axes.plot(xdata, ydata)
+    
+        
+    def get_x_series_data(self):
+        if self.xseries_box.GetValue() == '':
+            return None
+        data = self.file_contents.columns[self.__x_series_col].get_data()
+        
+        return numpy.ma.masked_array(data, mask=numpy.logical_not(self.__x_series_mask))
+        
+        
+    def get_y_series_data(self):
+        if self.yseries_box.GetValue() == '':
+            return None
+        data = self.file_contents.columns[self.__y_series_col].get_data()
+        
+        return numpy.ma.masked_array(data, mask=numpy.logical_not(self.__y_series_mask)) 
+      
+           
+    def get_add_button_id(self):
+        return self.add_button.GetId()
+    
+    
+    def get_remove_button_id(self):
+        return self.remove_button.GetId()
+    
+    
+    def set_button_visibility(self, add_button, remove_button):
+        self.add_button.Show(add_button)
+        self.remove_button.Show(remove_button)
+        self.hsizer.Layout()
+    
+    
+    def on_select_x_series(self, evnt):
+        if self.select_x_button.GetToggle():
+            self.__selecting_x = True            
+            self.main_frame.enable_select_mode(True, self)
+            self.select_x_button.Enable()
+        else:
+            self.main_frame.enable_select_mode(False, self)
+            self.__selecting_x = False
+            
+    
+    
+    def on_select_y_series(self, evnt):
+        if self.select_y_button.GetToggle():
+            self.__selecting_x = False        
+            self.main_frame.enable_select_mode(True, self)
+            self.select_y_button.Enable()
+        else:
+            self.main_frame.enable_select_mode(False, self)
+
+    
+    def set_selection(self, selection_str, col_idx, mask):
+        if self.__selecting_x:
+            self.__x_series_col = col_idx
+            self.__x_series_mask = mask
+            self.xseries_box.SetValue(selection_str)
+        else:
+            self.__y_series_col = col_idx
+            self.__y_series_mask = mask
+            self.yseries_box.SetValue(selection_str)
+        
+        
+class DataSeriesSelectPanel(wx.ScrolledWindow):
+    def __init__(self, parent, main_frame, file_contents):
+        wx.ScrolledWindow.__init__(self, parent, wx.ID_ANY)
+        self.SetScrollRate(5,5)
+        self.file_contents = file_contents
         box = wx.StaticBox(self, wx.ID_ANY, "Data Series")
-        vsizer = wx.StaticBoxSizer(box, wx.VERTICAL)
+        self.vsizer = wx.StaticBoxSizer(box, wx.VERTICAL)
+        self.main_frame = main_frame
+        #TODO - these would be better implemented as an ordered dict
+        self.data_series = []
+        self.data_series_id_mapping = {} #{id:index in data_series}
         
-        #box = wx.StaticBox(self, wx.ID_ANY, "File Contents")
-        #vsizer.Add(box,1,wx.EXPAND)
-        vsizer.Add(wx.StaticText(self, -1, "test text"), 1)
+
+        self.on_add_data_series(None)
         
-        self.SetSizer(vsizer)
-        vsizer.Fit(self)
-        self.SetAutoLayout(True)       
+        self.SetSizer(self.vsizer)
+        self.vsizer.Fit(self)
+        self.SetAutoLayout(True)
+        
+    
+    def enable_select_mode(self, val, series):
+        for s in self.data_series:
+            s.enable_select_mode(val, series)
+        
+    def on_add_data_series(self, evnt):
+        series = XYDataSeriesPanel(self, self.file_contents, self.main_frame) #remove button only if it is not the first series
+        series.set_button_visibility(True, bool(self.data_series))
+        self.vsizer.Add(series,1, wx.EXPAND | wx.ALIGN_TOP)
+        if self.data_series:
+            self.data_series[-1].set_button_visibility(False, True)
+        self.data_series.append(series)
+        self.data_series_id_mapping[series.get_remove_button_id()] = series
+        wx.EVT_BUTTON(self, self.data_series[-1].get_add_button_id(), self.on_add_data_series)   
+        wx.EVT_BUTTON(self, self.data_series[-1].get_remove_button_id(), self.on_remove_data_series)
+        self.SendSizeEvent()
+    
+    
+    def on_remove_data_series(self, evnt):
+        
+        id_ = evnt.Id
+        series =  self.data_series_id_mapping[id_]
+        self.data_series_id_mapping.pop(id_)
+        idx = self.data_series.index(series)
+        
+        if idx == len(self.data_series) -1:
+            self.data_series[-2].set_button_visibility(True, len(self.data_series)>2)       
+        elif idx == 0:
+            self.data_series[1].set_button_visibility(len(self.data_series)<3, len(self.data_series)>2)
+        elif len(self.data_series)<3:
+            self.data_series[0].set_button_visibility(True, False)
+        
+        self.data_series[idx].Destroy()
+        self.data_series.remove(series)
+        self.SendSizeEvent()
         
         
-class TxtFileDataSeriesSelectFrame(wx.Frame):
+        
+        
+        
+class TxtFileDataSeriesSelectFrame(wx.Dialog):
     def __init__(self, parent, file_contents):
         #set the title to the file name
         frame_title = "%s - Data Select - AvoPlot" % file_contents.filename        
-        wx.Frame.__init__(self, parent, wx.ID_ANY, frame_title)
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, frame_title, style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER|wx.MAXIMIZE_BOX|wx.MINIMIZE_BOX)
+        self.parent = parent
         
         #set up the icon for the frame
-        self.art_provider = AvoplotArtProvider()
-        wx.ArtProvider.Push(self.art_provider)
-        self.SetIcon(self.art_provider.GetIcon("AvoPlot"))
+        self.SetIcon(wx.ArtProvider.GetIcon("AvoPlot"))
         
         #create top level panel to hold all frame elements
         top_panel = wx.Panel(self, wx.ID_ANY)
@@ -154,8 +472,8 @@ class TxtFileDataSeriesSelectFrame(wx.Frame):
         
         #create all the frame elements
         self.file_contents_panel = FileContentsPanel(top_panel, file_contents)
-        self.data_series_panel = DataSeriesPanel(top_panel)
-        vsizer.Add(self.file_contents_panel, 2, wx.EXPAND | wx.ALL, border=5)
+        self.data_series_panel = DataSeriesSelectPanel(top_panel, self, file_contents)
+        vsizer.Add(self.file_contents_panel, 5, wx.EXPAND | wx.ALL, border=5)
         vsizer.Add(self.data_series_panel, 1, wx.EXPAND | wx.ALL, border=5)
             
         #create main buttons
@@ -170,21 +488,30 @@ class TxtFileDataSeriesSelectFrame(wx.Frame):
         vsizer.Add(buttons_sizer, 0, wx.ALL | wx.ALIGN_BOTTOM | wx.ALIGN_RIGHT, border=10)
         
         #configure layout and position
-        top_panel.SetSizer(vsizer)
-        topsizer.Fit(self)
+        top_panel.SetSizer(topsizer)
+        topsizer.Fit(top_panel)
         top_panel.SetAutoLayout(True)
         self.Center(wx.BOTH)
         self.Show()
 
     def on_plot(self, evnt):
-        pass
+        self.EndModal(wx.ID_OK)
+        
     
     def on_cancel(self, evnt):
-        self.Destroy()
+        self.EndModal(wx.ID_CANCEL)
+    
+    
+    def enable_select_mode(self, val, data_series):
+        self.file_contents_panel.enable_select_mode(val, data_series)
+        self.data_series_panel.enable_select_mode(val, data_series)
 
-
-
-
+    
+    def get_plot(self):
+        plt = PlotPanelBase(self.parent)
+        for series in self.data_series_panel.data_series:
+            series.plot_into_axes(plt.axes)
+        return plt
     
 class ColumnSelectorFrame(wx.Frame):
     def __init__(self, parent, file_contents):
