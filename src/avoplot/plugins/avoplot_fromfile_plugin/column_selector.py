@@ -1,4 +1,5 @@
 import wx
+import re
 import wx.lib.buttons
 import wx.grid
 import numpy
@@ -110,8 +111,8 @@ class ColumnDataPanel(wx.ScrolledWindow):
         wx.ScrolledWindow.__init__(self, parent, wx.ID_ANY)
         self.SetScrollRate(5,5)
         self.file_contents = file_contents
-        n_cols = len(file_contents.columns)
-        n_rows = file_contents.columns[0].get_number_of_rows()
+        n_cols = file_contents.get_number_of_columns()
+        n_rows = file_contents.get_number_of_rows()
         
         vsizer = wx.BoxSizer(wx.VERTICAL)
      
@@ -120,7 +121,7 @@ class ColumnDataPanel(wx.ScrolledWindow):
         self.grid.CreateGrid(n_rows, n_cols)
         self.col_letter_names = []
                 
-        for c, col in enumerate(file_contents.columns):
+        for c, col in enumerate(file_contents.get_columns()):
             self.col_letter_names.append(self.grid.GetColLabelValue(c))
             if col.title and not col.title.isspace():
                 self.grid.SetColLabelValue(c, col.title)
@@ -136,7 +137,7 @@ class ColumnDataPanel(wx.ScrolledWindow):
         self.data_type_sizer.Add(text,0,wx.ALIGN_LEFT| wx.ALIGN_CENTER_VERTICAL)
         self.data_type_sizer.AddSpacer(self.grid.GetRowLabelSize()-text.GetSize()[0])
         self.data_type_choices = []
-        for col in file_contents.columns:
+        for col in file_contents.get_columns():
             choice = wx.Choice(self, wx.ID_ANY,choices=["Float", "String"])
             self.data_type_choices.append(choice)
             self.data_type_sizer.Add(choice,0,wx.ALIGN_CENTER_VERTICAL|wx.GROW)
@@ -178,11 +179,9 @@ class ColumnDataPanel(wx.ScrolledWindow):
             #selected then they are invalid)
             if (len(cols_selected) > 1 or blocks_TL_selected or cells_selected):
                 raise InvalidSelectionError("You cannot select data from more than one column for an axis data series.")
-            
-            col_idx = cols_selected[0]
-            mask = self.file_contents.columns[col_idx].get_data_mask()
-            selection_str = '%s[:]'%self.col_letter_names[col_idx]
-            return selection_str,col_idx,mask
+
+            selection_str = '%s[:]'%self.file_contents.get_col_name(cols_selected[0])
+            return selection_str
         
         if not (cells_selected or blocks_BR_selected):
             #No selection made
@@ -212,14 +211,7 @@ class ColumnDataPanel(wx.ScrolledWindow):
         selection_str = ', '.join(['%s[%d:%d]'%(self.col_letter_names[col_idx], 
                                                 start+1, end+1) for start,end in selections])
         
-        mask = self.file_contents.columns[col_idx].get_data_mask()
-        selection_mask = numpy.zeros_like(mask)
-        
-        for start,end in selections:
-            selection_mask[start:end+1] = True
-        mask = numpy.logical_and(mask, selection_mask)
-        
-        return selection_str, col_idx, mask
+        return selection_str
         
             
                 
@@ -239,7 +231,7 @@ class ColumnDataPanel(wx.ScrolledWindow):
             except InvalidSelectionError,e:
                 wx.MessageBox(e.args[0], "AvoPlot", wx.ICON_EXCLAMATION)
                 selection = ("",None, None)
-            data_series.set_selection(*selection)
+            data_series.set_selection(selection)
         
         
     def set_editable(self, value):
@@ -259,7 +251,7 @@ class ColumnDataPanel(wx.ScrolledWindow):
             self.data_type_choices[idx].SetMinSize((col_size,-1))
         
         self.data_type_sizer.Layout()
-            
+     
    
 class XYDataSeriesPanel(wx.Panel):
     def __init__(self, parent, file_contents, main_frame):
@@ -333,21 +325,112 @@ class XYDataSeriesPanel(wx.Panel):
     
         
     def get_x_series_data(self):
-        if self.xseries_box.GetValue() == '':
-            return None
-        data = self.file_contents.columns[self.__x_series_col].get_data()
-        
-        return numpy.ma.masked_array(data, mask=numpy.logical_not(self.__x_series_mask))
-        
+        return self.__get_data_selection(self.xseries_box.GetValue(), False)      
         
     def get_y_series_data(self):
-        if self.yseries_box.GetValue() == '':
-            return None
-        data = self.file_contents.columns[self.__y_series_col].get_data()
-        
-        return numpy.ma.masked_array(data, mask=numpy.logical_not(self.__y_series_mask)) 
+        return self.__get_data_selection(self.yseries_box.GetValue(), False)     
+    
+    def validate_selection(self, row_selection):
+        self._validate_selection_str(self.xseries_box.GetValue(), row_selection)
+        self._validate_selection_str(self.yseries_box.GetValue(), row_selection)
       
-           
+    def _validate_selection_str(self, selection_str, row_selection=False):
+        if row_selection:
+            raise NotImplementedError("Selecting rows as data series is not implemented yet!")
+        
+        if not selection_str or selection_str.isspace():
+            return []
+        
+        selection_blocks = selection_str.split(',')
+        
+        if row_selection:
+            raise NotImplementedError("Selecting rows as data series is not implemented yet!")
+        else:
+        
+            regexp = re.compile(r'''
+                                   (?:^\s*(?P<whole_column>[A-Z]+)\s*\[\s*:\s*\]\s*$) #matches whole column selections (e.g. A[:])
+                                   | # or match column sections (e.g. A[2:9])
+                                   (?:^\s*(?P<column>[A-Z]+) #matches column name 
+                                   \s*\[\s*(?P<lower_bound>[0-9]+) #matches lower bound number
+                                   \s*:\s*  
+                                   (?P<upper_bound>[0-9]{1,})\s*\]\s*$) #matches upped bound number''', 
+                                   flags=re.VERBOSE)
+            
+            cols = set()
+            selection_params = []
+            for block in selection_blocks:
+                match = regexp.match(block)
+                
+                if match is None:
+                    #then there is a syntax error in the selection string
+                    raise InvalidSelectionError("Syntax error in selection string. \'%s\' is not a valid selection, expecting something of the form \'A[2:8]\'."%block)
+            
+                params = match.groupdict()
+                selection_params.append(params)
+                if params['whole_column'] is not None:
+                    cols.add(params['whole_column'])
+                else:
+                    cols.add(params['column'])
+                    lower_bound = int(params['lower_bound'])
+                    upper_bound = int(params['upper_bound'])
+                    
+                    if lower_bound < 1:
+                        raise InvalidSelectionError("Value error in selection string. \'%s\' is not a valid selection, lower bound must be greater than zero."%block)
+                    
+                    if lower_bound > upper_bound:
+                        raise InvalidSelectionError("Value error in selection string. \'%s\' is not a valid selection, upper bound cannot be smaller than lower bound."%block)
+                    
+                    n_rows = self.file_contents.get_column_by_name(params['column']).get_number_of_rows()
+                    if upper_bound > n_rows:
+                        raise InvalidSelectionError("Value error in selection string. \'%s\' is not a valid selection, upper bound is outside data range."%block)
+            
+            if len(cols) != 1:
+                raise InvalidSelectionError("Selection cannot contain data from multiple columns.")
+            
+        return selection_params
+                    
+    def __get_data_selection(self, selection_str, row_selection=False):
+        """
+        Given a selection string (of the form "A[1:20], A[23:25]", returns a masked array
+        of the requested data.
+        """
+        if row_selection:
+            raise NotImplementedError("Selecting rows as data series is not implemented yet!")
+        
+        if not selection_str or selection_str.isspace():
+            #empty string - no selection made
+            return None
+        
+        selection_params = self._validate_selection_str(selection_str, row_selection)
+        
+        #see if we have any complete column selections - life is easy if we do!
+        blocks = []
+        for s in selection_params:
+            if s['whole_column'] is not None:
+                column = self.file_contents.get_column_by_name(s['whole_column'])
+                return column.get_data()
+            else:
+                #-1 because array indexing starts at 0 but row indexing starts at 1
+                blocks.append((int(s['lower_bound'])-1,int(s['upper_bound'])-1))
+        
+        #otherwise build a mask for the selection       
+        column = self.file_contents.get_column_by_name(selection_params[0]['column'])
+        data_mask = column.get_data_mask()
+        
+        #sort selection blocks into row order
+        tuple_compare = lambda x1,x2: cmp(x1[0], x2[0])
+        blocks.sort(cmp=tuple_compare)
+
+        selection_mask = numpy.zeros_like(data_mask)
+        
+        for start,end in blocks:
+            selection_mask[start:end+1] = True
+        mask = numpy.logical_and(data_mask, selection_mask)
+        
+        return numpy.ma.masked_array(column.get_data(), mask=numpy.logical_not(mask))
+        
+
+          
     def get_add_button_id(self):
         return self.add_button.GetId()
     
@@ -382,14 +465,10 @@ class XYDataSeriesPanel(wx.Panel):
             self.main_frame.enable_select_mode(False, self)
 
     
-    def set_selection(self, selection_str, col_idx, mask):
+    def set_selection(self, selection_str):
         if self.__selecting_x:
-            self.__x_series_col = col_idx
-            self.__x_series_mask = mask
             self.xseries_box.SetValue(selection_str)
         else:
-            self.__y_series_col = col_idx
-            self.__y_series_mask = mask
             self.yseries_box.SetValue(selection_str)
         
         
@@ -495,6 +574,14 @@ class TxtFileDataSeriesSelectFrame(wx.Dialog):
         self.Show()
 
     def on_plot(self, evnt):
+        for series in self.data_series_panel.data_series:
+            try:
+                #TODO - read the row data status from the checkbox
+                series.validate_selection(False)
+            except InvalidSelectionError,e:
+                wx.MessageBox(e.args[0], 'AvoPlot', wx.ICON_ERROR)
+                return
+        
         self.EndModal(wx.ID_OK)
         
     

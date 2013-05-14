@@ -4,7 +4,7 @@ import os.path
 from avoplot.persist import PersistantStorage
 from avoplot.gui.plots import PlotPanelBase
 from avoplot.plugins import AvoPlotPluginBase
-from doas.spectrum_loader import SpectrumIO
+from doas.spectrum_loader import SpectrumIO, UnableToLoad
 
 
 class DOASSpectrumPlot(PlotPanelBase):
@@ -38,7 +38,7 @@ class DOASSpectrumPlugin(AvoPlotPluginBase):
         persist = PersistantStorage()
         
         try:
-            last_path_used = persist.get_value("spectra_dir")
+            last_path_used = persist.get_value("doas_spectra_dir")
         except KeyError:
             last_path_used = ""
         
@@ -47,12 +47,12 @@ class DOASSpectrumPlugin(AvoPlotPluginBase):
         if spectrum_file == "":
             return
         
-        persist.set_value("spectra_dir", os.path.dirname(spectrum_file))
+        persist.set_value("doas_spectra_dir", os.path.dirname(spectrum_file))
         
         try:
             spec_plot = DOASSpectrumPlot(self.get_parent(), spectrum_file)
         except UnableToLoad:
-            wx.MessageBox("Unable to load spectrum. Unrecognised file format.", "AvoPlot", wx.ICON_ERROR)
+            wx.MessageBox("Unable to load spectrum file \'%s\'. Unrecognised file format."%spectrum_file, "AvoPlot", wx.ICON_ERROR)
             return
         
         self.add_plot_to_main_window(spec_plot, os.path.basename(spectrum_file))

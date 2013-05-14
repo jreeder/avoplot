@@ -18,8 +18,10 @@ class TextFilePlugin(AvoPlotPluginBase):
     def __init__(self):
         AvoPlotPluginBase.__init__(self, "Text File")
         
+        
     def get_onNew_handler(self):
         return ("From file", "", "Plot data from a file", self.on_new)
+    
     
     def on_new(self,evnt):
         persistant_storage = PersistantStorage()
@@ -52,6 +54,8 @@ class TextFileLoader(loader.FileLoaderBase):
     
     def __init__(self):
         self.name = "Text file loader"
+        
+        
     def test(self, filename, ifp):
         
         try:

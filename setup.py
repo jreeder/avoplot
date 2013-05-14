@@ -44,7 +44,7 @@ setup(name='AvoPlot',
       author = 'Nial Peters', 
       author_email='nonbiostudent@hotmail.com',
       package_dir = {'':'src'},
-      packages=['avoplot','avoplot.gui', 'avoplot.plugins'],
+      packages=['avoplot','avoplot.gui', 'avoplot.plugins', 'avoplot.plugins.avoplot_fromfile_plugin'],
       scripts=avoplot_scripts_to_install,
       data_files=avoplot_files_to_install 
       )

@@ -1,4 +1,5 @@
 import StringIO
+import string
 import datetime
 import numpy
 
@@ -39,10 +40,48 @@ class FileContents:
     def __init__(self, filename, columns, header=None, comment_symbols=[], skipped_rows=[], footer=None):
         self.filename = filename
         self.header = header
-        self.columns = columns
+        self.__columns = columns
         self.comment_symbols = comment_symbols
         self.skipped_rows = skipped_rows
         self.footer = footer
+           
+        #build mapping between column names and indices
+        self.__col_name_mapping = {}
+        for c in range(len(self.__columns)):
+            self.__col_name_mapping[self.get_col_name(c)] = c
+    
+    
+    def get_col_name(self, n):
+        quotient=n+1 #want n=1 to yield 'A'
+        indx = []
+        while quotient > 0:  
+            quotient = n // 26
+            remainder = n % 26        
+            indx.append(remainder)
+            n = quotient    
+        return ''.join([string.ascii_uppercase[i] for i in reversed(indx)])
+    
+    
+    def get_column_by_index(self, idx):
+        return self.__columns[idx]
+    
+    
+    def get_column_by_name(self, name):
+        idx = self.__col_name_mapping[name]
+        return self.get_column_by_index(idx)
+    
+    
+    def get_number_of_columns(self):
+        return len(self.__columns)
+    
+    
+    def get_number_of_rows(self):
+        return self.__columns[0].get_number_of_rows()
+    
+    
+    def get_columns(self):
+        return self.__columns
+    
     
     def print_summary(self):
         print "\n\n----------------------------------------"
@@ -111,6 +150,7 @@ class ColumnData:
         
         self.data = _converters[self.get_data_type()](self.raw_data)
         return self.data
+
         
 def to_float(data):
     return numpy.array([float(i) for i in data])    
