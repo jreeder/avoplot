@@ -18,6 +18,7 @@
 import wx
 #from wx.lib.agw.flatnotebook import FlatNotebook, EVT_FLATNOTEBOOK_PAGE_CHANGED, EVT_FLATNOTEBOOK_PAGE_CLOSED, FNB_FANCY_TABS, FNB_X_ON_TAB,FNB_NO_X_BUTTON, EVT_FLATNOTEBOOK_PAGE_CLOSING
 from wx.aui import AuiNotebook, EVT_AUINOTEBOOK_PAGE_CHANGED, EVT_AUINOTEBOOK_PAGE_CLOSE, EVT_AUINOTEBOOK_PAGE_CLOSED,AUI_NB_DEFAULT_STYLE
+from wx.aui import EVT_AUINOTEBOOK_TAB_RIGHT_DOWN
 from avoplot.gui.artwork import AvoplotArtProvider
 from avoplot.gui import menu
 from avoplot.gui import toolbar
@@ -52,14 +53,32 @@ class MainFrame(wx.Frame):
         EVT_AUINOTEBOOK_PAGE_CLOSE(self, self.notebook.GetId(), self.onTabClose)
         EVT_AUINOTEBOOK_PAGE_CLOSED(self, self.notebook.GetId(), self.onTabChange)
         EVT_AUINOTEBOOK_PAGE_CHANGED(self, self.notebook.GetId(), self.onTabChange)
+        EVT_AUINOTEBOOK_TAB_RIGHT_DOWN(self, self.notebook.GetId(), self.onTabRightClick)
         self.Show()
     
     
     def onTabClose(self, evnt):
         p = self.get_active_plot()
         p.close()
+   
         
-        
+    def onTabRightClick(self, evnt):
+        self.notebook.SetSelection(evnt.GetSelection())
+        context_menu = wx.Menu()
+        rename = context_menu.Append(wx.ID_ANY,"Rename", "Rename the current tab")
+        wx.EVT_MENU(self, rename.GetId(), self.rename_current_tab)
+        self.PopupMenu(context_menu)
+    
+    
+    def rename_current_tab(self, evnt):
+        page_idx = self.notebook.GetSelection()
+        d = wx.TextEntryDialog(self, "Plot name:","Rename", defaultValue=self.notebook.GetPageText(page_idx))
+        if d.ShowModal() == wx.ID_OK:
+            new_name = d.GetValue()
+            if new_name and not new_name.isspace():
+                self.notebook.SetPageText(page_idx,d.GetValue())
+            
+            
     def onTabChange(self,evnt):
         p = self.get_active_plot()
         if p is None:
