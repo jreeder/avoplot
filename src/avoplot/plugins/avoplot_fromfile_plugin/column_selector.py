@@ -129,7 +129,13 @@ class ColumnDataPanel(wx.ScrolledWindow):
             for r, data in enumerate(col.raw_data):
                 self.grid.SetCellValue(r, c, data)
         
-        self.grid.AutoSize() 
+        self.grid.AutoSize()
+        
+        #set the size of the grid to be big enough that the grid's scrollbars are
+        #not enabled
+        #TODO - this will break if you resize some of the cells
+        self.grid.SetSize(self.grid.GetBestVirtualSize())
+        
         
         #create choice boxes for data types
         self.data_type_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -159,6 +165,7 @@ class ColumnDataPanel(wx.ScrolledWindow):
 
         self.SetSizer(vsizer)
         vsizer.Fit(self)
+
 
     
     def get_selection(self):
