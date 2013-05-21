@@ -124,7 +124,7 @@ class ColumnDataPanel(wx.ScrolledWindow):
         for c, col in enumerate(file_contents.get_columns()):
             self.col_letter_names.append(self.grid.GetColLabelValue(c))
             if col.title and not col.title.isspace():
-                self.grid.SetColLabelValue(c, col.title)
+                self.grid.SetColLabelValue(c, ''.join([self.grid.GetColLabelValue(c),'\n',col.title]))
             
             for r, data in enumerate(col.raw_data):
                 self.grid.SetCellValue(r, c, data)

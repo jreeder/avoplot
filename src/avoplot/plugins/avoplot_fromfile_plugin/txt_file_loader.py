@@ -76,7 +76,7 @@ class TextFileLoader(loader.FileLoaderBase):
         comment = self.guess_comment_symbol(ifp)
         n_cols = self.guess_number_of_columns(ifp)
         start_idx, end_idx, lines_to_skip = self.guess_data_lines(ifp, n_cols, comment)
-        headings = self.guess_column_titles(ifp, n_cols, start_idx)
+        headings = self.guess_column_titles(ifp, n_cols, start_idx, comment)
         header,columns,footer = self.get_columns(ifp, n_cols, start_idx, end_idx, lines_to_skip, headings)
         
         return loader.FileContents(filename, columns, header=header, comment_symbols=[comment], skipped_rows=[(i,l) for i,l in lines_to_skip], footer=footer)
@@ -137,6 +137,8 @@ class TextFileLoader(loader.FileLoaderBase):
                         end_idx = i
                 else:
                     lines_to_skip.append((i,line))
+            if end_idx is None:
+                end_idx = start_idx
             
             while lines_to_skip and lines_to_skip[-1][0] >= end_idx:
                 lines_to_skip.pop() #otherwise it will include line=end_idx
@@ -176,22 +178,38 @@ class TextFileLoader(loader.FileLoaderBase):
 
         return header,[loader.ColumnData(c, title=headings[i]) for i,c in enumerate(columns)],footer
         
-        
-        
-        
-    
-    
-    def guess_column_titles(self, ifp, n_cols, start_idx):
+           
+    def guess_column_titles(self, ifp, n_cols, start_idx, comment_symbol):
         lines = ifp.readlines()
         ifp.seek(0)
-        col_name_regexp = r''.join([r'^\s*\#\s*']+([r'(?:(?:((?: ?\S+ ?\S+)+))\s+)']*n_cols) + [r'\s*$'])
-        print "regexp = ",col_name_regexp
-        match = re.match(col_name_regexp,lines[start_idx - 1])
-        if match is not None:
-            print match.groups()
-            return match.groups()
-        else:
+        
+        words = lines[start_idx - 1].lstrip(comment_symbol).split()
+        if len(words) == n_cols:
+            return words
+        elif len(words) < n_cols:
+            #it cannot be column titles
             return ['']*n_cols
+        else:
+            #life is more difficult since the column names might have spaces in them
+            #first check to see if there are a sane number of separators greater than one space
+            line = lines[start_idx - 1].strip().lstrip(comment_symbol).lstrip()
+            
+            seps = re.findall(r' {2,}| ?[\t\n\r\f\v]+', line)
+            
+            if len(seps) != n_cols - 1:
+                return ['']*n_cols
+
+            names = []
+            for s in seps:
+                name,line = line.split(s, 1)
+                names.append(name)
+            names.append(line)
+            
+            if len(names) == n_cols:
+                return names
+            else:
+                return ['']*n_cols
+
 
         
 loader.register_loader(TextFileLoader())        
