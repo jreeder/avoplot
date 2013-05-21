@@ -23,7 +23,7 @@ from avoplot.gui.artwork import AvoplotArtProvider
 from avoplot.gui import menu
 from avoplot.gui import toolbar
 from avoplot import persist
-
+from matplotlib.backends.backend_wx import StatusBarWx
 
 
 class MainFrame(wx.Frame):      
@@ -46,14 +46,28 @@ class MainFrame(wx.Frame):
         self.toolbar = toolbar.MainToolbar(self)
         self.SetToolBar(self.toolbar)
         
+        vsizer = wx.BoxSizer(wx.VERTICAL)
+        
         #create the notebook
         self.notebook = AuiNotebook(self, id = wx.ID_ANY, style=AUI_NB_DEFAULT_STYLE)
+               
+        #create the status bar
+        self.statbar = StatusBarWx(self)
         
+        #put everything into the sizer
+        vsizer.Add(self.notebook, 1, wx.EXPAND)
+        vsizer.Add(self.statbar, 0, wx.EXPAND | wx.ALIGN_BOTTOM)
+        
+        #register the event handlers
         wx.EVT_CLOSE(self, self.onClose)
         EVT_AUINOTEBOOK_PAGE_CLOSE(self, self.notebook.GetId(), self.onTabClose)
         EVT_AUINOTEBOOK_PAGE_CLOSED(self, self.notebook.GetId(), self.onTabChange)
         EVT_AUINOTEBOOK_PAGE_CHANGED(self, self.notebook.GetId(), self.onTabChange)
         EVT_AUINOTEBOOK_TAB_RIGHT_DOWN(self, self.notebook.GetId(), self.onTabRightClick)
+        
+        #do the layout
+        self.SetSizer(vsizer)
+        vsizer.Fit(self)
         self.Show()
     
     
@@ -170,6 +184,9 @@ class MainFrame(wx.Frame):
    
     def add_plot_tab(self, plot, name, select=True):
         self.notebook.AddPage(plot, name, select=select)
+        
+        #allow the plot to talk to the status bar
+        plot.set_status_bar(self.statbar)
 
             
             
