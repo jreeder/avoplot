@@ -14,7 +14,7 @@ class DOASSpectrumPlot(PlotPanelBase):
         loader = SpectrumIO()        
         self.spectrum = loader.load(filename)        
         
-        PlotPanelBase.__init__(self,parent)
+        PlotPanelBase.__init__(self,parent,os.path.basename(filename))
         self.create_plot()
     
     
@@ -55,6 +55,6 @@ class DOASSpectrumPlugin(AvoPlotPluginBase):
             wx.MessageBox("Unable to load spectrum file \'%s\'. Unrecognised file format."%spectrum_file, "AvoPlot", wx.ICON_ERROR)
             return
         
-        self.add_plot_to_main_window(spec_plot, os.path.basename(spectrum_file))
+        self.add_plot_to_main_window(spec_plot)
         
     

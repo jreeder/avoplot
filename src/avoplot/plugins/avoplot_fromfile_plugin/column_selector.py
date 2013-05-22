@@ -3,6 +3,7 @@ import re
 import wx.lib.buttons
 import wx.grid
 import numpy
+import os
 from avoplot.gui.plots import PlotPanelBase
 
 class InvalidSelectionError(ValueError):
@@ -192,7 +193,7 @@ class ColumnDataPanel(wx.ScrolledWindow):
         
         if not (cells_selected or blocks_BR_selected):
             #No selection made
-            return "",None,None
+            return ""
         
         #otherwise we have a selection of blocks of cells and individual cells to sort out       
         #first check that they are all from the same column
@@ -237,7 +238,7 @@ class ColumnDataPanel(wx.ScrolledWindow):
                 selection = self.get_selection()
             except InvalidSelectionError,e:
                 wx.MessageBox(e.args[0], "AvoPlot", wx.ICON_EXCLAMATION)
-                selection = ("",None, None)
+                selection = ""
             data_series.set_selection(selection)
         
         
@@ -327,8 +328,23 @@ class XYDataSeriesPanel(wx.Panel):
         elif ydata is None:
             axes.plot(xdata,numpy.arange(len(xdata)))
         else:
-            print xdata, ydata
-            axes.plot(xdata, ydata)
+             
+             #this stuff is redundant for now since the masked arrays will always have
+             #the same length
+#            #if the data has different lengths then only plot
+#            #the overlapping regions
+#            if len(xdata) != len(ydata):
+#                d = wx.MessageDialog(self, "Your x and y data series have different lengths."
+#                                 "Plot the overlapping region?", "AvoPlot")
+#                if d.ShowModal() == wx.ID_CANCEL:
+#                    return
+#                
+#                if len(xdata) > len(ydata):
+#                    axes.plot(xdata[:len(ydata)], ydata)
+#                else:
+#                    axes.plot(xdata, ydata[:len(xdata)])
+#            else:
+                axes.plot(xdata, ydata)
     
         
     def get_x_series_data(self):
@@ -353,16 +369,13 @@ class XYDataSeriesPanel(wx.Panel):
         if row_selection:
             raise NotImplementedError("Selecting rows as data series is not implemented yet!")
         else:
-        
+                   
             regexp = re.compile(r'''
-                                   (?:^\s*(?P<whole_column>[A-Z]+)\s*\[\s*:\s*\]\s*$) #matches whole column selections (e.g. A[:])
-                                   | # or match column sections (e.g. A[2:9])
                                    (?:^\s*(?P<column>[A-Z]+) #matches column name 
-                                   \s*\[\s*(?P<lower_bound>[0-9]+) #matches lower bound number
+                                   \s*\[\s*(?P<lower_bound>[0-9]*) #matches lower bound number (if there is one)
                                    \s*:\s*  
-                                   (?P<upper_bound>[0-9]{1,})\s*\]\s*$) #matches upped bound number''', 
+                                   (?P<upper_bound>[0-9]*)\s*\]\s*$) #matches upped bound number (if there is one)''', 
                                    flags=re.VERBOSE)
-            
             cols = set()
             selection_params = []
             for block in selection_blocks:
@@ -374,23 +387,27 @@ class XYDataSeriesPanel(wx.Panel):
             
                 params = match.groupdict()
                 selection_params.append(params)
-                if params['whole_column'] is not None:
-                    cols.add(params['whole_column'])
-                else:
-                    cols.add(params['column'])
-                    lower_bound = int(params['lower_bound'])
-                    upper_bound = int(params['upper_bound'])
-                    
-                    if lower_bound < 1:
-                        raise InvalidSelectionError("Value error in selection string. \'%s\' is not a valid selection, lower bound must be greater than zero."%block)
-                    
-                    if lower_bound > upper_bound:
-                        raise InvalidSelectionError("Value error in selection string. \'%s\' is not a valid selection, upper bound cannot be smaller than lower bound."%block)
-                    
-                    n_rows = self.file_contents.get_column_by_name(params['column']).get_number_of_rows()
-                    if upper_bound > n_rows:
-                        raise InvalidSelectionError("Value error in selection string. \'%s\' is not a valid selection, upper bound is outside data range."%block)
-            
+
+                cols.add(params['column'])
+                n_rows = self.file_contents.get_column_by_name(params['column']).get_number_of_rows()
+                   
+                if not params['lower_bound']:
+                    params['lower_bound'] = '1'
+                if not params['upper_bound']:
+                    params['upper_bound'] = str(n_rows)
+                
+                lower_bound = int(params['lower_bound'])
+                upper_bound = int(params['upper_bound'])
+                
+                if lower_bound < 1:
+                    raise InvalidSelectionError("Value error in selection string. \'%s\' is not a valid selection, lower bound must be greater than zero."%block)
+                
+                if lower_bound > upper_bound:
+                    raise InvalidSelectionError("Value error in selection string. \'%s\' is not a valid selection, upper bound cannot be smaller than lower bound."%block)
+                 
+                if upper_bound > n_rows:
+                    raise InvalidSelectionError("Value error in selection string. \'%s\' is not a valid selection, upper bound is outside data range."%block)
+        
             if len(cols) != 1:
                 raise InvalidSelectionError("Selection cannot contain data from multiple columns.")
             
@@ -413,12 +430,8 @@ class XYDataSeriesPanel(wx.Panel):
         #see if we have any complete column selections - life is easy if we do!
         blocks = []
         for s in selection_params:
-            if s['whole_column'] is not None:
-                column = self.file_contents.get_column_by_name(s['whole_column'])
-                return column.get_data()
-            else:
-                #-1 because array indexing starts at 0 but row indexing starts at 1
-                blocks.append((int(s['lower_bound'])-1,int(s['upper_bound'])-1))
+            #-1 because array indexing starts at 0 but row indexing starts at 1
+            blocks.append((int(s['lower_bound'])-1,int(s['upper_bound'])-1))
         
         #otherwise build a mask for the selection       
         column = self.file_contents.get_column_by_name(selection_params[0]['column'])
@@ -544,6 +557,7 @@ class TxtFileDataSeriesSelectFrame(wx.Dialog):
         frame_title = "%s - Data Select - AvoPlot" % file_contents.filename        
         wx.Dialog.__init__(self, parent, wx.ID_ANY, frame_title, style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER|wx.MAXIMIZE_BOX|wx.MINIMIZE_BOX)
         self.parent = parent
+        self.filename = file_contents.filename
         
         #set up the icon for the frame
         self.SetIcon(wx.ArtProvider.GetIcon("AvoPlot"))
@@ -602,7 +616,7 @@ class TxtFileDataSeriesSelectFrame(wx.Dialog):
 
     
     def get_plot(self):
-        plt = PlotPanelBase(self.parent)
+        plt = PlotPanelBase(self.parent, os.path.basename(self.filename))
         for series in self.data_series_panel.data_series:
             series.plot_into_axes(plt.axes)
         return plt

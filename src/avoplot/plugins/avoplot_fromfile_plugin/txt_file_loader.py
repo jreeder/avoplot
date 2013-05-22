@@ -47,7 +47,7 @@ class TextFilePlugin(AvoPlotPluginBase):
         
         if series_select_dialog.ShowModal() == wx.ID_OK:
             plt = series_select_dialog.get_plot()
-            self.add_plot_to_main_window(plt, "New Plot")
+            self.add_plot_to_main_window(plt)
         
         
 class TextFileLoader(loader.FileLoaderBase):
@@ -90,7 +90,7 @@ class TextFileLoader(loader.FileLoaderBase):
             
             for line in ifp:
                 for i in range(len(counts)):
-                    if line.startswith(common_choices[i]):
+                    if line.lstrip().startswith(common_choices[i]):
                         counts[i] += 1
                         break
         finally:
@@ -180,6 +180,10 @@ class TextFileLoader(loader.FileLoaderBase):
         
            
     def guess_column_titles(self, ifp, n_cols, start_idx, comment_symbol):
+        if start_idx == 0:
+            #there are no column headings - data starts in the first row
+            return ['']*n_cols
+        
         lines = ifp.readlines()
         ifp.seek(0)
         

@@ -262,7 +262,7 @@ class FTIRSpecPlot(PlotPanelBase):
     def __init__(self, parent, filename):            
         self.wavenumber, self.absorbance = load_ftir_file(filename)        
         #print classify_spectrum(self.wavenumber, self.absorbance)
-        PlotPanelBase.__init__(self,parent)
+        PlotPanelBase.__init__(self,parent, os.path.basename(filename))
         self.control_panel = FTIRFittingPanel(self, classify_spectrum(self.wavenumber, self.absorbance))
         self.h_sizer.Insert(0,self.control_panel, flag=wx.ALIGN_LEFT)
         
@@ -314,5 +314,5 @@ class FTIRSpectrumPlugin(AvoPlotPluginBase):
         
         persist.set_value("ftir.spectra_dir", os.path.dirname(spectrum_file))
         
-        self.add_plot_to_main_window(FTIRSpecPlot(self.get_parent(), spectrum_file), os.path.basename(spectrum_file))
+        self.add_plot_to_main_window(FTIRSpecPlot(self.get_parent(), spectrum_file))
         

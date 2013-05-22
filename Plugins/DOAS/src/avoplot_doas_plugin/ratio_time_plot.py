@@ -287,7 +287,7 @@ class RatioTimePlot(PlotPanelBase):
         self._found_dark_lock = threading.Lock()
         self._found_dark_lock.acquire() #lock is released when dark spectrum is found
         
-        PlotPanelBase.__init__(self,parent)
+        PlotPanelBase.__init__(self,parent,os.path.basename(dir_name))
         
         self.plotting_thread = threading.Thread(target=self._create_plot)
         self.plotting_thread.start()
@@ -491,7 +491,7 @@ class RatioTimePlugin(AvoPlotPluginBase):
                 #then disable the panning (again so that the plot gets autoscaled as data is added)
                 parent.toolbar.ToggleTool(parent.toolbar.move_tool.GetId(), False)
             
-            self.add_plot_to_main_window(time_plot, dialog.get_name())
+            self.add_plot_to_main_window(time_plot)
             
             wx.CallAfter(self.create_manual_dark_select_frame, time_plot)
     

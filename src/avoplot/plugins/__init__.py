@@ -71,8 +71,8 @@ class AvoPlotPluginBase:
         self.name = name
     
     
-    def add_plot_to_main_window(self, plot, name, select=True):
-        self.get_parent().add_plot_tab(plot, name, select=select)
+    def add_plot_to_main_window(self, plot, select=True):
+        self.get_parent().add_plot_tab(plot, select=select)
     
     
     def get_parent(self):

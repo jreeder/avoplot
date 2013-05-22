@@ -17,12 +17,13 @@ def invalid_user_input(message):
 
 class PlotPanelBase(wx.ScrolledWindow):
     
-    def __init__(self, parent):
+    def __init__(self, parent, name):
         wx.ScrolledWindow.__init__(self, parent, wx.ID_ANY)
         self.SetScrollRate(2,2)
         self._is_panned = False
         self._is_zoomed = False
         self._gridlines = False
+        self.name = name
         
         self.parent = parent
         self.v_sizer = wx.BoxSizer(wx.VERTICAL)
