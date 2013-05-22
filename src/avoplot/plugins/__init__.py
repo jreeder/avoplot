@@ -1,3 +1,20 @@
+#Copyright (C) Nial Peters 2013
+#
+#This file is part of AvoPlot.
+#
+#AvoPlot is free software: you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+#
+#AvoPlot is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+#
+#You should have received a copy of the GNU General Public License
+#along with AvoPlot.  If not, see <http://www.gnu.org/licenses/>.
+
 import wx
 import os
 import os.path
@@ -14,9 +31,9 @@ def register(plugin):
     the plugin when it is imported. The plugin argument should be an
     instance of the plugin class (which must be a subclass of AvoPlotPluginBase)
     """
-    #TODO
-    #if not issubclass(plugin, AvoPlotPluginBase):
-    #    raise RuntimeError("Failed to register plugin. Plugins must be a subclass of AvoPlotPluginBase")
+    if not isinstance(plugin, AvoPlotPluginBase):
+        raise RuntimeError("Failed to register plugin. Plugins must be a subclass of AvoPlotPluginBase")
+    
     __plotting_plugins[plugin.name] = plugin
     
 

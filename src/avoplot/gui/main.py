@@ -1,22 +1,22 @@
-#Copyright (C) Nial Peters 2012
+#Copyright (C) Nial Peters 2013
 #
-#This file is part of AvoScan.
+#This file is part of AvoPlot.
 #
-#AvoScan is free software: you can redistribute it and/or modify
+#AvoPlot is free software: you can redistribute it and/or modify
 #it under the terms of the GNU General Public License as published by
 #the Free Software Foundation, either version 3 of the License, or
 #(at your option) any later version.
 #
-#AvoScan is distributed in the hope that it will be useful,
+#AvoPlot is distributed in the hope that it will be useful,
 #but WITHOUT ANY WARRANTY; without even the implied warranty of
 #MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #GNU General Public License for more details.
 #
 #You should have received a copy of the GNU General Public License
-#along with AvoScan.  If not, see <http://www.gnu.org/licenses/>.
+#along with AvoPlot.  If not, see <http://www.gnu.org/licenses/>.
 
 import wx
-#from wx.lib.agw.flatnotebook import FlatNotebook, EVT_FLATNOTEBOOK_PAGE_CHANGED, EVT_FLATNOTEBOOK_PAGE_CLOSED, FNB_FANCY_TABS, FNB_X_ON_TAB,FNB_NO_X_BUTTON, EVT_FLATNOTEBOOK_PAGE_CLOSING
+import re
 from wx.aui import AuiNotebook, EVT_AUINOTEBOOK_PAGE_CHANGED, EVT_AUINOTEBOOK_PAGE_CLOSE, EVT_AUINOTEBOOK_PAGE_CLOSED,AUI_NB_DEFAULT_STYLE
 from wx.aui import EVT_AUINOTEBOOK_TAB_RIGHT_DOWN
 from avoplot.gui.artwork import AvoplotArtProvider
@@ -28,6 +28,9 @@ from matplotlib.backends.backend_wx import StatusBarWx
 
 class MainFrame(wx.Frame):      
     def __init__(self):
+        #create the persistant settings object
+        self.persistant = persist.PersistantStorage()
+        
         wx.Frame.__init__(self, None, wx.ID_ANY, "AvoPlot")
         
         #set up the icon for the frame
@@ -35,12 +38,10 @@ class MainFrame(wx.Frame):
         wx.ArtProvider.Push(art)
         self.SetIcon(art.GetIcon("AvoPlot"))
         
-        #create the persistant settings object
-        self.persistant = persist.PersistantStorage()
-        
-        #create the menu
+        #create the menus
         self.menu = menu.MainMenu(self)
         self.SetMenuBar(menu.MainMenu(self))
+        self._tab_menu = menu.TabRightClickMenu(self)
         
         #create the toolbar
         self.toolbar = toolbar.MainToolbar(self)
@@ -53,6 +54,7 @@ class MainFrame(wx.Frame):
                
         #create the status bar
         self.statbar = StatusBarWx(self)
+        self.statbar.set_function('')
         
         #put everything into the sizer
         vsizer.Add(self.notebook, 1, wx.EXPAND)
@@ -68,6 +70,25 @@ class MainFrame(wx.Frame):
         #do the layout
         self.SetSizer(vsizer)
         vsizer.Fit(self)
+        
+        #see what size the frame was in the last session
+        try:
+            old_size = self.persistant.get_value('main_frame_size')            
+            min_size = vsizer.GetMinSize()
+            
+            size = (max(min_size[0], old_size[0]),max(min_size[1], old_size[1]))
+            self.SetSize(size)
+
+        except KeyError:
+            pass
+        
+        #see if the frame was maximised last time
+        try:
+            maximised = self.persistant.get_value('main_frame_maximised')
+            self.Maximize(maximised)
+        except:
+            pass
+        
         self.Show()
     
     
@@ -78,19 +99,21 @@ class MainFrame(wx.Frame):
         
     def onTabRightClick(self, evnt):
         self.notebook.SetSelection(evnt.GetSelection())
-        context_menu = wx.Menu()
-        rename = context_menu.Append(wx.ID_ANY,"Rename", "Rename the current tab")
-        wx.EVT_MENU(self, rename.GetId(), self.rename_current_tab)
-        self.PopupMenu(context_menu)
+        
+        #context_menu = wx.Menu()
+        #rename = context_menu.Append(wx.ID_ANY,"Rename", "Rename the current tab")
+        #wx.EVT_MENU(self, rename.GetId(), self.rename_current_tab)
+        self.PopupMenu(self._tab_menu)
     
     
     def rename_current_tab(self, evnt):
         page_idx = self.notebook.GetSelection()
-        d = wx.TextEntryDialog(self, "Plot name:","Rename", defaultValue=self.notebook.GetPageText(page_idx))
+        current_name = self.notebook.GetPage(page_idx).name
+        d = wx.TextEntryDialog(self, "Plot name:","Rename", defaultValue=current_name)
         if d.ShowModal() == wx.ID_OK:
             new_name = d.GetValue()
-            if new_name and not new_name.isspace():
-                self.notebook.SetPageText(page_idx,d.GetValue())
+            if new_name and not new_name.isspace() and new_name != current_name:
+                self.set_page_name(page_idx, new_name)
             
             
     def onTabChange(self,evnt):
@@ -176,19 +199,80 @@ class MainFrame(wx.Frame):
       
         
     def onClose(self, *args):
-        #close each plot in turn in order to shut down the plotting threads
+        #close each plot in turn - they may have clean-up operations they need
+        #to complete
+        self.Freeze()
         for i in range(0,self.notebook.GetPageCount(),):
             self.notebook.GetPage(i).close()
+        self.Thaw()
+        #save the final size of the frame so that it can be loaded next time
+        self.persistant.set_value('main_frame_maximised', self.IsMaximized())
+        
+        if not self.IsMaximized():
+            self.persistant.set_value('main_frame_size', self.GetSize())
+
         self.Destroy()
    
-   
-    def add_plot_tab(self, plot, select=True):
-        self.notebook.AddPage(plot, plot.name, select=select)
+    
+    
+    def close_plot(self, idx):
+        """
+        Closes the plot at the specified index.
+        """
+        #call the plot's close method
+        self.notebook.GetPage(idx).close()
         
+        #delete it from the notebook
+        self.notebook.DeletePage(idx)
+        
+        self.onTabChange(None)
+        
+    
+    def add_plot_tab(self, plot, select=True):
+        #check if a plot tab with this name already exists       
+        name = plot.name
+        plot.name = '' #this is a hack to get the naming to work correctly
+        self.notebook.AddPage(plot, '', select=select)
+        self.set_page_name(self.notebook.GetPageCount()-1, name)
+         
         #allow the plot to talk to the status bar
         plot.set_status_bar(self.statbar)
 
+    
+    def set_page_name(self, idx, name):
+        """
+        Sets the name of the notebook page at the specified index. If a page
+        with the same name already exists then a copy number is appended to 
+        the specified name. Note that this method will update the value
+        of the name attribute of the plot contained in the notebook page - 
+        however, the copy number will not be included in the attribute value.
+        """
+        current_names = [p.name for p in self.get_all_pages()]  
+        count = current_names.count(name)
+        
+        #set the name in the plot object
+        self.notebook.GetPage(idx).name = name
+        
+        if count > 0:
+            current_indices = [1]
+            #this name is already in use - find what the 
+            #highest index of current use is (don't want to go back to
+            #lower numbers if some intermediate tab is closed)
+            plot_titles = [self.notebook.GetPageText(i) for i in range(self.notebook.GetPageCount())]
             
+            for title in plot_titles:
+                if not title.startswith(name):
+                    continue
+                title = title[len(name):].strip()
+                
+                if title:
+                    match = re.match(r'\(([0-9]+)\)', title)
+                    if match:
+                        current_indices.append(int(match.groups()[0]))
+                                            
+            name = ''.join([name, ' (%d)'%(max(current_indices)+1)])
+        self.notebook.SetPageText(idx, name)
+    
             
     def onSavePlot(self, *args):
         self.get_active_plot().save_plot()

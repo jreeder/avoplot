@@ -1,5 +1,20 @@
+#Copyright (C) Nial Peters 2013
+#
+#This file is part of AvoPlot.
+#
+#AvoPlot is free software: you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+#
+#AvoPlot is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+#
+#You should have received a copy of the GNU General Public License
+#along with AvoPlot.  If not, see <http://www.gnu.org/licenses/>.
 import wx
-import avoplot
 import avoplot.plugins
 
 #TODO - add keyboard shortcuts
@@ -101,3 +116,64 @@ class MainMenu(wx.MenuBar):
         about_info.AddDeveloper("Nial Peters <nonbiostudent@hotmail.com>")
         
         wx.AboutBox(about_info)
+        
+        
+        
+        
+class TabRightClickMenu(wx.Menu):
+    def __init__(self, main_frame):
+        
+        wx.Menu.__init__(self)
+        
+        self.main_frame = main_frame
+                       
+        rename = self.Append(wx.ID_ANY,"Rename", "Rename the current tab")
+        wx.EVT_MENU(self, rename.GetId(), self.main_frame.rename_current_tab)
+        self.AppendSeparator()
+        
+        h_split = self.Append(-1, "Split Horizontal", "Split the current plot into a new pane")
+        v_split = self.Append(-1, "Split Vertical", "Split the current plot into a new pane")
+        wx.EVT_MENU(self, h_split.GetId(), self.main_frame.split_plot_horiz)
+        wx.EVT_MENU(self, v_split.GetId(), self.main_frame.split_plot_vert)
+        
+        self.AppendSeparator()
+        close_current = self.Append(wx.ID_ANY,"Close", "Close the current tab")
+        wx.EVT_MENU(self, close_current.GetId(), self.close_current)
+        
+        close_others = self.Append(wx.ID_ANY,"Close Others", "Close other tabs")
+        wx.EVT_MENU(self, close_others.GetId(), self.close_others)
+        
+        close_all = self.Append(wx.ID_ANY,"Close All", "Close all tabs")
+        wx.EVT_MENU(self, close_all.GetId(), self.close_all)
+    
+    
+    def close_current(self, evnt):
+        idx = self.main_frame.notebook.GetSelection()
+        self.main_frame.close_plot(idx)
+    
+    
+    def close_others(self, evnt):
+        cur_idx = self.main_frame.notebook.GetSelection()
+        self.main_frame.Freeze()
+        #close all the plots with lower index than current
+        for i in range(cur_idx):
+            self.main_frame.close_plot(0)
+        
+        #close all plots with higher index
+        for i in range(self.main_frame.notebook.GetPageCount() - 1):
+            self.main_frame.close_plot(1)
+        
+        self.main_frame.Thaw()
+    
+    
+    def close_all(self, evnt):
+        self.main_frame.Freeze()
+        idx = self.main_frame.notebook.GetSelection()
+       
+        while idx >= 0:
+            self.main_frame.close_plot(idx)
+            idx = self.main_frame.notebook.GetSelection()
+        self.main_frame.Thaw()
+        
+        
+        
