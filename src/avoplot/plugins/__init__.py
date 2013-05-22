@@ -97,7 +97,6 @@ class AvoPlotPluginInstaller(install):
         install path to be the AvoPlot plugins directory (as returned by 
         get_plugin_install_path())
         """
-        print self.__dict__
         ignored_opts = [self.prefix,
                         self.exec_prefix,
                         self.home,

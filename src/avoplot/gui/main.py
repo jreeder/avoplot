@@ -182,8 +182,8 @@ class MainFrame(wx.Frame):
         self.Destroy()
    
    
-    def add_plot_tab(self, plot, name, select=True):
-        self.notebook.AddPage(plot, name, select=select)
+    def add_plot_tab(self, plot, select=True):
+        self.notebook.AddPage(plot, plot.name, select=select)
         
         #allow the plot to talk to the status bar
         plot.set_status_bar(self.statbar)
