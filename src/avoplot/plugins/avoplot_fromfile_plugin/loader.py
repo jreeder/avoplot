@@ -74,7 +74,9 @@ class FileContents:
             quotient = n // 26
             remainder = n % 26        
             indx.append(remainder)
-            n = quotient    
+            n = quotient
+        for i in range(1,len(indx)):
+            indx[i] -= 1        
         return ''.join([string.ascii_uppercase[i] for i in reversed(indx)])
     
     
