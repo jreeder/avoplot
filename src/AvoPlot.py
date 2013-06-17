@@ -26,11 +26,13 @@ import wx
 
 from avoplot.gui import main
 import avoplot.plugins
-
+from avoplot.gui.artwork import AvoplotArtProvider
 
 if __name__ == '__main__':
         
     app = wx.PySimpleApp()
+
+    wx.ArtProvider.Insert(AvoplotArtProvider())
     avoplot.plugins.load_all_plugins()
     main.MainFrame()
        

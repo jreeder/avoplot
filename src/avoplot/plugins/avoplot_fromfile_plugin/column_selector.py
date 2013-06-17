@@ -21,6 +21,7 @@ import wx.lib.buttons
 import wx.grid
 import numpy
 import os
+import avoplot
 from avoplot.gui.plots import PlotPanelBase
 
 class InvalidSelectionError(ValueError):
@@ -289,11 +290,11 @@ class XYDataSeriesPanel(wx.Panel):
         self.xseries_box = wx.TextCtrl(self, wx.ID_ANY)
         self.yseries_box = wx.TextCtrl(self, wx.ID_ANY)
         button_sz = self.yseries_box.GetSize()[1]
-        self.add_button = wx.BitmapButton(self, wx.ID_ANY, wx.ArtProvider.GetBitmap("add",wx.ART_BUTTON))
-        self.remove_button = wx.BitmapButton(self, wx.ID_ANY, wx.ArtProvider.GetBitmap("remove",wx.ART_BUTTON))
+        self.add_button = wx.BitmapButton(self, wx.ID_ANY, wx.ArtProvider.GetBitmap("avoplot_add",wx.ART_BUTTON))
+        self.remove_button = wx.BitmapButton(self, wx.ID_ANY, wx.ArtProvider.GetBitmap("avoplot_remove",wx.ART_BUTTON))
         
-        self.select_x_button = wx.lib.buttons.ThemedGenBitmapToggleButton(self, wx.ID_ANY, wx.ArtProvider.GetBitmap("select_cols",wx.ART_BUTTON), size=(button_sz,button_sz))
-        self.select_y_button = wx.lib.buttons.ThemedGenBitmapToggleButton(self, wx.ID_ANY, wx.ArtProvider.GetBitmap("select_cols",wx.ART_BUTTON), size=(button_sz,button_sz))
+        self.select_x_button = wx.lib.buttons.ThemedGenBitmapToggleButton(self, wx.ID_ANY, wx.ArtProvider.GetBitmap("avoplot_col_select",wx.ART_BUTTON), size=(button_sz,button_sz))
+        self.select_y_button = wx.lib.buttons.ThemedGenBitmapToggleButton(self, wx.ID_ANY, wx.ArtProvider.GetBitmap("avoplot_col_select",wx.ART_BUTTON), size=(button_sz,button_sz))
         wx.EVT_BUTTON(self, self.select_x_button.GetId(), self.on_select_x_series)
         wx.EVT_BUTTON(self, self.select_y_button.GetId(), self.on_select_y_series)
         
@@ -571,13 +572,13 @@ class DataSeriesSelectPanel(wx.ScrolledWindow):
 class TxtFileDataSeriesSelectFrame(wx.Dialog):
     def __init__(self, parent, file_contents):
         #set the title to the file name
-        frame_title = "%s - Data Select - AvoPlot" % file_contents.filename        
+        frame_title = "%s - Data Select - %s" %(file_contents.filename,avoplot.PROG_SHORT_NAME)     
         wx.Dialog.__init__(self, parent, wx.ID_ANY, frame_title, style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER|wx.MAXIMIZE_BOX|wx.MINIMIZE_BOX)
         self.parent = parent
         self.filename = file_contents.filename
         
         #set up the icon for the frame
-        self.SetIcon(wx.ArtProvider.GetIcon("AvoPlot"))
+        self.SetIcon(wx.ArtProvider.GetIcon("avoplot"))
         
         #create top level panel to hold all frame elements
         top_panel = wx.Panel(self, wx.ID_ANY)

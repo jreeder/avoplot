@@ -104,9 +104,9 @@ class MainMenu(wx.MenuBar):
         self.Append(view_menu, '&View')
     
     
-    def onAbout(self, evnt):
+    def onAbout(self, evnt):       
         about_info = wx.AboutDialogInfo()
-        
+        about_info.SetIcon(wx.ArtProvider.GetIcon('avoplot',size=wx.Size(96,96)))
         about_info.SetName("AvoPlot")
         about_info.SetVersion(str(avoplot.__version__))
         about_info.SetCopyright("(C) 2013 Nial Peters <nonbiostudent@hotmail.com>")

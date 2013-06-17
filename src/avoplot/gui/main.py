@@ -14,16 +14,16 @@
 #
 #You should have received a copy of the GNU General Public License
 #along with AvoPlot.  If not, see <http://www.gnu.org/licenses/>.
-
-import wx
 import re
-from wx.aui import AuiNotebook, EVT_AUINOTEBOOK_PAGE_CHANGED, EVT_AUINOTEBOOK_PAGE_CLOSE, EVT_AUINOTEBOOK_PAGE_CLOSED,AUI_NB_DEFAULT_STYLE
-from wx.aui import EVT_AUINOTEBOOK_TAB_RIGHT_DOWN
-from avoplot.gui.artwork import AvoplotArtProvider
+import wx
+from wx import aui
+from matplotlib.backends import backend_wx
+
+import avoplot
 from avoplot.gui import menu
 from avoplot.gui import toolbar
 from avoplot import persist
-from matplotlib.backends.backend_wx import StatusBarWx
+
 
 
 class MainFrame(wx.Frame):      
@@ -31,12 +31,10 @@ class MainFrame(wx.Frame):
         #create the persistant settings object
         self.persistant = persist.PersistantStorage()
         
-        wx.Frame.__init__(self, None, wx.ID_ANY, "AvoPlot")
+        wx.Frame.__init__(self, None, wx.ID_ANY, avoplot.PROG_SHORT_NAME)
         
         #set up the icon for the frame
-        art = AvoplotArtProvider()
-        wx.ArtProvider.Push(art)
-        self.SetIcon(art.GetIcon("AvoPlot"))
+        self.SetIcon(wx.ArtProvider.GetIcon("avoplot"))
         
         #create the menus
         self.menu = menu.MainMenu(self)
@@ -50,10 +48,11 @@ class MainFrame(wx.Frame):
         vsizer = wx.BoxSizer(wx.VERTICAL)
         
         #create the notebook
-        self.notebook = AuiNotebook(self, id = wx.ID_ANY, style=AUI_NB_DEFAULT_STYLE)
+        self.notebook = aui.AuiNotebook(self, id=wx.ID_ANY, 
+                                        style=aui.AUI_NB_DEFAULT_STYLE)
                
         #create the status bar
-        self.statbar = StatusBarWx(self)
+        self.statbar = backend_wx.StatusBarWx(self)
         self.statbar.set_function('')
         
         #put everything into the sizer
@@ -62,10 +61,14 @@ class MainFrame(wx.Frame):
         
         #register the event handlers
         wx.EVT_CLOSE(self, self.onClose)
-        EVT_AUINOTEBOOK_PAGE_CLOSE(self, self.notebook.GetId(), self.onTabClose)
-        EVT_AUINOTEBOOK_PAGE_CLOSED(self, self.notebook.GetId(), self.onTabChange)
-        EVT_AUINOTEBOOK_PAGE_CHANGED(self, self.notebook.GetId(), self.onTabChange)
-        EVT_AUINOTEBOOK_TAB_RIGHT_DOWN(self, self.notebook.GetId(), self.onTabRightClick)
+        aui.EVT_AUINOTEBOOK_PAGE_CLOSE(self, self.notebook.GetId(), 
+                                       self.onTabClose)
+        aui.EVT_AUINOTEBOOK_PAGE_CLOSED(self, self.notebook.GetId(), 
+                                        self.onTabChange)
+        aui.EVT_AUINOTEBOOK_PAGE_CHANGED(self, self.notebook.GetId(), 
+                                         self.onTabChange)
+        aui.EVT_AUINOTEBOOK_TAB_RIGHT_DOWN(self, self.notebook.GetId(), 
+                                           self.onTabRightClick)
         
         #do the layout
         self.SetSizer(vsizer)
@@ -76,7 +79,8 @@ class MainFrame(wx.Frame):
             old_size = self.persistant.get_value('main_frame_size')            
             min_size = vsizer.GetMinSize()
             
-            size = (max(min_size[0], old_size[0]),max(min_size[1], old_size[1]))
+            size = (max(min_size[0], old_size[0]), 
+                    max(min_size[1], old_size[1]))
             self.SetSize(size)
 
         except KeyError:
@@ -99,24 +103,24 @@ class MainFrame(wx.Frame):
         
     def onTabRightClick(self, evnt):
         self.notebook.SetSelection(evnt.GetSelection())
-        
-        #context_menu = wx.Menu()
-        #rename = context_menu.Append(wx.ID_ANY,"Rename", "Rename the current tab")
-        #wx.EVT_MENU(self, rename.GetId(), self.rename_current_tab)
         self.PopupMenu(self._tab_menu)
     
     
     def rename_current_tab(self, evnt):
         page_idx = self.notebook.GetSelection()
         current_name = self.notebook.GetPage(page_idx).name
-        d = wx.TextEntryDialog(self, "Plot name:","Rename", defaultValue=current_name)
+        
+        d = wx.TextEntryDialog(self, "Plot name:", "Rename", 
+                               defaultValue=current_name)
+        
         if d.ShowModal() == wx.ID_OK:
             new_name = d.GetValue()
-            if new_name and not new_name.isspace() and new_name != current_name:
+            if (new_name and not new_name.isspace() and 
+                new_name != current_name):
                 self.set_page_name(page_idx, new_name)
             
             
-    def onTabChange(self,evnt):
+    def onTabChange(self, evnt):
         p = self.get_active_plot()
         if p is None:
             self.toolbar.enable_plot_tools(False)
@@ -193,8 +197,7 @@ class MainFrame(wx.Frame):
         self.notebook.SetSelection(nowSelected)
 
         self.notebook.Thaw()
-
-        
+       
         #self.notebook.UnSplit()
       
         
@@ -202,7 +205,7 @@ class MainFrame(wx.Frame):
         #close each plot in turn - they may have clean-up operations they need
         #to complete
         self.Freeze()
-        for i in range(0,self.notebook.GetPageCount(),):
+        for i in range(0, self.notebook.GetPageCount(),):
             self.notebook.GetPage(i).close()
         self.Thaw()
         #save the final size of the frame so that it can be loaded next time
@@ -233,7 +236,7 @@ class MainFrame(wx.Frame):
         name = plot.name
         plot.name = '' #this is a hack to get the naming to work correctly
         self.notebook.AddPage(plot, '', select=select)
-        self.set_page_name(self.notebook.GetPageCount()-1, name)
+        self.set_page_name(self.notebook.GetPageCount() - 1, name)
          
         #allow the plot to talk to the status bar
         plot.set_status_bar(self.statbar)
@@ -270,7 +273,7 @@ class MainFrame(wx.Frame):
                     if match:
                         current_indices.append(int(match.groups()[0]))
                                             
-            name = ''.join([name, ' (%d)'%(max(current_indices)+1)])
+            name = ''.join([name, ' (%d)' % (max(current_indices) + 1)])
         self.notebook.SetPageText(idx, name)
     
             
