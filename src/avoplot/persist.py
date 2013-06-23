@@ -21,25 +21,27 @@ import cPickle
 
 import avoplot
 
-_persistant_storage = None
+_persistent_storage = None
 
-class __PersistantStorage:
+class __PersistentStorage:
     """
     Class for storing non-volatile settings (i.e. those that you want to be
     available the next time you start the program). The actual settings just 
     get pickled and stored in the AvoPlot read/write directory (as returned by
     avoplot.get_avoplot_rw_dir()). To prevent multiple instances of this class
     overwriting each others data, you should not instanciate the class directly, 
-    instead use the PersistantStorage function which simply hands out references 
+    instead use the PersistentStorage function which simply hands out references 
     to a single instance.
     """
     def __init__(self):
         #setup save_settings to be run when the program exits.
         atexit.register(self._save_settings)
         
-        self.__cache_file = os.path.join(avoplot.get_avoplot_rw_dir(),"avoplot.persist")
+        self.__cache_file = os.path.join(avoplot.get_avoplot_rw_dir(),
+                                         "avoplot.persist")
         
-        #attempt to load the persistant settings from the cache - give up if we can't
+        #attempt to load the persistant settings from the cache - give up 
+        #if we can't
         try:
             with open(self.__cache_file,"rb") as ifp:
                 self.__settings = cPickle.load(ifp)
@@ -76,11 +78,11 @@ class __PersistantStorage:
         self.__settings[name] = value
 
         
-def PersistantStorage():
+def PersistentStorage():
     """
     Returns a reference to the global persistant storage class. Which can be 
     used for storing settings across program restarts.
     """
-    if globals()['_persistant_storage'] is None:
-        globals()['_persistant_storage'] = __PersistantStorage()
-    return globals()['_persistant_storage']
+    if globals()['_persistent_storage'] is None:
+        globals()['_persistent_storage'] = __PersistentStorage()
+    return globals()['_persistent_storage']

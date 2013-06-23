@@ -22,10 +22,14 @@ import StringIO
 import os.path
 from std_ops.iter_ import multi_sort, tuple_compare
 from avoplot.plugins import AvoPlotPluginBase
-from avoplot.persist import PersistantStorage
+from avoplot.persist import PersistentStorage
 from column_selector import TxtFileDataSeriesSelectFrame
 #from avoplot.plugins.avoplot_fromfile_plugin.loader import FileLoaderBase
 import loader
+
+#required otherwise plugin will not be loaded!
+plugin_is_GPL_compatible = True
+
 def load(filename):
     with open(filename,'rb') as ifp:
         s = ifp.read()
@@ -41,7 +45,7 @@ class TextFilePlugin(AvoPlotPluginBase):
     
     
     def on_new(self,evnt):
-        persistant_storage = PersistantStorage()
+        persistant_storage = PersistentStorage()
         
         try:
             last_path_used = persistant_storage.get_value("fromfile_last_dir_used")

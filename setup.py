@@ -146,6 +146,7 @@ def install_icons():
     for d in dirs:
         if d.startswith('.'):
             continue
+        
         try:
             os.makedirs(os.path.join(icon_dest_dir,d))
         except OSError:
@@ -153,12 +154,16 @@ def install_icons():
         
         icon_files = os.listdir(os.path.join('icons',d))
         for f in icon_files:
+            if f.startswith('.'):
+                continue #skip the .svn folder
             shutil.copy(os.path.join('icons',d,f), os.path.join(icon_dest_dir,d))
     
     #if we're in Windows, then install the .ico file too
     if sys.platform == "win32":
         shutil.copy(os.path.join('icons','avoplot.ico'), icon_dest_dir)
-    
+
+def install_license():
+        shutil.copy('COPYING',avoplot.get_avoplot_sys_dir())
 
 try:
     #create a temporary build_info module - this will be populated during the build process
@@ -185,10 +190,12 @@ try:
           package_dir={'':'src'},
           packages=['avoplot', 'avoplot.gui', 'avoplot.plugins', 'avoplot.plugins.avoplot_fromfile_plugin'],
           scripts=scripts_to_install
+
           )
     
     #now the build_info.py file will have been populated, so re-import it
-    os.remove(build_info_name+'c') #remove the old compiled file first
+    if os.path.exists(build_info_name+'c'):
+        os.remove(build_info_name+'c') #remove the old compiled file first
     reload(avoplot)
     reload(avoplot.build_info)
 
@@ -200,6 +207,7 @@ try:
     
     if sys.argv.count('install') != 0:
         install_icons()
+        install_license()
         if sys.platform == "linux2":
             create_desktop_file()
             
@@ -207,4 +215,5 @@ try:
 #final tidy up            
 finally:
     os.remove(build_info_name)
-    os.remove(build_info_name+'c') #remove compiled build_info file
+    if os.path.exists(build_info_name+'c'):
+        os.remove(build_info_name+'c') #remove compiled build_info file

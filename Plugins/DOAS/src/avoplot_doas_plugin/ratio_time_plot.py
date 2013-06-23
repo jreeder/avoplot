@@ -27,7 +27,7 @@ from doas import spectra_dir
 from doas import spectrum_loader
 from doas import spectrum_maths
 
-from avoplot.persist import PersistantStorage
+from avoplot.persist import PersistentStorage
 from avoplot.gui.plots import PlotPanelBase
 from avoplot.plugins import AvoPlotPluginBase
 from spectrometers import SpectrometerManager
@@ -35,12 +35,14 @@ from spectrometers import SpectrometerManager
 from std_ops.os_ import find_files
 
 
+plugin_is_GPL_compatible = True
+
 class TimePlotSettingsFrame(wx.Dialog):
     def __init__(self,parent, name="Time plot settings"):
         wx.Dialog.__init__(self, parent, wx.ID_ANY, name)
         
         self.parent = parent
-        self.persist = PersistantStorage()
+        self.persist = PersistentStorage()
         self.spectrometer_manager = SpectrometerManager()
         self.spectrometer = None
         
@@ -458,7 +460,7 @@ class DarkSelectDialog(wx.Dialog):
     
     
     def onSelect(self, evnt):
-        persist = PersistantStorage()
+        persist = PersistentStorage()
         try:
             default_dir = persist.get_value("spectra_dir")
             default_dir = os.path.join(default_dir, os.path.pardir)

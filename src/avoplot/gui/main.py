@@ -29,7 +29,7 @@ from avoplot import persist
 class MainFrame(wx.Frame):      
     def __init__(self):
         #create the persistant settings object
-        self.persistant = persist.PersistantStorage()
+        self.persistant = persist.PersistentStorage()
         
         wx.Frame.__init__(self, None, wx.ID_ANY, avoplot.PROG_SHORT_NAME)
         
@@ -231,7 +231,8 @@ class MainFrame(wx.Frame):
         self.onTabChange(None)
         
     
-    def add_plot_tab(self, plot, select=True):
+    def add_tab(self, plot, select=True):
+        plot.finalise()
         #check if a plot tab with this name already exists       
         name = plot.name
         plot.name = '' #this is a hack to get the naming to work correctly

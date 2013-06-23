@@ -16,17 +16,16 @@
 #along with AvoPlot.  If not, see <http://www.gnu.org/licenses/>.
 
 import wx
-import numpy
 import matplotlib
 
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 from matplotlib.backends.backend_wx import NavigationToolbar2Wx
 from matplotlib.figure import Figure
-from matplotlib.transforms import Bbox
 
+import avoplot
 
 def invalid_user_input(message):
-        wx.MessageBox(message, "AvoPlot", wx.ICON_ERROR)
+        wx.MessageBox(message, avoplot.PROG_SHORT_NAME, wx.ICON_ERROR)
 
 
 
@@ -34,7 +33,7 @@ class PlotPanelBase(wx.ScrolledWindow):
     
     def __init__(self, parent, name):
         wx.ScrolledWindow.__init__(self, parent, wx.ID_ANY)
-        self.SetScrollRate(2,2)
+        self.SetScrollRate(2, 2)
         self._is_panned = False
         self._is_zoomed = False
         self._gridlines = False
@@ -49,11 +48,11 @@ class PlotPanelBase(wx.ScrolledWindow):
         
         #the figure size is a bit arbitrary, but seems to work ok on my small screen - 
         #all this does is to set the minSize size hints for the sizer anyway.
-        self.fig = Figure(figsize=(4,2))
+        self.fig = Figure(figsize=(4, 2))
         
         #set figure background to white
         #TODO - would this look better in default wx colour
-        self.fig.set_facecolor((1,1,1))
+        self.fig.set_facecolor((1, 1, 1))
         
         #try:
             #TODO - test this actually works on an up to date version of mpl
@@ -67,7 +66,7 @@ class PlotPanelBase(wx.ScrolledWindow):
         self.tb = NavigationToolbar2Wx(self.canvas)
         self.tb.Show(False)
         
-        self.v_sizer.Add(self.canvas, 1, wx.ALIGN_LEFT|wx.ALIGN_TOP|wx.EXPAND)
+        self.v_sizer.Add(self.canvas, 1, wx.ALIGN_LEFT | wx.ALIGN_TOP | wx.EXPAND)
 
         self.SetSizer(self.h_sizer)
         self.h_sizer.Fit(self)
@@ -139,24 +138,24 @@ class DataFollower:
     def on_motion(self, event):
         if event.inaxes != self.axes: return
         if self.line is None:
-            self.line, = self.axes.plot([event.xdata]*2,self.axes.get_ylim(),'k-')
+            self.line, = self.axes.plot([event.xdata] * 2, self.axes.get_ylim(), 'k-')
             self.line.set_animated(True)
             
             
             trans = self.line.get_transform()
             inv_trans = trans.inverted()
             
-            x0,y0 = inv_trans.transform_point([event.xdata-10,self.axes.get_ylim()[1]])
-            x1,y1 = inv_trans.transform_point([event.xdata+10,self.axes.get_ylim()[0]])
-            print "untransformed 0 = ",x0,y0
-            print "untransformed 0 = ",x1,y1
+            x0, y0 = inv_trans.transform_point([event.xdata - 10, self.axes.get_ylim()[1]])
+            x1, y1 = inv_trans.transform_point([event.xdata + 10, self.axes.get_ylim()[0]])
+            print "untransformed 0 = ", x0, y0
+            print "untransformed 0 = ", x1, y1
             #add the line width to it
             #x0,y0 = trans.transform_point([x0-(self.line.get_linewidth()/2.0),y0])
             #x1,y1 = trans.transform_point([x1+(self.line.get_linewidth()/2.0),y1])
             
             #print "transformed 0 = ",x0,y0
             #print "transformed 0 = ",x1,y1
-            bbox = matplotlib.transforms.Bbox([[x0,y0],[x1,y1]])
+            bbox = matplotlib.transforms.Bbox([[x0, y0], [x1, y1]])
             #bbox.update_from_data_xy([[x0,y0],[x1,y1]])
             self.background = self.axes.figure.canvas.copy_from_bbox(self.line.axes.bbox)
             print self.background
@@ -167,7 +166,7 @@ class DataFollower:
             #print self.line.axes.bbox.bbox.update_from_data(numpy.array([[event.xdata-10, event.xdata+10],[event.xdata+10, self.axes.get_ylim()[1]]]))
             #print self.line.axes.bbox
         else:
-            self.line.set_xdata([event.xdata]*2, )
+            self.line.set_xdata([event.xdata] * 2,)
             self.line.set_ydata(self.line.axes.get_ylim())
             
 #        x0, xpress, ypress = self.press
@@ -192,17 +191,17 @@ class DataFollower:
         trans = self.line.get_transform()
         inv_trans = trans.inverted()
         
-        x0,y0 = self.axes.transData.transform([event.xdata-10,self.axes.get_ylim()[1]])
-        x1,y1 = self.axes.transData.transform([event.xdata+10,self.axes.get_ylim()[0]])
-        print "untransformed 0 = ",x0,y0
-        print "untransformed 0 = ",x1,y1
+        x0, y0 = self.axes.transData.transform([event.xdata - 10, self.axes.get_ylim()[1]])
+        x1, y1 = self.axes.transData.transform([event.xdata + 10, self.axes.get_ylim()[0]])
+        print "untransformed 0 = ", x0, y0
+        print "untransformed 0 = ", x1, y1
         #add the line width to it
         #x0,y0 = trans.transform_point([x0-(self.line.get_linewidth()/2.0),y0])
         #x1,y1 = trans.transform_point([x1+(self.line.get_linewidth()/2.0),y1])
         
         #print "transformed 0 = ",x0,y0
         #print "transformed 0 = ",x1,y1
-        bbox = matplotlib.transforms.Bbox([[x0,y0],[x1,y1]])
+        bbox = matplotlib.transforms.Bbox([[x0, y0], [x1, y1]])
         #bbox.update_from_data_xy([[x0,y0],[x1,y1]])
         self.region_to_restore = bbox
 

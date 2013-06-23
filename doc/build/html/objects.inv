@@ -1,7 +1,3 @@
 # Sphinx inventory version 1
 # Project: AvoPlot
 # Version: 0.0
-avoplot mod index.html
-avoplot.get_avoplot_icons_dir function index.html
-avoplot.get_avoplot_sys_dir function index.html
-avoplot.get_avoplot_rw_dir function index.html
