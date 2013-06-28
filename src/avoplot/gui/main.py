@@ -20,8 +20,11 @@ from wx import aui
 from matplotlib.backends import backend_wx
 
 import avoplot
+from avoplot import core
 from avoplot.gui import menu
 from avoplot.gui import toolbar
+from avoplot.gui import control_panel
+from avoplot.gui import navigation
 from avoplot import persist
 
 
@@ -47,19 +50,31 @@ class MainFrame(wx.Frame):
         
         vsizer = wx.BoxSizer(wx.VERTICAL)
         
+        #create the manager to deal with the various panels
+        self._mgr = aui.AuiManager(self)
+        
         #create the notebook
         self.notebook = aui.AuiNotebook(self, id=wx.ID_ANY, 
                                         style=aui.AUI_NB_DEFAULT_STYLE)
+        
+        self.ctrl_panel = control_panel.ControlPanel(self)
+        self.nav_panel = navigation.NavigationPanel(self)
                
         #create the status bar
-        self.statbar = backend_wx.StatusBarWx(self)
-        self.statbar.set_function('')
+        self.statbar = backend_wx.StatusBarWx(self) 
+        self.SetStatusBar(self.statbar)
         
-        #put everything into the sizer
-        vsizer.Add(self.notebook, 1, wx.EXPAND)
-        vsizer.Add(self.statbar, 0, wx.EXPAND | wx.ALIGN_BOTTOM)
+        #put the various panes into the manager
+        #TODO - update visibility based on persistent setting
+        #TODO - need to update menu if panel is closed.
+        self._mgr.AddPane(self.ctrl_panel, wx.LEFT, 'Control Panel')
+        self._mgr.AddPane(self.nav_panel, wx.LEFT | wx.TOP, 'Navigation Panel')
+        self._mgr.AddPane(self.notebook, wx.CENTER)
         
+        self._mgr.Update()
+
         #register the event handlers
+        core.EVT_AVOPLOT_ELEM_CHANGE(self, self.ctrl_panel.on_element_selection)
         wx.EVT_CLOSE(self, self.onClose)
         aui.EVT_AUINOTEBOOK_PAGE_CLOSE(self, self.notebook.GetId(), 
                                        self.onTabClose)
@@ -67,12 +82,14 @@ class MainFrame(wx.Frame):
                                         self.onTabChange)
         aui.EVT_AUINOTEBOOK_PAGE_CHANGED(self, self.notebook.GetId(), 
                                          self.onTabChange)
-        aui.EVT_AUINOTEBOOK_TAB_RIGHT_DOWN(self, self.notebook.GetId(), 
-                                           self.onTabRightClick)
         
-        #do the layout
-        self.SetSizer(vsizer)
-        vsizer.Fit(self)
+        try:
+            aui.EVT_AUINOTEBOOK_TAB_RIGHT_DOWN(self, self.notebook.GetId(), 
+                                               self.onTabRightClick)
+        except AttributeError:
+            #new version of wx has renamed this for some reason!
+            aui.EVT__AUINOTEBOOK_TAB_RIGHT_DOWN(self, self.notebook.GetId(), 
+                                                self.onTabRightClick)
         
         #see what size the frame was in the last session
         try:
@@ -94,6 +111,24 @@ class MainFrame(wx.Frame):
             pass
         
         self.Show()
+    
+    
+    def show_ctrl_panel(self, val):
+        """
+        if val is True then shows the control panel, otherwise hides it
+        """
+        p = self._mgr.GetPane(self.ctrl_panel)    
+        p.Show(val)
+        self._mgr.Update()
+        
+        
+    def show_nav_panel(self, val):
+        """
+        if val is True then shows the navigation panel, otherwise hides it
+        """
+        p = self._mgr.GetPane(self.nav_panel)    
+        p.Show(val)
+        self._mgr.Update()
     
     
     def onTabClose(self, evnt):
@@ -145,8 +180,9 @@ class MainFrame(wx.Frame):
             if p._is_panned:
                 p.pan()
         
-        #set the toolbar gridlines button, based on the plot object
-        self.toolbar.ToggleTool(self.toolbar.grid_tool.GetId(), p._gridlines)
+        p.set_selected()
+        
+        #TODO- this should be done in the event handler
     
     
     def get_active_plot(self):
@@ -214,6 +250,7 @@ class MainFrame(wx.Frame):
         if not self.IsMaximized():
             self.persistant.set_value('main_frame_size', self.GetSize())
 
+        self._mgr.UnInit()
         self.Destroy()
    
     
@@ -279,7 +316,7 @@ class MainFrame(wx.Frame):
     
             
     def onSavePlot(self, *args):
-        self.get_active_plot().save_plot()
+        self.get_active_plot().save_figure_as_image()
         
         
         

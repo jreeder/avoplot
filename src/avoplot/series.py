@@ -15,35 +15,48 @@
 #You should have received a copy of the GNU General Public License
 #along with AvoPlot.  If not, see <http://www.gnu.org/licenses/>.
 from avoplot.subplots import AvoPlotSubplotBase,AvoPlotXYSubplot
+from avoplot import controls
+import wx
 
 class DataSeriesBase(object):
     def __init__(self, name):
         self.__name = name
         self.__plotted = False
+        self._mpl_lines = []
+        
     
+    def get_mpl_lines(self):
+        return self._mpl_lines
     
-    def plot(self, subplot):
+    def _plot(self, subplot):
         assert isinstance(subplot, AvoPlotSubplotBase), ('arg passed as '
                 'subplot is not an AvoPlotSubplotBase instance')
         
         assert not self.__plotted, ('plot() should only be called once')
         
         self.__plotted = True
+        
+        self._mpl_lines = self.plot(subplot)
     
+    
+    def plot(self, subplot):
+        return []
+    
+    def preprocess(self, *args):
+        return args
     
     def is_plotted(self):
         return self.__plotted
     
+    
     def get_name(self):
-        return self.__name
-        
+        return self.__name     
 
 
 class XYDataSeries(DataSeriesBase):
     def __init__(self, name, xdata=None, ydata=None):
         super(XYDataSeries,self).__init__(name)
         self.set_xy_data(xdata, ydata)
-        self._mpl_line = None
         
     @staticmethod    
     def get_supported_subplot_type():
@@ -56,7 +69,8 @@ class XYDataSeries(DataSeriesBase):
         
         if self.is_plotted():
             #update the the data in the plotted line
-            self._mpl_line.set_data(*self.get_data())
+            line, = self.get_mpl_lines()
+            line.set_data(*self.get_data())
     
     
     def get_raw_data(self):
@@ -73,14 +87,27 @@ class XYDataSeries(DataSeriesBase):
         Returns a tuple (xdata, ydata) of the data held by the series, with
         any pre-processing operations applied to it.
         """
-        #TODO - preprocessing
-        return (self.__xdata, self.__ydata)
+        return self.preprocess(self.__xdata, self.__ydata)
     
+    
+    def preprocess(self, xdata, ydata):
+        xdata, ydata = super(XYDataSeries, self).preprocess(xdata, ydata)
+        return xdata, ydata
+        
     
     def plot(self, subplot):
-        super(XYDataSeries,self).plot(subplot)
+        return subplot.get_mpl_axes().plot(*self.get_data())
         
-        self._mpl_line = subplot.get_mpl_axes().plot(*self.get_data())
+
+class TestCtrlPanel(controls.AvoPlotControlPanelBase):
+    def __init__(self, data_series):
+        super(TestCtrlPanel,self).__init__("Test")
+        self.data_series = data_series
+    
+    def create(self, parent):
+        super(TestCtrlPanel,self).create(parent)
         
-        
+        txt = wx.StaticText(parent, -1, "some text")
+        self.Add(txt, 0)
+                
         

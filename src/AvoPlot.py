@@ -36,7 +36,7 @@ def __parse_cmd_line():
     """
     usage = ("Usage: %prog [options]")
         
-    parser = optparse.OptionParser(usage)
+    parser = optparse.OptionParser(usage, version=avoplot.VERSION)
 
     (options, args) = parser.parse_args()
 
@@ -53,23 +53,36 @@ def display_warning(message, category, filename, *args):
 
 
 
+class AvoPlotApp(wx.App):
+    def __init__(self, options, args):
+        self.options = options
+        self.args = args
+        
+        super(AvoPlotApp, self).__init__()
+    
+    
+    def OnInit(self):
+        #setup warnings module to display messages in a wx.MessageBox
+        warnings.showwarning = display_warning
+        
+        #register our art provider to serve the AvoPlot icons
+        wx.ArtProvider.Insert(artwork.AvoplotArtProvider())
+        
+        #load all available plugins
+        avoplot.plugins.load_all_plugins()
+        
+        #launch the GUI!
+        main_frame = main.MainFrame()
+        
+        self.SetTopWindow(main_frame)
+        return True
+
+
 if __name__ == '__main__':
     
     #parse any command line args
     options, args = __parse_cmd_line()
         
-    app = wx.PySimpleApp()
-    
-    #setup warnings module to display messages in a wx.MessageBox
-    warnings.showwarning = display_warning
-    
-    #register our art provider to serve the AvoPlot icons
-    wx.ArtProvider.Insert(artwork.AvoplotArtProvider())
-    
-    #load all available plugins
-    avoplot.plugins.load_all_plugins()
-    
-    #launch the GUI!
-    main.MainFrame()
-       
+    app = AvoPlotApp(options, args)
+          
     app.MainLoop()

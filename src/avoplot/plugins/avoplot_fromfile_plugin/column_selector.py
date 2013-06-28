@@ -22,7 +22,8 @@ import wx.grid
 import numpy
 import os
 import avoplot
-from avoplot.gui.plots import PlotPanelBase
+#from avoplot.gui.plots import PlotPanelBase
+from avoplot.series import XYDataSeries
 
 class InvalidSelectionError(ValueError):
     pass
@@ -364,6 +365,24 @@ class XYDataSeriesPanel(wx.Panel):
 #            else:
                 axes.plot(xdata, ydata)
     
+    
+    def get_series_data(self):
+        """
+        Returns a tuple of (xdata, ydata)
+        """
+        xdata = self.get_x_series_data()
+        ydata = self.get_y_series_data()
+        
+        if xdata is None and ydata is None:
+            return
+        
+        if xdata is None:
+            return (numpy.arange(len(ydata)),ydata)
+        elif ydata is None:
+            return (xdata,numpy.arange(len(xdata)))
+        else:
+            return (xdata, ydata)
+        
         
     def get_x_series_data(self):
         return self.__get_data_selection(self.xseries_box.GetValue(), False)      
@@ -618,7 +637,7 @@ class TxtFileDataSeriesSelectFrame(wx.Dialog):
                 #TODO - read the row data status from the checkbox
                 series.validate_selection(False)
             except InvalidSelectionError,e:
-                wx.MessageBox(e.args[0], 'AvoPlot', wx.ICON_ERROR)
+                wx.MessageBox(e.args[0], avoplot.PROG_SHORT_NAME, wx.ICON_ERROR)
                 return
         
         self.EndModal(wx.ID_OK)
@@ -632,12 +651,16 @@ class TxtFileDataSeriesSelectFrame(wx.Dialog):
         self.file_contents_panel.enable_select_mode(val, data_series)
         self.data_series_panel.enable_select_mode(val, data_series)
 
+
+    def get_series(self):
+        series = []
+        for s in self.data_series_panel.data_series:
+            data = s.get_series_data()
+            if data:
+                series.append(XYDataSeries('',xdata=data[0], ydata=data[1]))
+        return series
     
-    def get_plot(self):
-        plt = PlotPanelBase(self.parent, os.path.basename(self.filename))
-        for series in self.data_series_panel.data_series:
-            series.plot_into_axes(plt.axes)
-        return plt
+
     
 class ColumnSelectorFrame(wx.Frame):
     def __init__(self, parent, file_contents):

@@ -21,7 +21,8 @@ import re
 import StringIO
 import os.path
 from std_ops.iter_ import multi_sort, tuple_compare
-from avoplot.plugins import AvoPlotPluginBase
+from avoplot.plugins import AvoPlotPluginSimple
+from avoplot.series import XYDataSeries
 from avoplot.persist import PersistentStorage
 from column_selector import TxtFileDataSeriesSelectFrame
 #from avoplot.plugins.avoplot_fromfile_plugin.loader import FileLoaderBase
@@ -35,16 +36,26 @@ def load(filename):
         s = ifp.read()
     return StringIO.StringIO(s)
 
-class TextFilePlugin(AvoPlotPluginBase):
+class TextFilePlugin(AvoPlotPluginSimple):
     def __init__(self):
-        AvoPlotPluginBase.__init__(self, "Text File")
-        
-        
-    def get_onNew_handler(self):
-        return ("From file", "", "Plot data from a file", self.on_new)
+        AvoPlotPluginSimple.__init__(self,"Text File", XYDataSeries)
+        self.set_menu_entry(['From file'], "Plot data from a file")
     
     
-    def on_new(self,evnt):
+    def plot_into_subplot(self, subplot):
+        
+        data_series = self.get_data_series()
+        
+        if not data_series:
+            return False
+        
+        for s in data_series:
+            subplot.add_data_series(s)
+        
+        return True
+    
+    
+    def get_data_series(self):
         persistant_storage = PersistentStorage()
         
         try:
@@ -67,8 +78,8 @@ class TextFilePlugin(AvoPlotPluginBase):
             wx.EndBusyCursor()
         
         if series_select_dialog.ShowModal() == wx.ID_OK:
-            plt = series_select_dialog.get_plot()
-            self.add_plot_to_main_window(plt)
+            return series_select_dialog.get_series()
+            
         
         
 class TextFileLoader(loader.FileLoaderBase):

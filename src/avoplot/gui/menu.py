@@ -21,13 +21,25 @@ import avoplot.plugins
 
 #TODO - add keyboard shortcuts
 
+class CallbackWrapper:
+    def __init__(self, func, *args, **kwargs):
+        self.func = func
+        self.args = args
+        self.kwargs = kwargs
+        
+    def __call__(self, *args):
+        self.func(*self.args, **self.kwargs)
+        
+        
+
 def get_subplot_right_click_menu(subplot):
     menu = wx.Menu()
     new_series_menu = wx.Menu()
     menu.AppendSubMenu(new_series_menu,"Add series")
     sub_menus = {}
+    
     for p in avoplot.plugins.get_plugins().values():
-        if not isinstance(subplot, p.get_supported_series_type().get_supported_subplot_type()):
+        if not issubclass(p.get_supported_series_type().get_supported_subplot_type(), subplot.__class__):
             continue
         labels = p.get_menu_entry_labels()
         if not labels:
@@ -46,12 +58,11 @@ def get_subplot_right_click_menu(subplot):
             cur_submenu = cur_submenu_dict[labels[i]][1]
             cur_submenu_dict = cur_submenu_dict[labels[i]][0]
             
-            #now add the menu entry
-            entry = cur_submenu.Append(-1, labels[-1], 
-                                           p.get_menu_entry_tooltip())
-            
-            f = lambda x: p.plot_into_subplot(subplot)
-            wx.EVT_MENU(subplot.get_figure().parent,entry.GetId(), f)
+        #now add the menu entry
+        entry = cur_submenu.Append(-1, labels[-1], p.get_menu_entry_tooltip())
+        callback = CallbackWrapper(p.plot_into_subplot, subplot)
+        wx.EVT_MENU(subplot.get_figure().parent,entry.GetId(), callback)
+    
     return menu
         
 
@@ -136,12 +147,29 @@ class MainMenu(wx.MenuBar):
         unsplit = view_menu.Append(-1, "&Unsplit", "Collapse all tabs into a "
                                    "single pane")
         
+        view_menu.AppendSeparator()
+        
+        ctrl_panel = view_menu.AppendCheckItem(-1,"Control Panel", 
+                                               'Show or hide the plot controls')
+        
+        nav_panel = view_menu.AppendCheckItem(-1,"Navigation Panel", 
+                                              'Show or hide the plot '
+                                              'navigation panel')
+        
         wx.EVT_MENU(self.parent, h_split.GetId(), self.parent.split_plot_horiz)
         wx.EVT_MENU(self.parent, v_split.GetId(), self.parent.split_plot_vert)
         wx.EVT_MENU(self.parent, unsplit.GetId(), self.parent.unsplit_panes)
+        wx.EVT_MENU(self.parent, ctrl_panel.GetId(), self.on_show_ctrl_panel)
+        wx.EVT_MENU(self.parent, nav_panel.GetId(), self.on_show_nav_panel)
         self.Append(view_menu, '&View')
     
     
+    def on_show_ctrl_panel(self, evnt):
+        self.parent.show_ctrl_panel(evnt.Checked())
+    
+    def on_show_nav_panel(self, evnt):
+        self.parent.show_nav_panel(evnt.Checked())
+        
     def onAbout(self, evnt):       
         about_info = wx.AboutDialogInfo()
         about_info.SetIcon(wx.ArtProvider.GetIcon('avoplot',

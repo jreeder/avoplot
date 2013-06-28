@@ -36,8 +36,8 @@ class MainToolbar(wx.ToolBar):
         #self.follow_data_tool = self.AddCheckTool(-1, wx.ArtProvider.GetBitmap("avoplot_grid",wx.ART_TOOLBAR),shortHelp='Inspect the data values' )
         self.AddSeparator()
 
-        self.grid_tool = self.AddCheckTool(-1, wx.ArtProvider.GetBitmap("avoplot_grid",wx.ART_TOOLBAR),shortHelp='Toggle gridlines' )
-        self.AddSeparator()
+        #self.grid_tool = self.AddCheckTool(-1, wx.ArtProvider.GetBitmap("avoplot_grid",wx.ART_TOOLBAR),shortHelp='Toggle gridlines' )
+        #self.AddSeparator()
         
         self.Realize()
         self.enable_plot_tools(False)
@@ -49,7 +49,7 @@ class MainToolbar(wx.ToolBar):
         wx.EVT_TOOL(self.parent, self.zoom_tool.GetId(), self.onZoom)
         wx.EVT_TOOL(self.parent, self.move_tool.GetId(), self.onMove)
         #wx.EVT_TOOL(self.parent, self.follow_data_tool.GetId(), self.on_follow_data)
-        wx.EVT_TOOL(self.parent, self.grid_tool.GetId(), self.onGrid)
+        #wx.EVT_TOOL(self.parent, self.grid_tool.GetId(), self.onGrid)
    
     
     def enable_plot_tools(self, state):
@@ -57,7 +57,7 @@ class MainToolbar(wx.ToolBar):
         self.EnableTool(self.home_tool.GetId(),state)
         self.EnableTool(self.move_tool.GetId(),state)
         self.EnableTool(self.zoom_tool.GetId(),state)
-        self.EnableTool(self.grid_tool.GetId(),state)
+        #self.EnableTool(self.grid_tool.GetId(),state)
    
     
     def onNew(self,evnt):
@@ -86,11 +86,11 @@ class MainToolbar(wx.ToolBar):
             p.pan()
 
     
-    def onGrid(self, evnt):     
-        gridstate = self.GetToolState(self.grid_tool.GetId())
-        p = self.parent.get_active_plot()
-        if p is not None:
-            p.gridlines(gridstate)
+#    def onGrid(self, evnt):     
+#        gridstate = self.GetToolState(self.grid_tool.GetId())
+#        p = self.parent.get_active_plot()
+#        if p is not None:
+#            p.gridlines(gridstate)
        
             
     def on_follow_data(self, evnt):

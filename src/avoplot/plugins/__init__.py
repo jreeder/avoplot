@@ -90,6 +90,26 @@ def get_plugins():
     """
     return __plotting_plugins
 
+
+def load_plugin_from_file(filename):
+    """
+    Loads a plugin from a file.
+    """
+    cur_dir = os.getcwd()
+    os.chdir(os.path.dirname(filename))
+    plugin = os.path.basename(filename)
+    try:
+        __import__(plugin.rstrip(".py"), 
+                   globals=globals(), 
+                   locals=locals())
+    except Exception,e:
+        #skip over any plugins that we cannot import
+        warnings.warn('Failed to import plug-in \'%s\'. \n\nregister() '
+                      'raised the exception: \'%s\'.'%(plugin, e.args[0]))
+    
+    #return to the old working dir
+    os.chdir(cur_dir)
+    
     
 def load_all_plugins():
     """
@@ -120,7 +140,7 @@ def load_all_plugins():
     os.chdir(cur_dir)
 
 
-class AvoPlotPluginBase:
+class AvoPlotPluginBase(object):
     """
     Base class for AvoPlot plugins. All plugins should inherit from this class.
     """
@@ -153,7 +173,7 @@ class AvoPlotPluginBase:
 
 class AvoPlotPluginSimple(AvoPlotPluginBase):
     def __init__(self, name, series_type):
-        AvoPlotPluginBase.__init__(self, name, series_type)
+        super(AvoPlotPluginSimple,self).__init__(name, series_type)
         self._plots_in_single_axes = True
     
         #make sure that the derived class has defined the correct methods

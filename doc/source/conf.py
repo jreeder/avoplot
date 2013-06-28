@@ -20,7 +20,6 @@ import sys, os
 sys.path.append(os.path.abspath(os.path.join(os.path.pardir,'src')))
 import avoplot
 
-print "AvoPlot version = ",avoplot.VERSION
 # -- General configuration -----------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
@@ -40,7 +39,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'AvoPlot'
+project = avoplot.PROG_SHORT_NAME
 copyright = u'2013, Nial Peters'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -48,7 +47,8 @@ copyright = u'2013, Nial Peters'
 # built documents.
 #
 # The short X.Y version.
-version = '0.0'
+version = avoplot.VERSION
+
 # The full version, including alpha/beta/rc tags.
 release = '1'
 

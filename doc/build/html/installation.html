@@ -31,9 +31,6 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="modindex.html" title="Global Module Index"
-             accesskey="M">modules</a> |</li>
-        <li class="right" >
           <a href="index.html" title="Welcome to AvoPlot’s documentation!"
              accesskey="P">previous</a> |</li>
         <li><a href="index.html">AvoPlot v1 documentation</a> &raquo;</li> 
@@ -41,6 +38,15 @@
     </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="#">Installation</a><ul>
+<li><a class="reference external" href="#prerequisites">Prerequisites</a></li>
+<li><a class="reference external" href="#from-source">From source</a></li>
+</ul>
+</li>
+</ul>
+
             <h4>Previous topic</h4>
             <p class="topless"><a href="index.html"
                                   title="previous chapter">Welcome to AvoPlot&#8217;s documentation!</a></p>
@@ -72,6 +78,43 @@
             
   <div class="section" id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>AvoPlot depends on several other software packages that you will need to install before installing AvoPlot. Instructions for installing the prerequisites can be found on their respective home pages. AvoPlot requires the following software to be installed:</dt>
+<dd><ul class="first last simple">
+<li><a class="reference external" href="http://www.wxpython.org/">wxPython</a></li>
+<li><a class="reference external" href="http://www.numpy.org/">NumPy</a></li>
+<li><a class="reference external" href="http://matplotlib.org/">matplotlib</a></li>
+<li><a class="reference external" href="https://github.com/ahupp/python-magic">python-magic</a></li>
+</ul>
+</dd>
+</dl>
+</div>
+<div class="section" id="from-source">
+<h2>From source<a class="headerlink" href="#from-source" title="Permalink to this headline">¶</a></h2>
+<p>The commands given in these instructions are for installation under Linux. It is assumed that if you are trying to install AvoPlot from source that you know what you are doing enough to be able to adapt the commands for your specific operating system!</p>
+<p>Installing AvoPlot from source requires that you have <a class="reference external" href="http://inkscape.org/">InkScape</a> installed on you computer in addition to the prerequisites listed above. This is used to generate the PNG icons for AvoPlot from their SVG versions.</p>
+<blockquote>
+<ol class="arabic">
+<li><p class="first">Check out the latest version of the code from the <a class="reference external" href="http://code.google.com/p/avoplot/source/checkout">repository</a>. You can do this using the following command:</p>
+<div class="highlight-python"><pre>svn checkout http://avoplot.googlecode.com/svn/trunk/ avoplot-read-only</pre>
+</div>
+</li>
+<li><p class="first">Create the AvoPlot icons:</p>
+<div class="highlight-python"><pre>cd avoplot-read-only/icons
+python create_sized_icons.py</pre>
+</div>
+</li>
+<li><p class="first">Build and install the main program:</p>
+<div class="highlight-python"><pre>cd ..
+python setup.py build
+sudo python setup.py install</pre>
+</div>
+</li>
+</ol>
+</blockquote>
+</div>
 </div>
 
 
@@ -86,9 +129,6 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
-        <li class="right" >
-          <a href="modindex.html" title="Global Module Index"
-             >modules</a> |</li>
         <li class="right" >
           <a href="index.html" title="Welcome to AvoPlot’s documentation!"
              >previous</a> |</li>

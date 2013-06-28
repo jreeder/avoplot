@@ -20,8 +20,17 @@ import re
 import avoplot.gui
 import wx
 
+#TODO - document this! ensures that my_init() is only called once, after
+#all __init__ methods have finished
+class MetaCallMyInit(type):
+    def __call__(self, *args, **kw):
+        obj=type.__call__(self, *args, **kw)
+        obj.my_init()
+        return obj
+
+
 class AvoPlotSubplotBase(object):
-    
+    __metaclass__ = MetaCallMyInit
     def __init__(self, fig, name='subplot'):
         
         assert isinstance(fig, AvoPlotFigure)
@@ -32,6 +41,10 @@ class AvoPlotSubplotBase(object):
         self.__figure = fig
         
         self.set_name(name)
+    
+            
+    def my_init(self):
+        pass
     
     
     def get_figure(self):
@@ -83,7 +96,7 @@ class AvoPlotXYSubplot(AvoPlotSubplotBase):
         
         #note the use of self.get_name() to ensure that the label is unique!
         self.__mpl_axes = fig.get_mpl_figure().add_subplot(111,label=self.get_name())
-    
+        
     
     def get_mpl_axes(self):
         return self.__mpl_axes  
@@ -95,6 +108,9 @@ class AvoPlotXYSubplot(AvoPlotSubplotBase):
         
         if evnt.button ==3:
             wx.CallAfter(self.on_right_click)
+            #need to release the mouse otherwise everything hangs (under Linux at
+            #least)
+            self.get_figure().ReleaseMouse()
             return
 
     
@@ -103,10 +119,6 @@ class AvoPlotXYSubplot(AvoPlotSubplotBase):
         menu = avoplot.gui.menu.get_subplot_right_click_menu(self)
         self.get_figure().PopupMenu(menu)
         menu.Destroy()
-        
-        #need to release the mouse otherwise everything hangs (under Linux at
-        #least)
-        self.get_figure().ReleaseMouse()
     
     
     def add_data_series(self, series):

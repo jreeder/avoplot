@@ -22,10 +22,12 @@ from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 from matplotlib.backends.backend_wx import NavigationToolbar2Wx
 from matplotlib.figure import Figure
 
+from avoplot import core
 
-class AvoPlotFigure(wx.ScrolledWindow):
+class AvoPlotFigure(core.AvoPlotElementBase, wx.ScrolledWindow):
     
     def __init__(self, parent, name):
+        core.AvoPlotElementBase.__init__(self)
         self.name = name        
         self.parent = parent
         self.canvas = None
