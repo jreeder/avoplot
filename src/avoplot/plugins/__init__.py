@@ -196,7 +196,7 @@ class AvoPlotPluginSimple(AvoPlotPluginBase):
     
     
     def show_figure(self, fig, select=True):
-        self.get_parent().add_tab(fig, select=select)
+        self.get_parent().add_figure(fig)
     
     
     def create_new(self, evnt):

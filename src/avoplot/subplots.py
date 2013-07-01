@@ -18,6 +18,8 @@
 from avoplot.figure import AvoPlotFigure
 import re
 import avoplot.gui
+from avoplot import core
+#from avoplot import series
 import wx
 
 #TODO - document this! ensures that my_init() is only called once, after
@@ -29,30 +31,29 @@ class MetaCallMyInit(type):
         return obj
 
 
-class AvoPlotSubplotBase(object):
+class AvoPlotSubplotBase(core.AvoPlotElementBase):
     __metaclass__ = MetaCallMyInit
     def __init__(self, fig, name='subplot'):
-        
-        assert isinstance(fig, AvoPlotFigure)
-        assert type(name) is str
-        
-        self._data_series = {}
-        self.__name = None
-        self.__figure = fig
-        
-        self.set_name(name)
+        super(AvoPlotSubplotBase, self).__init__(name)
+        self.set_parent_element(fig)
     
-            
+    
+    def add_data_series(self, data):
+        #assert isinstance(data, series.DataSeriesBase)
+        data.set_parent_element(self)
+    
+    
+    def set_parent_element(self, parent):
+        assert isinstance(parent, AvoPlotFigure) or parent is None
+        super(AvoPlotSubplotBase, self).set_parent_element(parent)
+          
+                     
     def my_init(self):
         pass
     
     
     def get_figure(self):
-        return self.__figure
-    
-    
-    def get_name(self):
-        return self.__name
+        return self.get_parent_element()
     
     
     def close(self):
@@ -61,31 +62,6 @@ class AvoPlotSubplotBase(object):
     
     def on_mouse_button(self, evnt):
         pass
-    
-    
-    def set_name(self, name):
-        if name == self.__name:
-            return
-        
-        if  self.__figure.subplots.has_key(name):
-            existing_names = self.__figure.subplots.keys()
-            current_indices = [1]
-            for n in existing_names:
-                if not n.startswith(name):
-                    continue
-                n = n[len(name):].strip()
-                if n:
-                        match = re.match(r'\(([0-9]+)\)', n)
-                        if match:
-                            current_indices.append(int(match.groups()[0]))
-                                                
-            name = ''.join([name, ' (%d)' % (max(current_indices) + 1)])
-        
-        self.__figure.subplots[name] = self
-        
-        if self.__name is not None:
-            self.__figure.subplots.pop(self.__name)
-        self.__name = name
         
         
         
@@ -121,11 +97,12 @@ class AvoPlotXYSubplot(AvoPlotSubplotBase):
         menu.Destroy()
     
     
-    def add_data_series(self, series):
-        self._data_series[series.get_name()] = series
-        series.plot(self)
+    def add_data_series(self, data):
+        super(AvoPlotXYSubplot, self).add_data_series(data)
+        data.plot(self)
         canvas = self.get_figure().canvas
         if canvas:
             canvas.draw()
+        
     
     

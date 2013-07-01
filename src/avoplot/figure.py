@@ -23,12 +23,31 @@ from matplotlib.backends.backend_wx import NavigationToolbar2Wx
 from matplotlib.figure import Figure
 
 from avoplot import core
+from avoplot import controls
+
+
+class FigureControls(controls.AvoPlotControlPanelBase):
+    def __init__(self, figure):
+        controls.AvoPlotControlPanelBase.__init__(self, figure, "no name")
+        self.figure = figure
+        text = wx.StaticText(self, -1, "Some text in the control")
+        self.Add(text,0, wx.CENTER)
+        
+        self.button = wx.ColourPickerCtrl(self, -1, wx.WHITE)
+        #wx.Button(self, -1 ,"Black")
+        self.Add(self.button, 0 , wx.CENTER)
+        wx.EVT_COLOURPICKER_CHANGED(self,self.button.GetId(), self.onButton)
+    
+    def onButton(self, evnt):
+        fig = self.figure.get_mpl_figure()
+        fig.set_facecolor(evnt.GetColour().GetAsString(wx.C2S_HTML_SYNTAX))
+        fig.canvas.draw()
+        
 
 class AvoPlotFigure(core.AvoPlotElementBase, wx.ScrolledWindow):
     
     def __init__(self, parent, name):
-        core.AvoPlotElementBase.__init__(self)
-        self.name = name        
+        core.AvoPlotElementBase.__init__(self, name)       
         self.parent = parent
         self.canvas = None
         
@@ -39,7 +58,7 @@ class AvoPlotFigure(core.AvoPlotElementBase, wx.ScrolledWindow):
         wx.ScrolledWindow.__init__(self, parent, wx.ID_ANY)
         self.SetScrollRate(2, 2)
         self.v_sizer = wx.BoxSizer(wx.VERTICAL)
-        
+        self.add_control_panel(FigureControls(self))
         #keep track of which tools are active for this figure, this allows
         #us to enable the correct tools when the figure is selected.
         self._is_panned = False
@@ -60,6 +79,10 @@ class AvoPlotFigure(core.AvoPlotElementBase, wx.ScrolledWindow):
         self.v_sizer.Fit(self)
         self.SetAutoLayout(True)
         
+        
+    def delete(self):
+        core.AvoPlotElementBase.delete(self)
+    
     
     def finalise(self):
         #embed the figure in a wx canvas, ready to be put into the main window
@@ -83,7 +106,7 @@ class AvoPlotFigure(core.AvoPlotElementBase, wx.ScrolledWindow):
             return
         
         #otherwise find out what subplot it occurred in and pass the event over
-        for subplot in self.subplots.values():
+        for subplot in self.get_child_elements():
             subplot.on_mouse_button(evnt)
         
     

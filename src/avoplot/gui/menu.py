@@ -119,7 +119,7 @@ class MainMenu(wx.MenuBar):
         exit = file_menu.Append(wx.ID_EXIT, "&Exit", "Exit AvoPlot.")
         
         #register the event handlers
-        wx.EVT_MENU(self.parent,exit.GetId(), self.parent.onClose)
+        wx.EVT_MENU(self.parent,exit.GetId(), self.parent.on_close)
         wx.EVT_MENU(self.parent,save_plot.GetId(), self.parent.onSavePlot)
                 
         #add the menu item to the MenuBar (self)
@@ -156,9 +156,9 @@ class MainMenu(wx.MenuBar):
                                               'Show or hide the plot '
                                               'navigation panel')
         
-        wx.EVT_MENU(self.parent, h_split.GetId(), self.parent.split_plot_horiz)
-        wx.EVT_MENU(self.parent, v_split.GetId(), self.parent.split_plot_vert)
-        wx.EVT_MENU(self.parent, unsplit.GetId(), self.parent.unsplit_panes)
+        wx.EVT_MENU(self.parent, h_split.GetId(), self.parent.plots_panel.split_figure_horiz)
+        wx.EVT_MENU(self.parent, v_split.GetId(), self.parent.plots_panel.split_figure_vert)
+        wx.EVT_MENU(self.parent, unsplit.GetId(), self.parent.plots_panel.unsplit_panes)
         wx.EVT_MENU(self.parent, ctrl_panel.GetId(), self.on_show_ctrl_panel)
         wx.EVT_MENU(self.parent, nav_panel.GetId(), self.on_show_nav_panel)
         self.Append(view_menu, '&View')
@@ -199,15 +199,15 @@ class TabRightClickMenu(wx.Menu):
         self.main_frame = main_frame
                        
         rename = self.Append(wx.ID_ANY,"Rename", "Rename the current tab")
-        wx.EVT_MENU(self, rename.GetId(), self.main_frame.rename_current_tab)
+        wx.EVT_MENU(self, rename.GetId(), self.main_frame.rename_current_figure)
         self.AppendSeparator()
         
         h_split = self.Append(-1, "Split Horizontal", "Split the current plot "
                               "into a new pane")
         v_split = self.Append(-1, "Split Vertical", "Split the current plot "
                               "into a new pane")
-        wx.EVT_MENU(self, h_split.GetId(), self.main_frame.split_plot_horiz)
-        wx.EVT_MENU(self, v_split.GetId(), self.main_frame.split_plot_vert)
+        wx.EVT_MENU(self, h_split.GetId(), self.main_frame.split_figure_horiz)
+        wx.EVT_MENU(self, v_split.GetId(), self.main_frame.split_figure_vert)
         
         self.AppendSeparator()
         close_current = self.Append(wx.ID_ANY,"Close", "Close the current tab")

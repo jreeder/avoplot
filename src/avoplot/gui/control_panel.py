@@ -16,27 +16,53 @@
 #along with AvoPlot.  If not, see <http://www.gnu.org/licenses/>.
 
 import wx
+from wx import aui
+from avoplot import core
 
-class ControlPanel(wx.Notebook):
+class ControlPanel(aui.AuiNotebook):
     def __init__(self,parent):
-        wx.Notebook.__init__(self, parent, id=wx.ID_ANY)
-    
+        super(ControlPanel, self).__init__(parent, id=wx.ID_ANY, 
+                                           style=wx.NB_TOP|wx.CLIP_CHILDREN)
+        self._current_element = None
+        core.EVT_AVOPLOT_ELEM_SELECT(self, self.on_element_select)
+        core.EVT_AVOPLOT_ELEM_DELETE(self, self.on_element_delete)
        
     def set_control_panels(self, control_panels):
         """
         Sets the control panels shown in the notebook. 'control_panels' should
         be a list of AvoPlotControlPanelBase objects.
         """
-        while self.GetPageCount():
-            self.RemovePage(0)
+        self.Freeze()
+        self.Show(False)
+        if self._current_element is not None:
+            while self.GetPageCount():
+                p = self.GetPage(0)
+                self.RemovePage(0)
+                p.Show(False)
+                p.Reparent(p.old_parent)
         
         for p in control_panels:
-            self.Add(p, p.name) 
+            p.Reparent(self)
+            self.AddPage(p, p.name)
+
+        self.Show(True)
+        self.Thaw()
     
     
-    def on_element_selection(self, evnt):
+    def on_element_delete(self, evnt):
+        print "ctrl panel on delete", evnt.element.get_name()
+
         el = evnt.element
-        
-        self.set_control_panels(el.get_control_panels())
-        
-        print "handled element change event"
+
+        if el == self._current_element:
+            while self.GetPageCount():
+                self.DeletePage(0)
+            self._current_element = None
+    
+    
+    def on_element_select(self, evnt):
+        print "ctrl panel on select"
+        el = evnt.element
+        if el != self._current_element: 
+            self.set_control_panels(el.get_control_panels())
+            self._current_element = el

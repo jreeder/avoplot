@@ -17,12 +17,10 @@
 import wx
 
 class AvoPlotControlPanelBase(wx.ScrolledWindow):
-    def __init__(self, name):
+    def __init__(self, parent, name):
         self.name = name
         self.__sizer = wx.BoxSizer(wx.VERTICAL)
-    
-    
-    def create(self,parent):
+        self.old_parent = parent
         super(AvoPlotControlPanelBase, self).__init__(parent, wx.ID_ANY)
         
         self.SetScrollRate(2, 2)

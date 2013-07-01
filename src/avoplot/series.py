@@ -16,14 +16,19 @@
 #along with AvoPlot.  If not, see <http://www.gnu.org/licenses/>.
 from avoplot.subplots import AvoPlotSubplotBase,AvoPlotXYSubplot
 from avoplot import controls
+from avoplot import core
 import wx
 
-class DataSeriesBase(object):
+class DataSeriesBase(core.AvoPlotElementBase):
     def __init__(self, name):
-        self.__name = name
+        super(DataSeriesBase,self).__init__(name)
         self.__plotted = False
         self._mpl_lines = []
         
+    def set_parent_element(self, parent):
+        assert isinstance(parent, AvoPlotSubplotBase) or parent is None
+        super(DataSeriesBase,self).set_parent_element(parent)
+    
     
     def get_mpl_lines(self):
         return self._mpl_lines
@@ -46,11 +51,7 @@ class DataSeriesBase(object):
         return args
     
     def is_plotted(self):
-        return self.__plotted
-    
-    
-    def get_name(self):
-        return self.__name     
+        return self.__plotted   
 
 
 class XYDataSeries(DataSeriesBase):
