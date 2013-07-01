@@ -53,7 +53,7 @@ class DOASSpectrumPlugin(AvoPlotPluginSimple):
         if spec is None:
             return False
         
-        data_series = DOASSpectrumData("",xdata=spec.wavelengths, ydata=spec.counts)
+        data_series = DOASSpectrumData(os.path.basename(spec.filename),xdata=spec.wavelengths, ydata=spec.counts)
         
         subplot.add_data_series(data_series)
         

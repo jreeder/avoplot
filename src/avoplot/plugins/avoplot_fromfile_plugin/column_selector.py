@@ -138,6 +138,7 @@ class ColumnDataPanel(wx.ScrolledWindow):
      
         #create cells
         self.grid = wx.grid.Grid(self, wx.ID_ANY)
+        self.grid.EnableGridLines(False)
         self.grid.CreateGrid(n_rows, n_cols)
         self.col_letter_names = []
                 
@@ -182,10 +183,11 @@ class ColumnDataPanel(wx.ScrolledWindow):
         
         vsizer.Add(self.data_type_sizer, 0, wx.EXPAND)
         vsizer.Add(self.grid, 1, wx.EXPAND)
-
+        
         self.SetSizer(vsizer)
         vsizer.Fit(self)
-
+        
+        #self.grid.EnableGridLines(True)
 
     
     def get_selection(self):

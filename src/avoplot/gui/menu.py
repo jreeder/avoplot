@@ -18,6 +18,8 @@ import wx
 import os.path
 import avoplot
 import avoplot.plugins
+from avoplot import core
+from avoplot import figure
 
 #TODO - add keyboard shortcuts
 
@@ -70,11 +72,53 @@ class MainMenu(wx.MenuBar):
     def __init__(self, parent):
         wx.MenuBar.__init__(self)
         self.parent=parent
+        self.__current_figure = None
+        self.__figure_count = 0
         self.create_file_menu()
         self.create_view_menu()
         self.create_help_menu()
         
-                
+        #self.enable_figure_entries(False)
+        
+        core.EVT_AVOPLOT_ELEM_ADD(self, self.on_element_add)
+        core.EVT_AVOPLOT_ELEM_DELETE(self, self.on_element_delete)
+        core.EVT_AVOPLOT_ELEM_SELECT(self, self.on_element_select)
+        
+    
+    def on_element_select(self, evnt):
+        el = evnt.element
+        if isinstance(el, figure.AvoPlotFigure):
+            self.__current_figure = el
+            
+    
+    def on_element_add(self, evnt):
+        el = evnt.element
+        
+        if isinstance(el, figure.AvoPlotFigure):
+            self.__current_figure = el
+            self.enable_figure_entries(True)
+            print "main menu - on element add enabled controls"
+            self.__figure_count += 1
+    
+    def on_element_delete(self, evnt):
+        el = evnt.element
+        if isinstance(el, figure.AvoPlotFigure):
+            if el == self.__current_figure:
+                self.__current_figure = None
+            
+            self.__figure_count -= 1
+            
+            if not self.__figure_count:
+                self.enable_figure_entries(False)
+        
+        
+    
+    def enable_figure_entries(self, val):
+
+        self.save_data_entry.Enable(enable=val)
+        self.save_plot_entry.Enable(enable=val)
+        
+                        
     def create_file_menu(self):
         file_menu = wx.Menu()
         
@@ -111,21 +155,23 @@ class MainMenu(wx.MenuBar):
         file_menu.AppendSubMenu(new_submenu, "New")
         
         #save controls
-        save_data = file_menu.Append(-1, "&Export Data", "Save the current "
+        self.save_data_entry = file_menu.Append(-1, "&Export Data", "Save the current "
                                      "plot data.")
-        save_plot = file_menu.Append(wx.ID_SAVE, "&Save Plot", "Save the "
+        self.save_plot_entry = file_menu.Append(wx.ID_SAVE, "&Save Plot", "Save the "
                                      "current plot.")
 
         exit = file_menu.Append(wx.ID_EXIT, "&Exit", "Exit AvoPlot.")
         
         #register the event handlers
         wx.EVT_MENU(self.parent,exit.GetId(), self.parent.on_close)
-        wx.EVT_MENU(self.parent,save_plot.GetId(), self.parent.onSavePlot)
+        wx.EVT_MENU(self.parent,self.save_plot_entry.GetId(), self.on_save_plot)
                 
         #add the menu item to the MenuBar (self)
         self.Append(file_menu, "&File")
+        
     
-    
+    def on_save_plot(self, evnt):
+        print "on_save_plot"
     def create_help_menu(self):
         help_menu = wx.Menu()
         

@@ -19,6 +19,7 @@ from avoplot.figure import AvoPlotFigure
 import re
 import avoplot.gui
 from avoplot import core
+from avoplot import controls
 #from avoplot import series
 import wx
 
@@ -28,6 +29,7 @@ class MetaCallMyInit(type):
     def __call__(self, *args, **kw):
         obj=type.__call__(self, *args, **kw)
         obj.my_init()
+        obj.setup_controls(obj.get_parent_element())
         return obj
 
 
@@ -41,7 +43,7 @@ class AvoPlotSubplotBase(core.AvoPlotElementBase):
     def add_data_series(self, data):
         #assert isinstance(data, series.DataSeriesBase)
         data.set_parent_element(self)
-    
+        
     
     def set_parent_element(self, parent):
         assert isinstance(parent, AvoPlotFigure) or parent is None
@@ -73,6 +75,7 @@ class AvoPlotXYSubplot(AvoPlotSubplotBase):
         #note the use of self.get_name() to ensure that the label is unique!
         self.__mpl_axes = fig.get_mpl_figure().add_subplot(111,label=self.get_name())
         
+        self.add_control_panel(XYSubplotControls(self))
     
     def get_mpl_axes(self):
         return self.__mpl_axes  
@@ -89,8 +92,7 @@ class AvoPlotXYSubplot(AvoPlotSubplotBase):
             self.get_figure().ReleaseMouse()
             return
 
-    
-    
+      
     def on_right_click(self):
         menu = avoplot.gui.menu.get_subplot_right_click_menu(self)
         self.get_figure().PopupMenu(menu)
@@ -99,10 +101,32 @@ class AvoPlotXYSubplot(AvoPlotSubplotBase):
     
     def add_data_series(self, data):
         super(AvoPlotXYSubplot, self).add_data_series(data)
-        data.plot(self)
+        data._plot(self)
         canvas = self.get_figure().canvas
         if canvas:
             canvas.draw()
         
     
+
+class XYSubplotControls(controls.AvoPlotControlPanelBase):
+    def __init__(self, subplot):
+        super(XYSubplotControls, self).__init__("Subplot")
+        self.subplot = subplot
     
+    
+    def setup(self, parent):
+        super(XYSubplotControls, self).setup(parent)
+        
+        grid = wx.CheckBox(self, -1, "Gridlines")
+        self.Add(grid, 0, wx.ALIGN_CENTER_HORIZONTAL)
+        wx.EVT_CHECKBOX(self, grid.GetId(), self.on_grid)
+    
+    
+    def on_grid(self, evnt):
+        ax = self.subplot.get_mpl_axes()
+        ax.grid(b=evnt.IsChecked())
+        ax.figure.canvas.draw()
+        
+    
+        
+        

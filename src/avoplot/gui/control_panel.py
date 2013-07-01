@@ -43,7 +43,7 @@ class ControlPanel(aui.AuiNotebook):
         
         for p in control_panels:
             p.Reparent(self)
-            self.AddPage(p, p.name)
+            self.AddPage(p, p.get_name())
 
         self.Show(True)
         self.Thaw()

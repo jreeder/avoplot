@@ -17,10 +17,15 @@
 import wx
 from matplotlib.backends.backend_wx import _load_bitmap as load_matplotlib_bitmap
 
+from avoplot import core
+from avoplot import figure
+
 class MainToolbar(wx.ToolBar):
     def __init__(self,parent):
         self.parent = parent
-
+        
+        self.__active_figure = None
+        self.__all_figures = set()
         
         wx.ToolBar.__init__(self,parent, wx.ID_ANY)
         
@@ -42,15 +47,43 @@ class MainToolbar(wx.ToolBar):
         self.Realize()
         self.enable_plot_tools(False)
         
+        #register avoplot event handlers
+        core.EVT_AVOPLOT_ELEM_ADD(self, self.on_element_add)
+        core.EVT_AVOPLOT_ELEM_SELECT(self, self.on_element_select)
+        core.EVT_AVOPLOT_ELEM_DELETE(self, self.on_element_delete)
+        
         #register events
         wx.EVT_TOOL(self.parent, new_tool.GetId(), self.onNew)
-        wx.EVT_TOOL(self.parent, self.save_tool.GetId(), self.parent.onSavePlot)        
-        wx.EVT_TOOL(self.parent, self.home_tool.GetId(), self.onHome)
-        wx.EVT_TOOL(self.parent, self.zoom_tool.GetId(), self.onZoom)
-        wx.EVT_TOOL(self.parent, self.move_tool.GetId(), self.onMove)
+        wx.EVT_TOOL(self.parent, self.save_tool.GetId(), self.on_save_plot)        
+        wx.EVT_TOOL(self.parent, self.home_tool.GetId(), self.on_home)
+        wx.EVT_TOOL(self.parent, self.zoom_tool.GetId(), self.on_zoom)
+        wx.EVT_TOOL(self.parent, self.move_tool.GetId(), self.on_move)
         #wx.EVT_TOOL(self.parent, self.follow_data_tool.GetId(), self.on_follow_data)
         #wx.EVT_TOOL(self.parent, self.grid_tool.GetId(), self.onGrid)
    
+    
+    def on_element_add(self, evnt):
+        el = evnt.element
+        if isinstance(el, figure.AvoPlotFigure):
+            if not self.__all_figures:
+                self.enable_plot_tools(True)
+            self.__all_figures.add(el)
+    
+    
+    def on_element_delete(self, evnt):
+        el = evnt.element
+        if isinstance(el, figure.AvoPlotFigure):
+            self.__all_figures.remove(el)
+            if not self.__all_figures:
+                self.enable_plot_tools(False)
+    
+    
+    def on_element_select(self, evnt):
+        el = evnt.element
+        if isinstance(el, figure.AvoPlotFigure):
+            self.__active_figure = el
+        
+    
     
     def enable_plot_tools(self, state):
         self.EnableTool(self.save_tool.GetId(),state)
@@ -67,25 +100,26 @@ class MainToolbar(wx.ToolBar):
         self.PopupMenuXY(self.parent.menu.new_menu, x, y+h-34)
 
         
-    def onHome(self, evnt):
-        p = self.parent.get_active_plot()
-        
-        if p is not None:
-            p.go_home()
+    def on_home(self, evnt):
+        if self.__active_figure is not None:
+            self.__active_figure.go_home()
  
     
-    def onZoom(self,evnt):
+    def on_zoom(self,evnt):
         self.ToggleTool(self.move_tool.GetId(),False) 
-        for p in self.parent.get_all_pages():
+        for p in self.__all_figures:
             p.zoom()
 
    
-    def onMove(self,evnt):
+    def on_move(self,evnt):
         self.ToggleTool(self.zoom_tool.GetId(),False) 
-        for p in self.parent.get_all_pages():
+        for p in self.__all_figures:
             p.pan()
 
     
+    def on_save_plot(self, *args):
+        if self.__active_figure is not None:
+            self.__active_figure.save_figure_as_image()
 #    def onGrid(self, evnt):     
 #        gridstate = self.GetToolState(self.grid_tool.GetId())
 #        p = self.parent.get_active_plot()
@@ -96,7 +130,7 @@ class MainToolbar(wx.ToolBar):
     def on_follow_data(self, evnt):
         #TODO - disable the other navigation tools on all the plots
         follow_state = self.GetToolState(self.follow_data_tool.GetId())
-        for p in self.parent.get_all_pages():
+        for p in self.__all_figures:
             p.follow_data(follow_state)
             
         

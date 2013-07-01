@@ -133,53 +133,7 @@ class MainFrame(wx.Frame):
         #this has to come last since fig.Destroy() will get called here and
         #so subsequent access to fig will raise an exception
         wx.PostEvent(self.plots_panel, evnt) 
-    
-            
-    def onTabChange(self, evnt):
-        p = self.get_active_plot()
-        if p is None:
-            self.toolbar.enable_plot_tools(False)
-            return
-        
-        self.toolbar.enable_plot_tools(True)
-        
-        #set the zoom settings on the plot based on the toolbar selection
-        if self.toolbar.GetToolState(self.toolbar.zoom_tool.GetId()):
-            #then zoom tool is selected
-            if not p._is_zoomed:
-                p.zoom()
-        else:
-            if p._is_zoomed:
-                p.zoom()
-        
-        if self.toolbar.GetToolState(self.toolbar.move_tool.GetId()):
-            #then zoom tool is selected
-            if not p._is_panned:
-                p.pan()
-        else:
-            if p._is_panned:
-                p.pan()
-        
-        p.set_selected()
-        #TODO- this should be done in the event handler
-    
-    
-    def get_active_plot(self):
-        selection = self.notebook.GetSelection()
-
-        if selection == -1:
-            #means that no plots are open
-            return None
-        
-        return self.notebook.GetPage(selection)
-
-    
-    def get_all_pages(self):
-        """
-        Returns a list of all the pages currently managed by the notebook.
-        """
-        return [self.notebook.GetPage(i) for i in range(self.notebook.GetPageCount())]
-        
+   
 
         
     def on_close(self, *args):
@@ -205,8 +159,7 @@ class MainFrame(wx.Frame):
         figure.set_selected()
   
             
-    def onSavePlot(self, *args):
-        self.get_active_plot().save_figure_as_image()
+
         
         
         

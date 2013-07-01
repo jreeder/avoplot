@@ -2,7 +2,7 @@ import subprocess
 import os
 
 sizes = [16,22,24,32,48,64,96]
-icon_files = [os.path.join('scalable',f) for f in os.listdir('scalable')]
+icon_files = [os.path.join('scalable',f) for f in os.listdir('scalable') if not f.startswith('.')]
 
 #make sure all the output dirs exist
 for s in sizes:

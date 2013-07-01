@@ -14,10 +14,21 @@
 #
 #You should have received a copy of the GNU General Public License
 #along with AvoPlot.  If not, see <http://www.gnu.org/licenses/>.
+import matplotlib.colors
 from avoplot.subplots import AvoPlotSubplotBase,AvoPlotXYSubplot
 from avoplot import controls
 from avoplot import core
 import wx
+class ColourSetting(wx.BoxSizer):
+    def __init__(self, parent, label, default_colour, callback):
+        wx.BoxSizer.__init__(self, wx.HORIZONTAL)
+        text = wx.StaticText(parent, -1, label)
+        self.Add(text, 0, wx.ALIGN_CENTRE_VERTICAL|wx.ALIGN_LEFT)
+        
+        cp = wx.ColourPickerCtrl(parent, -1, default_colour)
+        self.Add(cp, 0 , wx.ALIGN_CENTRE_VERTICAL|wx.ALIGN_LEFT)
+        wx.EVT_COLOURPICKER_CHANGED(parent,cp.GetId(), callback)
+
 
 class DataSeriesBase(core.AvoPlotElementBase):
     def __init__(self, name):
@@ -33,6 +44,7 @@ class DataSeriesBase(core.AvoPlotElementBase):
     def get_mpl_lines(self):
         return self._mpl_lines
     
+    
     def _plot(self, subplot):
         assert isinstance(subplot, AvoPlotSubplotBase), ('arg passed as '
                 'subplot is not an AvoPlotSubplotBase instance')
@@ -42,22 +54,27 @@ class DataSeriesBase(core.AvoPlotElementBase):
         self.__plotted = True
         
         self._mpl_lines = self.plot(subplot)
+        self.setup_controls(subplot.get_parent_element())
     
     
     def plot(self, subplot):
         return []
     
+    
     def preprocess(self, *args):
         return args
     
+    
     def is_plotted(self):
         return self.__plotted   
+
 
 
 class XYDataSeries(DataSeriesBase):
     def __init__(self, name, xdata=None, ydata=None):
         super(XYDataSeries,self).__init__(name)
         self.set_xy_data(xdata, ydata)
+        self.add_control_panel(XYSeriesControls(self))
         
     @staticmethod    
     def get_supported_subplot_type():
@@ -100,15 +117,38 @@ class XYDataSeries(DataSeriesBase):
         return subplot.get_mpl_axes().plot(*self.get_data())
         
 
-class TestCtrlPanel(controls.AvoPlotControlPanelBase):
-    def __init__(self, data_series):
-        super(TestCtrlPanel,self).__init__("Test")
-        self.data_series = data_series
-    
-    def create(self, parent):
-        super(TestCtrlPanel,self).create(parent)
+class XYSeriesControls(controls.AvoPlotControlPanelBase):
+    def __init__(self, series):
+        super(XYSeriesControls, self).__init__("Series")
+        self.series = series
         
-        txt = wx.StaticText(parent, -1, "some text")
-        self.Add(txt, 0)
+               
+    def setup(self, parent):
+        super(XYSeriesControls, self).setup(parent)
+        mpl_lines = self.series.get_mpl_lines()
+        
+        #add line colour controls
+        line_col = matplotlib.colors.colorConverter.to_rgb(mpl_lines[0].get_color())
+        print line_col
+        line_col = (255 * line_col[0], 255 * line_col[1], 255 * line_col[2])
+        cs = ColourSetting(self, "Line:", line_col, 
+                           self.on_line_colour_change)
+        self.Add(cs, 0 , wx.CENTER| wx.ALL, border=10)
+        
+    
+    def on_line_colour_change(self, evnt):
+        l, = self.series.get_mpl_lines()
+        l.set_color(evnt.GetColour().GetAsString(wx.C2S_HTML_SYNTAX))
+        l.axes.figure.canvas.draw()
+        
+        
+    
+    def on_suptitle_change(self, evnt):
+        fig = self.figure.get_mpl_figure()
+        if self.__suptitle_text is None:
+            self.__suptitle_text = fig.suptitle(evnt.GetString())
+        else:
+            self.__suptitle_text.set_text(evnt.GetString())
+        fig.canvas.draw()
                 
         

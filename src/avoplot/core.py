@@ -65,23 +65,30 @@ class AvoPlotElementBase(object):
         while self.__child_elements:
             el = list(self.__child_elements)[-1]
             el.delete()
-            print "deleted el:",el.get_name()
             
-        self.set_parent_element(None) 
+        self.set_parent_element(None)
         
         #send the element delete event
         evt = AvoPlotElementDeleteEvent(element=self)
-        print "posting event"
         wx.PostEvent(wx.GetApp().GetTopWindow(), evt)
-        print "done"
+
     
     
     def get_control_panels(self):
+        for cp in self.__control_panels:
+            assert cp.is_initialised()
+        
         return self.__control_panels
        
     
     def get_child_elements(self):
         return self.__child_elements
+    
+    
+    def setup_controls(self, parent):
+        for cp in self.__control_panels:
+            assert not cp.is_initialised()
+            cp.setup(parent)
     
     
     def get_name(self):
@@ -102,7 +109,10 @@ class AvoPlotElementBase(object):
     
     
     def set_name(self, name):
-        assert type(name) == str, "name must be a string"        
+        #assert type(name) == str, "name must be a string" 
+
+        name = str(name)
+               
         #if the parent of this element already has a child with this name
         #then append a number to the end of it
         if self.__parent_element is not None:

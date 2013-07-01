@@ -24,19 +24,26 @@ class NavigationPanel(wx.ScrolledWindow):
         super(NavigationPanel, self).__init__(parent)
         self.SetScrollRate(2, 2)
         self.v_sizer = wx.BoxSizer(wx.VERTICAL)
-        self.tree = wx.TreeCtrl(self, wx.ID_ANY, style=wx.TR_HIDE_ROOT|wx.TR_HAS_BUTTONS|wx.TR_LINES_AT_ROOT)
+        self.tree = wx.TreeCtrl(self, wx.ID_ANY, style=(wx.TR_HIDE_ROOT|
+                                                        wx.TR_HAS_BUTTONS|
+                                                        wx.TR_LINES_AT_ROOT))
         self.v_sizer.Add(self.tree,1,wx.EXPAND)
         self.__current_selection_id = None
         
         #add the session element as the root node
-        root = self.tree.AddRoot(session.get_name(), data=wx.TreeItemData(session))
+        root = self.tree.AddRoot(session.get_name(), 
+                                 data=wx.TreeItemData(session))
         self.__el_id_mapping = {session.get_avoplot_id():root}
-
+        
+        #bind avoplot events
         core.EVT_AVOPLOT_ELEM_SELECT(self, self.on_element_select)
         core.EVT_AVOPLOT_ELEM_DELETE(self, self.on_element_delete)
         core.EVT_AVOPLOT_ELEM_ADD(self, self.on_element_add)
         core.EVT_AVOPLOT_ELEM_RENAME(self, self.on_element_rename)
+        
+        #bind wx events
         wx.EVT_TREE_SEL_CHANGED(self, self.tree.GetId(), self.on_tree_select_el)
+        
         #do the layout 
         self.SetSizer(self.v_sizer)
         self.v_sizer.Fit(self)
@@ -66,14 +73,7 @@ class NavigationPanel(wx.ScrolledWindow):
         
         else:
             warnings.warn("element not in tree"+str(el))
-        #if the element is new then insert it into the tree
-#        else:
-#            parent_id = el.get_parent_element().get_avoplot_id()
-#            print "added element to tree"
-#            self.tree.AppendItem(self.__el_id_mapping[parent_id], el.get_name(),
-#                                 data=wx.TreeItemData(el))
-        
-        #TODO
+
                
     def on_element_delete(self, evnt):
         print "nav panel on delete",evnt.element.get_name()
@@ -88,17 +88,11 @@ class NavigationPanel(wx.ScrolledWindow):
         el = evnt.element
         parent_id = el.get_parent_element().get_avoplot_id()
         if self.__el_id_mapping.has_key(parent_id):
-            node = self.tree.AppendItem(self.__el_id_mapping[parent_id], 
-                                        el.get_name(), data=wx.TreeItemData(el))
-            self.__el_id_mapping[el.get_avoplot_id()] = node
+            parent_node = self.__el_id_mapping[parent_id]
+            self._add_all_child_nodes(parent_node, el)
             
-            #add all the child elements as well
-            for c in el.get_child_elements():
-                if not self.__el_id_mapping.has_key(c.get_avoplot_id()):
-                    c_node = self.tree.AppendItem(node, 
-                                            c.get_name(), data=wx.TreeItemData(c))
-                    self.__el_id_mapping[c.get_avoplot_id()] = c_node
-    
+            self.tree.ExpandAllChildren(parent_node)
+
         
     def on_element_rename(self, evnt):
         el = evnt.element
@@ -107,6 +101,15 @@ class NavigationPanel(wx.ScrolledWindow):
             self.tree.SetItemText(tree_node, el.get_name())
         
             
+    def _add_all_child_nodes(self, parent_node, element):
+        
+        node = self.tree.AppendItem(parent_node, element.get_name(), 
+                                    data=wx.TreeItemData(element))
+        self.__el_id_mapping[element.get_avoplot_id()] = node
+        
+        for c in element.get_child_elements():
+            self._add_all_child_nodes(node, c)
+    
         
     def build_new_tree(self, fig):
         self.tree.DeleteAllItems()
@@ -123,4 +126,7 @@ class NavigationPanel(wx.ScrolledWindow):
                 data_node = self.tree.AppendItem(sbplt_node, data.get_name(), 
                                      data=wx.TreeItemData(data))
                 self.__el_id_mapping[data.get_avoplot_id()] = data_node
+
+
+
         
