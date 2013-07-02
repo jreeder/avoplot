@@ -71,10 +71,10 @@ class FigureControls(controls.AvoPlotControlPanelBase):
         self.Add(cs, 0 , wx.CENTER| wx.ALL, border=10)
         
         #add figure title controls
-        if mpl_fig._suptitle is not None:
-            title = mpl_fig._suptitle.get_text()
-        else:
-            title = ""
+        #TODO - if the figure already had a suptitle set, then this is going
+        #to ignore it. Need a way to access the current suptitle text from the 
+        #figure. My version of matplotlib doesn't seem to allow this.
+        title = ""
         
         ts = TextSetting(self, "Title:", title, self.on_suptitle_change)
         self.Add(ts, 0 , wx.CENTER| wx.ALL, border=10)
@@ -215,6 +215,9 @@ class AvoPlotFigure(core.AvoPlotElementBase, wx.ScrolledWindow):
     
     
     def save_figure_as_image(self):
-        self.tb.save_figure(None)
+        try:
+            self.tb.save_figure(None)
+        except NotImplementedError:
+            self.tb.save(None)
 
 

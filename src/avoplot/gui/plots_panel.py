@@ -168,3 +168,5 @@ class PlotsPanel(aui.AuiNotebook):
         self.Thaw()
        
         #self.notebook.UnSplit()
+        
+        

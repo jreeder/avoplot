@@ -75,10 +75,10 @@ class MainFrame(wx.Frame):
         self._mgr.Update()
 
         #register the event handlers
-        core.EVT_AVOPLOT_ELEM_SELECT(self, self.on_avoplot_event)
-        core.EVT_AVOPLOT_ELEM_ADD(self, self.on_avoplot_event)
-        core.EVT_AVOPLOT_ELEM_DELETE(self, self.on_avoplot_event)
-        core.EVT_AVOPLOT_ELEM_RENAME(self, self.on_avoplot_event)
+        self.Bind(core.EVT_AVOPLOT_ELEM_SELECT, self.on_avoplot_event)
+        self.Bind(core.EVT_AVOPLOT_ELEM_ADD, self.on_avoplot_event)
+        self.Bind(core.EVT_AVOPLOT_ELEM_RENAME, self.on_avoplot_event)
+        self.Bind(core.EVT_AVOPLOT_ELEM_DELETE, self.on_avoplot_event)
                        
         wx.EVT_CLOSE(self, self.on_close)
 
@@ -137,7 +137,9 @@ class MainFrame(wx.Frame):
 
         
     def on_close(self, *args):
-        #TODO - unregister handlers for selection changed events
+        #unregister handlers for selection changed events to prevent on_select
+        #handlers from attempting to access destroyed frames
+        self.Unbind(core.EVT_AVOPLOT_ELEM_SELECT)
         
         self.session.delete()
         
@@ -158,10 +160,3 @@ class MainFrame(wx.Frame):
         figure.set_parent_element(self.session)
         figure.set_selected()
   
-            
-
-        
-        
-        
-        
-        

@@ -32,7 +32,9 @@ __plotting_plugins = {}
 
 
 class PluginImportError(ImportError):
+    """Exception class for plugin import errors"""
     pass
+
 
 def is_plugin_gpl_compatible(plugin):
     """
@@ -49,10 +51,11 @@ def is_plugin_gpl_compatible(plugin):
     #get the path of the .py file that the plugin is defined in
     plugin_module = inspect.getmodule(plugin.__class__)
     
-    if hasattr(plugin_module,'plugin_is_GPL_compatible'):
+    if hasattr(plugin_module, 'plugin_is_GPL_compatible'):
         return plugin_module.plugin_is_GPL_compatible
 
     return False
+
 
 
 def register(plugin):
@@ -67,18 +70,22 @@ def register(plugin):
     
     #check plugin GPL compliance
     if not is_plugin_gpl_compatible(plugin):
-        raise PluginImportError("Failed to register plugin \'%s\'. Plugins must be "
-                           "GPL compatible. See the %s documentation for "
-                           "details."%(plugin.name, avoplot.PROG_SHORT_NAME))
+        raise PluginImportError("Failed to register plugin \'%s\'. Plugins must"
+                                " be GPL compatible. See the %s documentation "
+                                "for details." %(plugin.name,
+                                                 avoplot.PROG_SHORT_NAME))
     
     __plotting_plugins[plugin.name] = plugin
+    
     
 
 def get_plugin_install_path():
     """
-    Returns the path where plug-ins should be installed.
+    Returns the path where plug-ins should be installed. This will be the path
+    that this module is in.
     """
     return __path__[0]
+
 
 
 def get_plugins():
@@ -91,24 +98,27 @@ def get_plugins():
     return __plotting_plugins
 
 
+
 def load_plugin_from_file(filename):
     """
-    Loads a plugin from a file.
+    Loads a plugin from a file. This function is for loading plugins which 
+    have not been installed.
     """
     cur_dir = os.getcwd()
     os.chdir(os.path.dirname(filename))
     plugin = os.path.basename(filename)
     try:
-        __import__(plugin.rstrip(".py"), 
-                   globals=globals(), 
+        __import__(plugin.rstrip(".py"),
+                   globals=globals(),
                    locals=locals())
-    except Exception,e:
+    except Exception, e:
         #skip over any plugins that we cannot import
         warnings.warn('Failed to import plug-in \'%s\'. \n\nregister() '
-                      'raised the exception: \'%s\'.'%(plugin, e.args[0]))
+                      'raised the exception: \'%s\'.' % (plugin, e.args[0]))
     
     #return to the old working dir
     os.chdir(cur_dir)
+    
     
     
 def load_all_plugins():
@@ -128,21 +138,22 @@ def load_all_plugins():
     
     for plugin in plugin_list:
         try:
-            __import__("avoplot.plugins."+plugin.rstrip(".py"), 
-                       fromlist=["avoplot.plugins"], globals=globals(), 
+            __import__("avoplot.plugins." + plugin.rstrip(".py"),
+                       fromlist=["avoplot.plugins"], globals=globals(),
                        locals=locals())
-        except Exception,e:
+        except Exception, e:
             #skip over any plugins that we cannot import
             warnings.warn('Failed to import plug-in \'%s\'. \n\nregister() '
-                          'raised the exception: \'%s\'.'%(plugin, e.args[0]))
+                          'raised the exception: \'%s\'.' % (plugin, e.args[0]))
         
     #return to the old working dir
     os.chdir(cur_dir)
 
 
+
 class AvoPlotPluginBase(object):
     """
-    Base class for AvoPlot plugins. All plugins should inherit from this class.
+    Base class for AvoPlot plugins. 
     """
     def __init__(self, name, series_type):
         self.name = name
@@ -156,6 +167,7 @@ class AvoPlotPluginBase(object):
     def get_supported_series_type(self):
         return self.__supported_series_type
         
+        
     def get_controls(self):
         return self._controls
     
@@ -163,26 +175,15 @@ class AvoPlotPluginBase(object):
     def get_menu_entry_labels(self):
         return self._menu_entry_labels
     
+    
     def get_menu_entry_tooltip(self):
         return self._menu_entry_tooltip
+       
        
     def get_parent(self):
         return wx.GetApp().GetTopWindow() 
 
 
-
-class AvoPlotPluginSimple(AvoPlotPluginBase):
-    def __init__(self, name, series_type):
-        super(AvoPlotPluginSimple,self).__init__(name, series_type)
-        self._plots_in_single_axes = True
-    
-        #make sure that the derived class has defined the correct methods
-        if not hasattr(self, 'plot_into_subplot'):
-            raise RuntimeError("Plugins subclassed from AvoPlotPluginSimple "
-                               "must define a plot_into_subplot(subplot)"
-                               " method")
-        
-        
     def set_menu_entry(self, labels, tooltip):
         if type(labels) not in (list, tuple):
             raise TypeError("labels must be a list or tuple of strings")
@@ -193,15 +194,28 @@ class AvoPlotPluginSimple(AvoPlotPluginBase):
         
         self._menu_entry_labels = labels
         self._menu_entry_tooltip = tooltip
+
+
+
+class AvoPlotPluginSimple(AvoPlotPluginBase):
+    def __init__(self, name, series_type):
+        super(AvoPlotPluginSimple, self).__init__(name, series_type)
+        self._plots_in_single_axes = True
     
-    
+        #make sure that the derived class has defined the correct methods
+        if not hasattr(self, 'plot_into_subplot'):
+            raise RuntimeError("Plugins subclassed from AvoPlotPluginSimple "
+                               "must define a plot_into_subplot(subplot)"
+                               " method")
+        
+         
     def show_figure(self, fig, select=True):
         self.get_parent().add_figure(fig)
     
     
     def create_new(self, evnt):
         #create the new figure object
-        fig = AvoPlotFigure(self.get_parent(),"New Figure")
+        fig = AvoPlotFigure(self.get_parent(), "New Figure")
                 
         #figure out what type of subplot we need, based on what data
         #types the plugin supports
@@ -254,7 +268,7 @@ class AvoPlotPluginInstaller(install):
             self.prefix_option = None
             
         self.prefix = None
-        self.exec_prefix  = None
+        self.exec_prefix = None
         self.home = None
         self.install_base = None
         self.install_platbase = None
@@ -267,6 +281,7 @@ class AvoPlotPluginInstaller(install):
         
         install.finalize_options(self)
  
+
 
 def setup(*args, **kwargs):
     """
