@@ -50,7 +50,6 @@ class ControlPanel(aui.AuiNotebook):
     
     
     def on_element_delete(self, evnt):
-        print "ctrl panel on delete", evnt.element.get_name()
 
         el = evnt.element
 
@@ -61,7 +60,6 @@ class ControlPanel(aui.AuiNotebook):
     
     
     def on_element_select(self, evnt):
-        print "ctrl panel on select"
         el = evnt.element
         if el != self._current_element: 
             self.set_control_panels(el.get_control_panels())

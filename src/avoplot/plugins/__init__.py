@@ -198,6 +198,7 @@ class AvoPlotPluginBase(object):
 
 
 class AvoPlotPluginSimple(AvoPlotPluginBase):
+    """Base class for plugins only requiring a single subplot"""
     def __init__(self, name, series_type):
         super(AvoPlotPluginSimple, self).__init__(name, series_type)
         self._plots_in_single_axes = True
@@ -214,6 +215,11 @@ class AvoPlotPluginSimple(AvoPlotPluginBase):
     
     
     def create_new(self, evnt):
+        """
+        Generate a new figure object, put a subplot into it,
+        call plot_into_subplot() on the new subplot and then call
+        show_figure() to add the new figure to the main window.
+        """
         #create the new figure object
         fig = AvoPlotFigure(self.get_parent(), "New Figure")
                 

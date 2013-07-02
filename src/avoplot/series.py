@@ -129,7 +129,6 @@ class XYSeriesControls(controls.AvoPlotControlPanelBase):
         
         #add line colour controls
         line_col = matplotlib.colors.colorConverter.to_rgb(mpl_lines[0].get_color())
-        print line_col
         line_col = (255 * line_col[0], 255 * line_col[1], 255 * line_col[2])
         cs = ColourSetting(self, "Line:", line_col, 
                            self.on_line_colour_change)

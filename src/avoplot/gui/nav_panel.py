@@ -76,7 +76,6 @@ class NavigationPanel(wx.ScrolledWindow):
 
                
     def on_element_delete(self, evnt):
-        print "nav panel on delete",evnt.element.get_name()
 
         el = evnt.element
         if self.__el_id_mapping.has_key(el.get_avoplot_id()):
@@ -109,23 +108,7 @@ class NavigationPanel(wx.ScrolledWindow):
         
         for c in element.get_child_elements():
             self._add_all_child_nodes(node, c)
-    
-        
-    def build_new_tree(self, fig):
-        self.tree.DeleteAllItems()
 
-        root = self.tree.AddRoot(fig.get_name(), data=wx.TreeItemData(fig))
-        self.__el_id_mapping = {fig.get_avoplot_id():root}
-        
-        for subplot in fig.get_child_elements():
-            sbplt_node = self.tree.AppendItem(root, subplot.get_name(), 
-                                              data=wx.TreeItemData(subplot))
-            self.__el_id_mapping[subplot.get_avoplot_id()] = sbplt_node
-            
-            for data in subplot.get_child_elements():
-                data_node = self.tree.AppendItem(sbplt_node, data.get_name(), 
-                                     data=wx.TreeItemData(data))
-                self.__el_id_mapping[data.get_avoplot_id()] = data_node
 
 
 

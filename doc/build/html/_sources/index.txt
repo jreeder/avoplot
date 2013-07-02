@@ -13,6 +13,7 @@ Contents:
    :maxdepth: 2
      
    installation
+   writing_plugins
     
  
     

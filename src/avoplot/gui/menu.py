@@ -97,7 +97,6 @@ class MainMenu(wx.MenuBar):
         if isinstance(el, figure.AvoPlotFigure):
             self.__current_figure = el
             self.enable_figure_entries(True)
-            print "main menu - on element add enabled controls"
             self.__figure_count += 1
     
     def on_element_delete(self, evnt):

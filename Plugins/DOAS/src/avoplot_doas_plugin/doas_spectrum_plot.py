@@ -27,6 +27,7 @@ from doas.spectrum_loader import SpectrumIO, UnableToLoad
 
 plugin_is_GPL_compatible = True
 
+
 class DOASSpectrumSubplot(AvoPlotXYSubplot):
     def my_init(self):
         ax = self.get_mpl_axes()
@@ -53,7 +54,9 @@ class DOASSpectrumPlugin(AvoPlotPluginSimple):
         if spec is None:
             return False
         
-        data_series = DOASSpectrumData(os.path.basename(spec.filename),xdata=spec.wavelengths, ydata=spec.counts)
+        data_series = DOASSpectrumData(os.path.basename(spec.filename),
+                                       xdata=spec.wavelengths, 
+                                       ydata=spec.counts)
         
         subplot.add_data_series(data_series)
         
@@ -69,7 +72,8 @@ class DOASSpectrumPlugin(AvoPlotPluginSimple):
             last_path_used = ""
         
         #get filename to open
-        spectrum_file = wx.FileSelector("Choose spectrum file to open", default_path=last_path_used)
+        spectrum_file = wx.FileSelector("Choose spectrum file to open", 
+                                        default_path=last_path_used)
         if spectrum_file == "":
             return None
         
@@ -80,5 +84,7 @@ class DOASSpectrumPlugin(AvoPlotPluginSimple):
             return loader.load(spectrum_file)
         except Exception,e:
             print e.args
-            wx.MessageBox("Unable to load spectrum file \'%s\'. Unrecognised file format."%spectrum_file, "AvoPlot", wx.ICON_ERROR)
+            wx.MessageBox("Unable to load spectrum file \'%s\'. "
+                          "Unrecognised file format."%spectrum_file, 
+                          "AvoPlot", wx.ICON_ERROR)
             return False

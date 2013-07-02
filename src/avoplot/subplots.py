@@ -20,7 +20,6 @@ import re
 import avoplot.gui
 from avoplot import core
 from avoplot import controls
-#from avoplot import series
 import wx
 
 #TODO - document this! ensures that my_init() is only called once, after

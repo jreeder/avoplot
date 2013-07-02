@@ -1,3 +1,14 @@
 # Sphinx inventory version 1
 # Project: AvoPlot
 # Version: 0.0
+avoplot.plugins mod API.html
+avoplot.plugins.register function API.html
+avoplot.plugins.load_all_plugins function API.html
+avoplot.plugins.get_plugins function API.html
+avoplot.plugins.AvoPlotPluginInstaller.finalize_options method API.html
+avoplot.plugins.load_plugin_from_file function API.html
+avoplot.plugins.AvoPlotPluginInstaller class API.html
+avoplot.plugins.get_plugin_install_path function API.html
+avoplot.plugins.setup function API.html
+avoplot.plugins.is_plugin_gpl_compatible function API.html
+avoplot.plugins.AvoPlotPluginBase class API.html

@@ -52,14 +52,12 @@ class PlotsPanel(aui.AuiNotebook):
     
     
     def on_tab_change(self, evnt):
-        print "on tab change"
         idx = self.GetSelection()
         fig = self.GetPage(idx)
         fig.set_selected()
     
     
     def on_tab_close(self, evnt):
-        print "on tab close"
         #don't let the notebook actually close the tab, otherwise it will 
         #destroy the window as well
         evnt.Veto() 
@@ -96,8 +94,6 @@ class PlotsPanel(aui.AuiNotebook):
     
     
     def on_delete_element(self, evnt):
-        print "plots panel on delete",evnt.element.get_name()
-        #return
         el = evnt.element
         
         if isinstance(el, figure.AvoPlotFigure):

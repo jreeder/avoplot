@@ -1,0 +1,214 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Writing Plugins &mdash; AvoPlot v1 documentation</title>
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '#',
+        VERSION:     '1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/avoplot16.ico"/>
+    <link rel="top" title="AvoPlot v1 documentation" href="index.html" />
+    <link rel="next" title="API" href="API.html" />
+    <link rel="prev" title="Installation" href="installation.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="API.html" title="API"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Installation"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">AvoPlot v1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="#">Writing Plugins</a><ul>
+<li><a class="reference external" href="#a-simple-example">A simple example</a></li>
+<li><a class="reference external" href="#installing-your-plugin">Installing Your Plugin</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="installation.html"
+                                  title="previous chapter">Installation</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="API.html"
+                                  title="next chapter">API</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/writing_plugins.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="writing-plugins">
+<h1>Writing Plugins<a class="headerlink" href="#writing-plugins" title="Permalink to this headline">¶</a></h1>
+<p>The whole point of AvoPlot is to provide a plotting interface that can be easily extended to deal with specific types of data. To facilitate this, AvoPlot provides a plugin interface which allows end-users to create plugins that not only import data into AvoPlot, but also provide tools for manipulating it. Writing plugins for AvoPlot is relatively straightforward, but there are several steps that need to be followed. These are best explained by example.</p>
+<div class="section" id="a-simple-example">
+<h2>A simple example<a class="headerlink" href="#a-simple-example" title="Permalink to this headline">¶</a></h2>
+<p>As a simple example of writing a plugin, lets create a plugin that plots a sine wave. The complete plugin file for this example can be found in the &#8220;examples&#8221; folder of the AvoPlot package. The contents of the file looks like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">from</span> <span class="nn">avoplot</span> <span class="kn">import</span> <span class="n">plugins</span><span class="p">,</span> <span class="n">series</span>
+
+
+<span class="n">plugin_is_GPL_compatible</span> <span class="o">=</span> <span class="bp">True</span>
+
+
+<span class="k">class</span> <span class="nc">ExamplePlugin</span><span class="p">(</span><span class="n">plugins</span><span class="o">.</span><span class="n">AvoPlotPluginSimple</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">ExamplePlugin</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s">&quot;Example Plugin&quot;</span><span class="p">,</span>
+                                                <span class="n">series</span><span class="o">.</span><span class="n">XYDataSeries</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_menu_entry</span><span class="p">([</span><span class="s">&#39;Examples&#39;</span><span class="p">,</span><span class="s">&#39;Sine Wave&#39;</span><span class="p">],</span>
+                                <span class="s">&quot;Plot a sine wave&quot;</span><span class="p">)</span>
+
+
+        <span class="k">def</span> <span class="nf">plot_into_subplot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subplot</span><span class="p">):</span>
+
+            <span class="n">x_data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+            <span class="n">y_data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x_data</span><span class="p">)</span>
+
+            <span class="n">data_series</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">XYDataSeries</span><span class="p">(</span><span class="s">&quot;sine wave&quot;</span><span class="p">,</span> <span class="n">xdata</span><span class="o">=</span><span class="n">x_data</span><span class="p">,</span>
+                                              <span class="n">ydata</span><span class="o">=</span><span class="n">y_data</span><span class="p">)</span>
+
+            <span class="n">subplot</span><span class="o">.</span><span class="n">add_data_series</span><span class="p">(</span><span class="n">data_series</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="n">plugins</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">ExamplePlugin</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>Now lets go through that step by step.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">from</span> <span class="nn">avoplot</span> <span class="kn">import</span> <span class="n">plugins</span><span class="p">,</span> <span class="n">series</span>
+</pre></div>
+</div>
+<p>These lines just import the modules that we need for defining our plugin.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">plugin_is_GPL_compatible</span> <span class="o">=</span> <span class="bp">True</span>
+</pre></div>
+</div>
+<p>AvoPlot is licensed under the terms of the Gnu Public License (<a class="reference external" href="http://www.gnu.org/licenses/gpl.html">GPL</a>). A requirement of this license is that plugins for AvoPlot must be licensed in a <a class="reference external" href="http://www.gnu.org/licenses/gpl.html">GPL</a> compatible way (as discussed <a class="reference external" href="http://www.gnu.org/prep/standards/html_node/Dynamic-Plug_002dIn-Interfaces.html">here</a>). By including this line in your plugin source file you are indicating that your plugin is licensed in a GPL compatible way. If you don&#8217;t know what that means then take a look at the website for the <a class="reference external" href="http://www.gnu.org/licenses/gpl.html">GPL</a>. AvoPlot will not load your plugin if it does not include this line!</p>
+<div class="highlight-python"><pre>class ExamplePlugin(plugins.AvoPlotPluginSimple):</pre>
+</div>
+<p>AvoPlot plugins are just Python objects. Simple plugins that only require one subplot (set of axes) should inherit from <a href="#id1"><span class="problematic" id="id2">:py:class:`AvoPlotPluginSimple`</span></a>.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nb">super</span><span class="p">(</span><span class="n">ExamplePlugin</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s">&quot;Example Plugin&quot;</span><span class="p">,</span>
+                                    <span class="n">series</span><span class="o">.</span><span class="n">XYDataSeries</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If your plugin class defines and __init__ method, then you must call the __init__ method of the base class. You should pass it a descriptive name for your plugin, in this case &#8220;Example Plugin&#8221; and also the type of data series that your plugin is designed to work with - more on that later.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="bp">self</span><span class="o">.</span><span class="n">set_menu_entry</span><span class="p">([</span><span class="s">&#39;Examples&#39;</span><span class="p">,</span><span class="s">&#39;Sine Wave&#39;</span><span class="p">],</span>
+                    <span class="s">&quot;Plot a sine wave&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To get our plugin to show up in the AvoPlot menus, we need to call set_menu_entry. The first argument to this method, is a list of menu entries. The final entry in the list will be the menu entry for the plugin and the preceding entries will form submenus. So in the example above, we will get an &#8216;Examples&#8217; submenu with a &#8216;Sine Wave&#8217; entry. This allows us to group similar plugins together, for example if we wanted to create a cosine example as well then we might call set_menu_entry with [&#8216;Examples&#8217;, &#8216;Cosine Wave&#8217;]. This would result in an &#8216;Examples&#8217; submenu with &#8216;Sine Wave&#8217; and &#8216;Cosine Wave&#8217; entries. More nested menus can be created by simply extending the list e.g. [&#8216;Examples&#8217;, &#8216;Trig. Functions&#8217;, &#8216;Sine Wave&#8217;] etc. The second argument to set_menu_entry is the tooltip that will be displayed when the mouse is hovered over the menu entry.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">plot_into_subplot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subplot</span><span class="p">):</span>
+
+    <span class="n">x_data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+    <span class="n">y_data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x_data</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If your plugin inherits from <a href="#id3"><span class="problematic" id="id4">:py:class:`AvoPlotPluginSimple`</span></a> then this is the only other method that you have to define. The subplot argument that is passed to the method will be an AvoPlot subplot object. This method is the place to do all of your data loading/processing etc. Basically, eveything you need to do before your data gets plotted. In our example we simply create some arrays of values, but you are free to open dialogs to get the user to select files, perform complex operations etc etc.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">data_series</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">XYDataSeries</span><span class="p">(</span><span class="s">&quot;sine wave&quot;</span><span class="p">,</span> <span class="n">xdata</span><span class="o">=</span><span class="n">x_data</span><span class="p">,</span>
+                                  <span class="n">ydata</span><span class="o">=</span><span class="n">y_data</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Once we have our data, then we need to wrap it into a data series object. The first argument to the data series constructor is the name of the data that we are plotting.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">subplot</span><span class="o">.</span><span class="n">add_data_series</span><span class="p">(</span><span class="n">data_series</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This line actually plots the data into the subplot.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">return</span> <span class="bp">True</span>
+</pre></div>
+</div>
+<p>Finally, we should return True to tell AvoPlot that everything went ok with the plotting and that we want it to add our plot to the main window. If something goes wrong, and you decide at this point that you don&#8217;t want to plot anything (for example the user clicks cancel in you file select dialog) then you should return False.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">plugins</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">ExamplePlugin</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>This registers the plugin with AvoPlot so that it can be used. This function must be called on import of your plugin file/package and takes an instance of your plugin class as its only argument.</p>
+</div>
+<div class="section" id="installing-your-plugin">
+<h2>Installing Your Plugin<a class="headerlink" href="#installing-your-plugin" title="Permalink to this headline">¶</a></h2>
+<p>In order to use your plugins they will have to be installed. This is done in exactly the same way as you would for ordinary Python modules/packages, using <a class="reference external" href="http://docs.python.org/2/library/distutils.html">distutils</a>. However, there is one important difference! Instead of using the setup function provided by <a class="reference external" href="http://docs.python.org/2/library/distutils.html">distutils</a> you should use the one provided by the avoplot.plugins modules e.g.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">avoplot.plugins</span> <span class="kn">import</span> <span class="n">setup</span>
+</pre></div>
+</div>
+<p>This can be used in exactly the same way as the distutils setup function. See the example_plugin_setup.py file in the &#8220;examples&#8221; folder.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="API.html" title="API"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Installation"
+             >previous</a> |</li>
+        <li><a href="index.html">AvoPlot v1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2013, Nial Peters.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.5.
+    </div>
+  </body>
+</html>
