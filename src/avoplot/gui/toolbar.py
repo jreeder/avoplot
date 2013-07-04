@@ -37,7 +37,7 @@ class MainToolbar(wx.ToolBar):
         #plot navigation tools
         self.home_tool = self.AddTool(-1, wx.ArtProvider.GetBitmap(wx.ART_GO_HOME, wx.ART_TOOLBAR),shortHelpString="Return to initial zoom setting")
         self.zoom_tool = self.AddCheckTool(-1, load_matplotlib_bitmap('zoom_to_rect.png'), shortHelp="Zoom selection")
-        self.move_tool = self.AddCheckTool(-1, load_matplotlib_bitmap('move.png'),shortHelp='Pan',longHelp='Pan with left, zoom with right')
+        self.pan_tool = self.AddCheckTool(-1, load_matplotlib_bitmap('move.png'),shortHelp='Pan',longHelp='Pan with left, zoom with right')
         #self.follow_data_tool = self.AddCheckTool(-1, wx.ArtProvider.GetBitmap("avoplot_grid",wx.ART_TOOLBAR),shortHelp='Inspect the data values' )
         self.AddSeparator()
 
@@ -53,11 +53,11 @@ class MainToolbar(wx.ToolBar):
         core.EVT_AVOPLOT_ELEM_DELETE(self, self.on_element_delete)
         
         #register events
-        wx.EVT_TOOL(self.parent, new_tool.GetId(), self.onNew)
+        wx.EVT_TOOL(self.parent, new_tool.GetId(), self.on_new)
         wx.EVT_TOOL(self.parent, self.save_tool.GetId(), self.on_save_plot)        
         wx.EVT_TOOL(self.parent, self.home_tool.GetId(), self.on_home)
         wx.EVT_TOOL(self.parent, self.zoom_tool.GetId(), self.on_zoom)
-        wx.EVT_TOOL(self.parent, self.move_tool.GetId(), self.on_move)
+        wx.EVT_TOOL(self.parent, self.pan_tool.GetId(), self.on_pan)
         #wx.EVT_TOOL(self.parent, self.follow_data_tool.GetId(), self.on_follow_data)
         #wx.EVT_TOOL(self.parent, self.grid_tool.GetId(), self.onGrid)
    
@@ -67,6 +67,14 @@ class MainToolbar(wx.ToolBar):
         if isinstance(el, figure.AvoPlotFigure):
             if not self.__all_figures:
                 self.enable_plot_tools(True)
+            
+            #enable the zoom/pan tools for this figure (if they are currently
+            #selected in the toolbar)
+            if self.GetToolState(self.pan_tool.GetId()):
+                el.pan()
+            elif self.GetToolState(self.zoom_tool.GetId()):
+                el.zoom()
+            
             self.__all_figures.add(el)
     
     
@@ -88,12 +96,12 @@ class MainToolbar(wx.ToolBar):
     def enable_plot_tools(self, state):
         self.EnableTool(self.save_tool.GetId(),state)
         self.EnableTool(self.home_tool.GetId(),state)
-        self.EnableTool(self.move_tool.GetId(),state)
+        self.EnableTool(self.pan_tool.GetId(),state)
         self.EnableTool(self.zoom_tool.GetId(),state)
         #self.EnableTool(self.grid_tool.GetId(),state)
    
     
-    def onNew(self,evnt):
+    def on_new(self,evnt):
         """Handle menu button pressed."""
         x, y = self.GetPositionTuple()
         w, h = self.GetSizeTuple()
@@ -106,12 +114,12 @@ class MainToolbar(wx.ToolBar):
  
     
     def on_zoom(self,evnt):
-        self.ToggleTool(self.move_tool.GetId(),False) 
+        self.ToggleTool(self.pan_tool.GetId(),False) 
         for p in self.__all_figures:
             p.zoom()
 
    
-    def on_move(self,evnt):
+    def on_pan(self,evnt):
         self.ToggleTool(self.zoom_tool.GetId(),False) 
         for p in self.__all_figures:
             p.pan()
@@ -120,11 +128,6 @@ class MainToolbar(wx.ToolBar):
     def on_save_plot(self, *args):
         if self.__active_figure is not None:
             self.__active_figure.save_figure_as_image()
-#    def onGrid(self, evnt):     
-#        gridstate = self.GetToolState(self.grid_tool.GetId())
-#        p = self.parent.get_active_plot()
-#        if p is not None:
-#            p.gridlines(gridstate)
        
             
     def on_follow_data(self, evnt):

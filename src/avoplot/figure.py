@@ -21,35 +21,11 @@ import wx
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 from matplotlib.backends.backend_wx import NavigationToolbar2Wx
 from matplotlib.figure import Figure
-
+import matplotlib.colors
 from avoplot import core
 from avoplot import controls
-
-
-class ColourSetting(wx.BoxSizer):
-    def __init__(self, parent, label, default_colour, callback):
-        wx.BoxSizer.__init__(self, wx.HORIZONTAL)
-        text = wx.StaticText(parent, -1, label)
-        self.Add(text, 0, wx.ALIGN_CENTRE_VERTICAL|wx.ALIGN_LEFT)
-        
-        cp = wx.ColourPickerCtrl(parent, -1, default_colour)
-        self.Add(cp, 0 , wx.ALIGN_CENTRE_VERTICAL|wx.ALIGN_LEFT)
-        wx.EVT_COLOURPICKER_CHANGED(parent,cp.GetId(), callback)
-
-
-class TextSetting(wx.BoxSizer):
-    def __init__(self, parent, label, default_text, callback):
-        wx.BoxSizer.__init__(self, wx.HORIZONTAL)
-        text = wx.StaticText(parent, -1, label)
-        self.Add(text, 0, wx.ALIGN_CENTRE_VERTICAL|wx.ALIGN_LEFT)
-        
-        self.tc = wx.TextCtrl(parent, -1, value=default_text, 
-                              style=wx.TE_PROCESS_ENTER)
-        wx.EVT_TEXT(parent, self.tc.GetId(), callback)
-        self.Add(self.tc, 0, wx.EXPAND)
-        
-        
-        
+from avoplot.gui import widgets
+       
 
 class FigureControls(controls.AvoPlotControlPanelBase):
     def __init__(self, figure):
@@ -65,10 +41,11 @@ class FigureControls(controls.AvoPlotControlPanelBase):
         
         #add background colour controls
         bkgd_col = mpl_fig.get_facecolor()
+        bkgd_col = matplotlib.colors.colorConverter.to_rgb(bkgd_col)
         bkgd_col = (255 * bkgd_col[0], 255 * bkgd_col[1], 255 * bkgd_col[2])
-        cs = ColourSetting(self, "Background:", bkgd_col, 
+        cs = widgets.ColourSetting(self, "Background:", bkgd_col, 
                            self.on_bkgd_colour_change)
-        self.Add(cs, 0 , wx.CENTER| wx.ALL, border=10)
+        self.Add(cs, 0 , wx.ALIGN_LEFT| wx.ALL, border=10)
         
         #add figure title controls
         #TODO - if the figure already had a suptitle set, then this is going
@@ -76,8 +53,8 @@ class FigureControls(controls.AvoPlotControlPanelBase):
         #figure. My version of matplotlib doesn't seem to allow this.
         title = ""
         
-        ts = TextSetting(self, "Title:", title, self.on_suptitle_change)
-        self.Add(ts, 0 , wx.CENTER| wx.ALL, border=10)
+        ts = widgets.TextSetting(self, "Title:", title, self.on_suptitle_change)
+        self.Add(ts, 0 , wx.ALIGN_LEFT|wx.EXPAND|wx.ALL, border=10)
         
     
     

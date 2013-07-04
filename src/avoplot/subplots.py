@@ -16,8 +16,10 @@
 #along with AvoPlot.  If not, see <http://www.gnu.org/licenses/>.
 
 from avoplot.figure import AvoPlotFigure
+import matplotlib.colors
 import re
 import avoplot.gui
+from avoplot.gui import widgets
 from avoplot import core
 from avoplot import controls
 import wx
@@ -117,15 +119,56 @@ class XYSubplotControls(controls.AvoPlotControlPanelBase):
         super(XYSubplotControls, self).setup(parent)
         
         grid = wx.CheckBox(self, -1, "Gridlines")
-        self.Add(grid, 0, wx.ALIGN_CENTER_HORIZONTAL)
+        #TODO - if the axes already has a grid then this will ignore that
+        self.Add(grid, 0, wx.ALIGN_LEFT|wx.ALL, border=10)
         wx.EVT_CHECKBOX(self, grid.GetId(), self.on_grid)
+        
+        ax = self.subplot.get_mpl_axes()
+        bkgd_col = ax.get_axis_bgcolor()
+        bkgd_col = matplotlib.colors.colorConverter.to_rgb(bkgd_col)
+        bkgd_col = (255 * bkgd_col[0], 255 * bkgd_col[1], 255 * bkgd_col[2])
+        colour = widgets.ColourSetting(self, 'Background', bkgd_col,
+                                       self.on_bkgd_colour)
+        self.Add(colour, 0, wx.ALIGN_LEFT|wx.EXPAND|wx.ALL, border=10) 
+        
+        title = widgets.TextSetting(self, 'Subplot title:', ax.get_title(), 
+                                     self.on_title)  
+        self.Add(title, 0, wx.ALIGN_LEFT|wx.EXPAND|wx.ALL, border=10) 
+        
+        xlabel = widgets.TextSetting(self, 'x-axis title:', ax.get_xlabel(), 
+                                     self.on_xlabel)        
+        self.Add(xlabel, 0, wx.ALIGN_LEFT|wx.EXPAND|wx.ALL, border=10)
+        
+        ylabel = widgets.TextSetting(self, 'y-axis title:', ax.get_ylabel(), 
+                                     self.on_ylabel)        
+        self.Add(ylabel, 0, wx.ALIGN_LEFT|wx.EXPAND|wx.ALL, border=10)
     
     
     def on_grid(self, evnt):
         ax = self.subplot.get_mpl_axes()
         ax.grid(b=evnt.IsChecked())
         ax.figure.canvas.draw()
+    
+    def on_title(self, evnt):
+        ax = self.subplot.get_mpl_axes()
+        ax.set_title(evnt.GetString())
+        ax.figure.canvas.draw()
         
+    def on_xlabel(self, evnt):
+        ax = self.subplot.get_mpl_axes()
+        ax.set_xlabel(evnt.GetString())
+        ax.figure.canvas.draw()
+    
+    def on_ylabel(self, evnt):
+        ax = self.subplot.get_mpl_axes()
+        ax.set_ylabel(evnt.GetString())
+        ax.figure.canvas.draw()
+    
+    def on_bkgd_colour(self, evnt):
+        ax = self.subplot.get_mpl_axes()
+        ax.set_axis_bgcolor(evnt.GetColour().GetAsString(wx.C2S_HTML_SYNTAX))
+        ax.figure.canvas.draw()
+            
     
         
         

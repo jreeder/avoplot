@@ -18,16 +18,9 @@ import matplotlib.colors
 from avoplot.subplots import AvoPlotSubplotBase,AvoPlotXYSubplot
 from avoplot import controls
 from avoplot import core
+from avoplot.gui import widgets
 import wx
-class ColourSetting(wx.BoxSizer):
-    def __init__(self, parent, label, default_colour, callback):
-        wx.BoxSizer.__init__(self, wx.HORIZONTAL)
-        text = wx.StaticText(parent, -1, label)
-        self.Add(text, 0, wx.ALIGN_CENTRE_VERTICAL|wx.ALIGN_LEFT)
-        
-        cp = wx.ColourPickerCtrl(parent, -1, default_colour)
-        self.Add(cp, 0 , wx.ALIGN_CENTRE_VERTICAL|wx.ALIGN_LEFT)
-        wx.EVT_COLOURPICKER_CHANGED(parent,cp.GetId(), callback)
+
 
 
 class DataSeriesBase(core.AvoPlotElementBase):
@@ -127,20 +120,53 @@ class XYSeriesControls(controls.AvoPlotControlPanelBase):
         super(XYSeriesControls, self).setup(parent)
         mpl_lines = self.series.get_mpl_lines()
         
-        #add line colour controls
+        #add line controls
+        linestyle = widgets.ChoiceSetting(self, 'Line:',mpl_lines[0].get_linestyle(),
+                                       ['None', '-','--', '-.',':'], self.on_linestyle )
+        
         line_col = matplotlib.colors.colorConverter.to_rgb(mpl_lines[0].get_color())
         line_col = (255 * line_col[0], 255 * line_col[1], 255 * line_col[2])
-        cs = ColourSetting(self, "Line:", line_col, 
+        cs = widgets.ColourSetting(self, "", line_col, 
                            self.on_line_colour_change)
-        self.Add(cs, 0 , wx.CENTER| wx.ALL, border=10)
+        linestyle.Add(cs, 0 , wx.ALIGN_LEFT| wx.ALL, border=10)
+        self.Add(linestyle, 0 , wx.ALIGN_LEFT| wx.ALL, border=10)
         
+        
+        marker = widgets.ChoiceSetting(self, 'Marker:',mpl_lines[0].get_marker(),
+                                       ['None', '.','+','x'], self.on_marker )
+        
+        prev_col = matplotlib.colors.colorConverter.to_rgb(mpl_lines[0].get_markeredgecolor())
+        prev_col = (255 * prev_col[0], 255 * prev_col[1], 255 * prev_col[2])
+        marker_col = widgets.ColourSetting(self, "", prev_col, 
+                                           self.on_marker_colour)
+        
+        marker.Add(marker_col, wx.ALIGN_LEFT|wx.ALL, border=10)
+        self.Add(marker, 0 , wx.ALIGN_LEFT| wx.ALL, border=10)
+    
+    
+    def on_marker_colour(self, evnt):
+        l, = self.series.get_mpl_lines()
+        l.set_markeredgecolor(evnt.GetColour().GetAsString(wx.C2S_HTML_SYNTAX))
+        l.axes.figure.canvas.draw()
+    
+    
+    def on_marker(self, evnt):
+        l, = self.series.get_mpl_lines()
+        l.set_marker(evnt.GetString())
+        l.axes.figure.canvas.draw()
+    
     
     def on_line_colour_change(self, evnt):
         l, = self.series.get_mpl_lines()
         l.set_color(evnt.GetColour().GetAsString(wx.C2S_HTML_SYNTAX))
         l.axes.figure.canvas.draw()
         
-        
+    
+    def on_linestyle(self, evnt):
+        l, = self.series.get_mpl_lines()
+        l.set_linestyle(evnt.GetString())
+        l.axes.figure.canvas.draw()    
+    
     
     def on_suptitle_change(self, evnt):
         fig = self.figure.get_mpl_figure()
