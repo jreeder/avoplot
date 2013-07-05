@@ -52,7 +52,7 @@ class MainFrame(wx.Frame):
         
         #create the menus
         self.menu = menu.MainMenu(self)
-        self.SetMenuBar(menu.MainMenu(self))
+        self.SetMenuBar(self.menu)
         
         #create the toolbar
         self.toolbar = toolbar.MainToolbar(self)
@@ -79,7 +79,10 @@ class MainFrame(wx.Frame):
         self.Bind(core.EVT_AVOPLOT_ELEM_ADD, self.on_avoplot_event)
         self.Bind(core.EVT_AVOPLOT_ELEM_RENAME, self.on_avoplot_event)
         self.Bind(core.EVT_AVOPLOT_ELEM_DELETE, self.on_avoplot_event)
-                       
+        
+        menu.EVT_AVOPLOT_CTRL_PANEL_STATE(self, self.on_show_ctrl_panel)               
+        aui.EVT_AUI_PANE_CLOSE(self, self.on_pane_close)
+        #aui.EVT_AUI_PANE_RESTORE(self, self.on_pane_restore)
         wx.EVT_CLOSE(self, self.on_close)
 
         
@@ -105,12 +108,21 @@ class MainFrame(wx.Frame):
         self.Show()
     
     
-    def show_ctrl_panel(self, val):
+
+    def on_pane_close(self, evnt):
+        p = evnt.GetPane()
+        
+        if p == self.ctrl_panel:
+            evt = menu.AvoPlotCtrlPanelChangeState(state=False) #TODO
+            wx.PostEvent(self.menu, evt)
+    
+    
+    def on_show_ctrl_panel(self, evnt):
         """
         if val is True then shows the control panel, otherwise hides it
         """
         p = self._mgr.GetPane(self.ctrl_panel)    
-        p.Show(val)
+        p.Show(evnt.state)
         self._mgr.Update()
         
         
@@ -159,4 +171,5 @@ class MainFrame(wx.Frame):
         figure.set_status_bar(self.statbar)
         figure.set_parent_element(self.session)
         figure.set_selected()
+
   

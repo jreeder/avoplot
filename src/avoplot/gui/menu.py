@@ -15,11 +15,15 @@
 #You should have received a copy of the GNU General Public License
 #along with AvoPlot.  If not, see <http://www.gnu.org/licenses/>.
 import wx
+from wx import aui
 import os.path
 import avoplot
 import avoplot.plugins
 from avoplot import core
 from avoplot import figure
+
+AvoPlotCtrlPanelChangeState, EVT_AVOPLOT_CTRL_PANEL_STATE = wx.lib.newevent.NewEvent()
+AvoPlotNavPanelChangeState, EVT_AVOPLOT_NAV_PANEL_STATE = wx.lib.newevent.NewEvent()
 
 #TODO - add keyboard shortcuts
 
@@ -77,19 +81,20 @@ class MainMenu(wx.MenuBar):
         self.create_file_menu()
         self.create_view_menu()
         self.create_help_menu()
-        
-        #self.enable_figure_entries(False)
+        self.enable_figure_entries(False)
         
         core.EVT_AVOPLOT_ELEM_ADD(self, self.on_element_add)
         core.EVT_AVOPLOT_ELEM_DELETE(self, self.on_element_delete)
         core.EVT_AVOPLOT_ELEM_SELECT(self, self.on_element_select)
-        
+    
+    
     
     def on_element_select(self, evnt):
         el = evnt.element
+
         if isinstance(el, figure.AvoPlotFigure):
-            self.__current_figure = el
-            
+            self.__current_figure = el 
+    
     
     def on_element_add(self, evnt):
         el = evnt.element
@@ -98,6 +103,7 @@ class MainMenu(wx.MenuBar):
             self.__current_figure = el
             self.enable_figure_entries(True)
             self.__figure_count += 1
+    
     
     def on_element_delete(self, evnt):
         el = evnt.element
@@ -111,7 +117,6 @@ class MainMenu(wx.MenuBar):
                 self.enable_figure_entries(False)
         
         
-    
     def enable_figure_entries(self, val):
 
         self.save_data_entry.Enable(enable=val)
@@ -170,7 +175,12 @@ class MainMenu(wx.MenuBar):
         
     
     def on_save_plot(self, evnt):
-        print "on_save_plot"
+        print "on save",self.__current_figure
+        print self.__current_figure
+        if self.__current_figure is not None:
+            self.__current_figure.save_figure_as_image()
+        
+        
     def create_help_menu(self):
         help_menu = wx.Menu()
         
@@ -194,23 +204,33 @@ class MainMenu(wx.MenuBar):
         
         view_menu.AppendSeparator()
         
-        ctrl_panel = view_menu.AppendCheckItem(-1,"Control Panel", 
+        self.ctrl_panel = view_menu.AppendCheckItem(-1,"Control Panel", 
                                                'Show or hide the plot controls')
         
-        nav_panel = view_menu.AppendCheckItem(-1,"Navigation Panel", 
+        self.nav_panel = view_menu.AppendCheckItem(-1,"Navigation Panel", 
                                               'Show or hide the plot '
                                               'navigation panel')
         
         wx.EVT_MENU(self.parent, h_split.GetId(), self.parent.plots_panel.split_figure_horiz)
         wx.EVT_MENU(self.parent, v_split.GetId(), self.parent.plots_panel.split_figure_vert)
         wx.EVT_MENU(self.parent, unsplit.GetId(), self.parent.plots_panel.unsplit_panes)
-        wx.EVT_MENU(self.parent, ctrl_panel.GetId(), self.on_show_ctrl_panel)
-        wx.EVT_MENU(self.parent, nav_panel.GetId(), self.on_show_nav_panel)
+        wx.EVT_MENU(self.parent, self.ctrl_panel.GetId(), self.on_show_ctrl_panel)
+        wx.EVT_MENU(self.parent, self.nav_panel.GetId(), self.on_show_nav_panel)
+        
+        EVT_AVOPLOT_CTRL_PANEL_STATE(self, self.on_ctrl_panel_change_state)
+        #EVT_AVOPLOT_NAV_PANEL_STATE(self, self.on_nav_panel_change_state)
+        
         self.Append(view_menu, '&View')
     
     
     def on_show_ctrl_panel(self, evnt):
-        self.parent.show_ctrl_panel(evnt.Checked())
+        evt = AvoPlotCtrlPanelChangeState(state=evnt.Checked())
+        wx.PostEvent(self.parent, evt)
+    
+    
+    def on_ctrl_panel_change_state(self, evnt):
+        self.ctrl_panel.Check(evnt.state)
+        
     
     def on_show_nav_panel(self, evnt):
         self.parent.show_nav_panel(evnt.Checked())

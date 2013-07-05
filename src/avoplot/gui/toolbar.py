@@ -126,6 +126,7 @@ class MainToolbar(wx.ToolBar):
 
     
     def on_save_plot(self, *args):
+
         if self.__active_figure is not None:
             self.__active_figure.save_figure_as_image()
        
