@@ -66,11 +66,20 @@ class MainFrame(wx.Frame):
         self.SetStatusBar(self.statbar)
         
         #put the various panes into the manager
-        #TODO - update visibility based on persistent setting
-        #TODO - need to update menu if panel is closed.
-        self._mgr.AddPane(self.ctrl_panel, wx.LEFT, 'Control Panel')
-        self._mgr.AddPane(self.nav_panel, wx.LEFT | wx.TOP, 'Navigation Panel')
-        self._mgr.AddPane(self.plots_panel, wx.CENTER)
+        self._mgr.AddPane(self.ctrl_panel, aui.AuiPaneInfo().Bottom().Left().Caption('Control Panel').Name('ctrl_panel'))
+        self._mgr.AddPane(self.nav_panel, aui.AuiPaneInfo().Top().Left().Caption('Navigation Panel').Name('nav_panel'))
+        self._mgr.AddPane(self.plots_panel, aui.AuiPaneInfo().Center().Name('plt_panel').CloseButton(False).CaptionVisible(False).Floatable(False).Dockable(False))
+        
+        #try to load the last manager setup
+        try:
+            state = self.persistant.get_value('manager_state')
+            self._mgr.LoadPerspective(state, update=False)
+        except KeyError:
+            pass
+        
+        #default to showing all the panes
+        for p in self._mgr.GetAllPanes():
+            p.Show(True)
         
         self._mgr.Update()
 
@@ -89,7 +98,7 @@ class MainFrame(wx.Frame):
         #see what size the frame was in the last session
         try:
             old_size = self.persistant.get_value('main_frame_size')            
-            min_size = wx.Size(500,500) #TODO - come up with a good val for this
+            min_size = wx.Size(500,500) #don't restore the old size if it is too small
             
             size = (max(min_size[0], old_size[0]), 
                     max(min_size[1], old_size[1]))
@@ -111,9 +120,11 @@ class MainFrame(wx.Frame):
 
     def on_pane_close(self, evnt):
         p = evnt.GetPane()
-        
-        if p == self.ctrl_panel:
-            evt = menu.AvoPlotCtrlPanelChangeState(state=False) #TODO
+        if p.caption == "Control Panel":
+            evt = menu.AvoPlotCtrlPanelChangeState(state=False)
+            wx.PostEvent(self.menu, evt)
+        elif p.caption == "Navigation Panel":
+            evt = menu.AvoPlotNavPanelChangeState(state=False)
             wx.PostEvent(self.menu, evt)
     
     
@@ -160,7 +171,12 @@ class MainFrame(wx.Frame):
         
         if not self.IsMaximized():
             self.persistant.set_value('main_frame_size', self.GetSize())
-
+        
+        
+        #save the state of the manager so that the panels will restore to 
+        #the same size etc.
+        self.persistant.set_value('manager_state', self._mgr.SavePerspective())
+        
         self._mgr.UnInit()
 
         self.Destroy()

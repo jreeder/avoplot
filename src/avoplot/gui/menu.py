@@ -81,7 +81,6 @@ class MainMenu(wx.MenuBar):
         self.create_file_menu()
         self.create_view_menu()
         self.create_help_menu()
-        self.enable_figure_entries(False)
         
         core.EVT_AVOPLOT_ELEM_ADD(self, self.on_element_add)
         core.EVT_AVOPLOT_ELEM_DELETE(self, self.on_element_delete)
@@ -101,8 +100,14 @@ class MainMenu(wx.MenuBar):
         
         if isinstance(el, figure.AvoPlotFigure):
             self.__current_figure = el
-            self.enable_figure_entries(True)
+            self.save_data_entry.Enable(enable=True)
+            self.save_plot_entry.Enable(enable=True)
             self.__figure_count += 1
+        
+        if self.__figure_count > 1:
+            self.h_split.Enable(enable=True)
+            self.v_split.Enable(enable=True)
+            self.unsplit.Enable(enable=True)
     
     
     def on_element_delete(self, evnt):
@@ -114,13 +119,13 @@ class MainMenu(wx.MenuBar):
             self.__figure_count -= 1
             
             if not self.__figure_count:
-                self.enable_figure_entries(False)
-        
-        
-    def enable_figure_entries(self, val):
-
-        self.save_data_entry.Enable(enable=val)
-        self.save_plot_entry.Enable(enable=val)
+                self.save_data_entry.Enable(enable=False)
+                self.save_plot_entry.Enable(enable=False)
+            
+            if self.__figure_count < 2:
+                self.h_split.Enable(enable=False)
+                self.v_split.Enable(enable=False)
+                self.unsplit.Enable(enable=False)
         
                         
     def create_file_menu(self):
@@ -163,7 +168,10 @@ class MainMenu(wx.MenuBar):
                                      "plot data.")
         self.save_plot_entry = file_menu.Append(wx.ID_SAVE, "&Save Plot", "Save the "
                                      "current plot.")
-
+        
+        self.save_data_entry.Enable(enable=False)
+        self.save_plot_entry.Enable(enable=False)
+        
         exit = file_menu.Append(wx.ID_EXIT, "&Exit", "Exit AvoPlot.")
         
         #register the event handlers
@@ -175,8 +183,6 @@ class MainMenu(wx.MenuBar):
         
     
     def on_save_plot(self, evnt):
-        print "on save",self.__current_figure
-        print self.__current_figure
         if self.__current_figure is not None:
             self.__current_figure.save_figure_as_image()
         
@@ -195,30 +201,35 @@ class MainMenu(wx.MenuBar):
     
     def create_view_menu(self):
         view_menu = wx.Menu()
-        h_split = view_menu.Append(-1, "Split &Horizontal", "Split the current"
+        self.h_split = view_menu.Append(-1, "Split &Horizontal", "Split the current"
                                    " plot into a new pane")
-        v_split = view_menu.Append(-1, "Split &Vertical", "Split the current"
+        self.v_split = view_menu.Append(-1, "Split &Vertical", "Split the current"
                                    " plot into a new pane")
-        unsplit = view_menu.Append(-1, "&Unsplit", "Collapse all tabs into a "
+        self.unsplit = view_menu.Append(-1, "&Unsplit", "Collapse all tabs into a "
                                    "single pane")
+        self.h_split.Enable(enable=False)
+        self.v_split.Enable(enable=False)
+        self.unsplit.Enable(enable=False)
         
         view_menu.AppendSeparator()
         
         self.ctrl_panel = view_menu.AppendCheckItem(-1,"Control Panel", 
                                                'Show or hide the plot controls')
+        view_menu.Check(self.ctrl_panel.GetId(), True)
         
         self.nav_panel = view_menu.AppendCheckItem(-1,"Navigation Panel", 
                                               'Show or hide the plot '
                                               'navigation panel')
+        view_menu.Check(self.nav_panel.GetId(), True)
         
-        wx.EVT_MENU(self.parent, h_split.GetId(), self.parent.plots_panel.split_figure_horiz)
-        wx.EVT_MENU(self.parent, v_split.GetId(), self.parent.plots_panel.split_figure_vert)
-        wx.EVT_MENU(self.parent, unsplit.GetId(), self.parent.plots_panel.unsplit_panes)
+        wx.EVT_MENU(self.parent, self.h_split.GetId(), self.parent.plots_panel.split_figure_horiz)
+        wx.EVT_MENU(self.parent, self.v_split.GetId(), self.parent.plots_panel.split_figure_vert)
+        wx.EVT_MENU(self.parent, self.unsplit.GetId(), self.parent.plots_panel.unsplit_panes)
         wx.EVT_MENU(self.parent, self.ctrl_panel.GetId(), self.on_show_ctrl_panel)
         wx.EVT_MENU(self.parent, self.nav_panel.GetId(), self.on_show_nav_panel)
         
         EVT_AVOPLOT_CTRL_PANEL_STATE(self, self.on_ctrl_panel_change_state)
-        #EVT_AVOPLOT_NAV_PANEL_STATE(self, self.on_nav_panel_change_state)
+        EVT_AVOPLOT_NAV_PANEL_STATE(self, self.on_nav_panel_change_state)
         
         self.Append(view_menu, '&View')
     
@@ -234,6 +245,9 @@ class MainMenu(wx.MenuBar):
     
     def on_show_nav_panel(self, evnt):
         self.parent.show_nav_panel(evnt.Checked())
+    
+    def on_nav_panel_change_state(self, evnt):
+        self.nav_panel.Check(evnt.state)
         
     def onAbout(self, evnt):       
         about_info = wx.AboutDialogInfo()

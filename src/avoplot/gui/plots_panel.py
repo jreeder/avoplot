@@ -37,18 +37,17 @@ class PlotsPanel(aui.AuiNotebook):
         core.EVT_AVOPLOT_ELEM_RENAME(self, self.on_rename_element)        
         
         #register wx event handlers
-        aui.EVT_AUINOTEBOOK_PAGE_CLOSE(self, self.GetId(), 
-                                       self.on_tab_close)
-        aui.EVT_AUINOTEBOOK_PAGE_CHANGED(self, self.GetId(), 
-                                         self.on_tab_change)
+        self.Bind(aui.EVT_AUINOTEBOOK_PAGE_CLOSE, self.on_tab_close)
+        self.Bind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.on_tab_change)
+
         
         try:
-            aui.EVT_AUINOTEBOOK_TAB_RIGHT_DOWN(self, self.GetId(), 
-                                               self.on_tab_right_click)
+            self.Bind(aui.EVT_AUINOTEBOOK_TAB_RIGHT_DOWN, 
+                      self.on_tab_right_click)
         except AttributeError:
             #new version of wx has renamed this for some reason!
-            aui.EVT__AUINOTEBOOK_TAB_RIGHT_DOWN(self, self.GetId(), 
-                                                self.on_tab_right_click)
+            self.Bind(aui.EVT__AUINOTEBOOK_TAB_RIGHT_DOWN, 
+                      self.on_tab_right_click)
     
     
     def on_tab_change(self, evnt):
@@ -140,6 +139,10 @@ class PlotsPanel(aui.AuiNotebook):
         
         
     def unsplit_panes(self, *args):
+        #need to unbind the tab change handler - otherwise get stuck in an 
+        #infinite event loop
+        self.Unbind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED)
+        
         self.Freeze()
 
         # remember the tab now selected
@@ -162,7 +165,7 @@ class PlotsPanel(aui.AuiNotebook):
         self.SetSelection(nowSelected)
 
         self.Thaw()
-       
-        #self.notebook.UnSplit()
+        
+        self.Bind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.on_tab_change)
         
         
