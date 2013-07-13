@@ -89,7 +89,9 @@ class MainFrame(wx.Frame):
         self.Bind(core.EVT_AVOPLOT_ELEM_RENAME, self.on_avoplot_event)
         self.Bind(core.EVT_AVOPLOT_ELEM_DELETE, self.on_avoplot_event)
         
-        menu.EVT_AVOPLOT_CTRL_PANEL_STATE(self, self.on_show_ctrl_panel)               
+        menu.EVT_AVOPLOT_CTRL_PANEL_STATE(self, self.on_show_ctrl_panel)
+        menu.EVT_AVOPLOT_NAV_PANEL_STATE(self, self.on_show_nav_panel)  
+                    
         aui.EVT_AUI_PANE_CLOSE(self, self.on_pane_close)
         #aui.EVT_AUI_PANE_RESTORE(self, self.on_pane_restore)
         wx.EVT_CLOSE(self, self.on_close)
@@ -129,20 +131,14 @@ class MainFrame(wx.Frame):
     
     
     def on_show_ctrl_panel(self, evnt):
-        """
-        if val is True then shows the control panel, otherwise hides it
-        """
         p = self._mgr.GetPane(self.ctrl_panel)    
         p.Show(evnt.state)
         self._mgr.Update()
         
         
-    def show_nav_panel(self, val):
-        """
-        if val is True then shows the navigation panel, otherwise hides it
-        """
+    def on_show_nav_panel(self, evnt):
         p = self._mgr.GetPane(self.nav_panel)    
-        p.Show(val)
+        p.Show(evnt.state)
         self._mgr.Update()
     
     

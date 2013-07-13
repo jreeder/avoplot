@@ -244,10 +244,13 @@ class MainMenu(wx.MenuBar):
         
     
     def on_show_nav_panel(self, evnt):
-        self.parent.show_nav_panel(evnt.Checked())
+        evt = AvoPlotNavPanelChangeState(state=evnt.Checked())
+        wx.PostEvent(self.parent, evt)
+    
     
     def on_nav_panel_change_state(self, evnt):
         self.nav_panel.Check(evnt.state)
+        
         
     def onAbout(self, evnt):       
         about_info = wx.AboutDialogInfo()
