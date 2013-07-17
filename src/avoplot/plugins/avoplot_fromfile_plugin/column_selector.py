@@ -659,7 +659,7 @@ class TxtFileDataSeriesSelectFrame(wx.Dialog):
         for s in self.data_series_panel.data_series:
             data = s.get_series_data()
             if data:
-                series.append(XYDataSeries('',xdata=data[0], ydata=data[1]))
+                series.append(XYDataSeries(os.path.basename(self.filename),xdata=data[0], ydata=data[1]))
         return series
     
 

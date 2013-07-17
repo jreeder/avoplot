@@ -109,6 +109,7 @@ class PlotsPanel(aui.AuiNotebook):
             
     
     def on_tab_right_click(self, evnt):
+
         idx = evnt.GetSelection()
         fig = self.GetPage(idx)
         fig.set_selected()
