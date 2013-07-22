@@ -12,9 +12,10 @@ for s in sizes:
         pass
 
 for fname in icon_files:    
+    print "Creating sized icons for %s"%os.path.basename(fname)
     for s in sizes:        
         output = os.path.join('%dx%d'%(s,s),os.path.splitext(os.path.basename(fname))[0]+'.png')        
         if os.path.exists(output):
             continue
         subprocess.call(['inkscape','-z', '-f', fname, '-w', str(s), '-j', '-e', output])
-
+print "Finished creating sized icons"

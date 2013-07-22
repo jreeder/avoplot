@@ -73,8 +73,9 @@ class AvoPlotApp(wx.App):
         
         #launch the GUI!
         main_frame = main.MainFrame()
-        
         self.SetTopWindow(main_frame)
+        main_frame.launch()
+        
         return True
 
 

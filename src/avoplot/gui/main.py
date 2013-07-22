@@ -34,13 +34,19 @@ class AvoPlotSession(core.AvoPlotElementBase):
 
 class MainFrame(wx.Frame):      
     def __init__(self):
+        wx.Frame.__init__(self, None, wx.ID_ANY, avoplot.PROG_SHORT_NAME)
+        
+    def launch(self):
+        """
+        Create all the GUI elements and show the main window. Note that this 
+        needs to be separate from the __init__ method, since we need set the top
+        level window for wx before calling launch().
+        """
         #create the persistent settings object
         self.persistant = persist.PersistentStorage()
         
         #create a new session to hold all the figures
         self.session = AvoPlotSession('/')
-        
-        wx.Frame.__init__(self, None, wx.ID_ANY, avoplot.PROG_SHORT_NAME)
         
         #set up the icon for the frame
         self.SetIcon(wx.ArtProvider.GetIcon("avoplot"))

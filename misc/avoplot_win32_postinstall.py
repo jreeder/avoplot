@@ -37,7 +37,7 @@ if sys.argv[1] == '-install':
     
     create_shortcut(
         os.path.join(sys.prefix, 'pythonw.exe'), # program
-        'Visualise DOAS data', # description
+        avoplot.SHORT_DESCRIPTION, # description
         avoplot_prog_name, # filename
         script_path, # parameters
         '', # workdir
@@ -45,11 +45,11 @@ if sys.argv[1] == '-install':
     )
     # move shortcut from current directory to DESKTOP_FOLDER
     shutil.move(os.path.join(os.getcwd(), avoplot_prog_name),
-                os.path.join(desktop_folder, avoplot_prog_name))
+                os.path.join(start_menu_folder, avoplot_prog_name))
     
     # tell windows installer that we created another
     # file which should be deleted on uninstallation
-    file_created(os.path.join(desktop_folder, avoplot_prog_name))
+    file_created(os.path.join(start_menu_folder, avoplot_prog_name))
 
 if sys.argv[1] == '-remove':
     pass
