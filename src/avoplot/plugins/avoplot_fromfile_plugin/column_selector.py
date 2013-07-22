@@ -631,6 +631,8 @@ class TxtFileDataSeriesSelectFrame(wx.Dialog):
         topsizer.Fit(top_panel)
         top_panel.SetAutoLayout(True)
         self.Center(wx.BOTH)
+        
+        self.SendSizeEvent() #force redraw (only needed for windows)
         self.Show()
 
     def on_plot(self, evnt):
@@ -718,6 +720,7 @@ class ColumnSelectorFrame(wx.Frame):
         self.SetSizer(vsizer)
         vsizer.Fit(self)
         self.SetAutoLayout(True)
+        
         self.Show()
         
     

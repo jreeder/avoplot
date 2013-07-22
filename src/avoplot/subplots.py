@@ -24,9 +24,12 @@ from avoplot import core
 from avoplot import controls
 import wx
 
-#TODO - document this! ensures that my_init() is only called once, after
-#all __init__ methods have finished
+
 class MetaCallMyInit(type):
+    """
+    Metaclass which ensures that a class's my_init() and setup_controls() 
+    methods get called once, after it's __init__ method has returned.
+    """
     def __call__(self, *args, **kw):
         obj=type.__call__(self, *args, **kw)
         obj.my_init()
@@ -35,54 +38,94 @@ class MetaCallMyInit(type):
 
 
 class AvoPlotSubplotBase(core.AvoPlotElementBase):
+    """
+    The AvoPlotSubplotBase class is the base class for all subplots - which 
+    represent a set of axes in the figure.
+    """
+    
+    #metaclass ensures that my_init() is called once, after __init__ method
+    #has completed. This requires a metaclass, because if the class is 
+    #subclassed then there is a danger of my_init() being called multiple times
+    #or being called before all the base class' __init__ methods have been 
+    #called
     __metaclass__ = MetaCallMyInit
+    
     def __init__(self, fig, name='subplot'):
         super(AvoPlotSubplotBase, self).__init__(name)
         self.set_parent_element(fig)
     
     
     def add_data_series(self, data):
+        """
+        Adds a data series to the subplot. data should be an instance of
+        avoplot.series.DataSeriesBase or a subclass.
+        """
         #assert isinstance(data, series.DataSeriesBase)
         data.set_parent_element(self)
         
     
     def set_parent_element(self, parent):
+        """
+        Overrides the AvoPlotElementBase class's method. Does the exactly
+        the same as the base class but ensures that the parent is an 
+        AvoPlotFigure instance.
+        """
         assert isinstance(parent, AvoPlotFigure) or parent is None
         super(AvoPlotSubplotBase, self).set_parent_element(parent)
           
                      
     def my_init(self):
+        """
+        This method should be overridden by subclasses wishing to customise the
+        look of the subplot before it is displayed.
+        """
         pass
     
     
     def get_figure(self):
+        """
+        Returns the AvoPlotFigure instance that this subplot is contained 
+        within. Use get_figure().get_mpl_figure() to get the matplotlib figure
+        object that the subplot is associated with.
+        """
         return self.get_parent_element()
     
     
-    def close(self):
-        pass
-    
-    
     def on_mouse_button(self, evnt):
+        """
+        Event handler for mouse click events. These will be passed to the
+        subplot from its parent figure. This should be overriden by subclasses.
+        """
         pass
         
         
         
 
 class AvoPlotXYSubplot(AvoPlotSubplotBase):
+    """
+    Subplot for containing 2D (XY) data series.
+    """
     def __init__(self, fig, name='xy subplot'):
         super(AvoPlotXYSubplot, self).__init__(fig, name=name)
         
         #note the use of self.get_name() to ensure that the label is unique!
-        self.__mpl_axes = fig.get_mpl_figure().add_subplot(111,label=self.get_name())
+        self.__mpl_axes = fig.get_mpl_figure().add_subplot(111,
+                                                           label=self.get_name())
         
         self.add_control_panel(XYSubplotControls(self))
+        
     
     def get_mpl_axes(self):
+        """
+        Returns the matplotlib axes object associated with this subplot.
+        """
         return self.__mpl_axes  
     
 
     def on_mouse_button(self, evnt):
+        """
+        Event handler for mouse click events.
+        """
         if evnt.inaxes != self.__mpl_axes: 
             return
         
@@ -90,17 +133,25 @@ class AvoPlotXYSubplot(AvoPlotSubplotBase):
             wx.CallAfter(self.on_right_click)
             #need to release the mouse otherwise everything hangs (under Linux at
             #least)
-            self.get_figure().ReleaseMouse()
+            self.get_figure().GetCapture().ReleaseMouse()
             return
 
       
     def on_right_click(self):
+        """
+        Called by on_mouse_button() if the event was a right-click. Creates
+        a PopupMenu for adding new data series to the subplot.
+        """
         menu = avoplot.gui.menu.get_subplot_right_click_menu(self)
         self.get_figure().PopupMenu(menu)
         menu.Destroy()
     
     
     def add_data_series(self, data):
+        """
+        Adds (i.e. plots) a data series into the subplot. data should be an
+        avoplot.series.XYDataSeries instance or subclass thereof.
+        """
         super(AvoPlotXYSubplot, self).add_data_series(data)
         data._plot(self)
         canvas = self.get_figure().canvas
@@ -110,12 +161,21 @@ class AvoPlotXYSubplot(AvoPlotSubplotBase):
     
 
 class XYSubplotControls(controls.AvoPlotControlPanelBase):
+    """
+    Control panel for allowing the user to edit subplot parameters (title,
+    axis labels etc.). The subplot argument should be an AvoPlotXYSubplot
+    instance.
+    """
+    
     def __init__(self, subplot):
         super(XYSubplotControls, self).__init__("Subplot")
         self.subplot = subplot
     
     
     def setup(self, parent):
+        """
+        Creates all the controls for the panel.
+        """
         super(XYSubplotControls, self).setup(parent)
         
         grid = wx.CheckBox(self, -1, "Gridlines")
@@ -145,26 +205,45 @@ class XYSubplotControls(controls.AvoPlotControlPanelBase):
     
     
     def on_grid(self, evnt):
+        """
+        Event handler for the gridlines checkbox.
+        """
         ax = self.subplot.get_mpl_axes()
         ax.grid(b=evnt.IsChecked())
         ax.figure.canvas.draw()
     
+    
     def on_title(self, evnt):
+        """
+        Event handler for the subplot title text box.
+        """
         ax = self.subplot.get_mpl_axes()
         ax.set_title(evnt.GetString())
         ax.figure.canvas.draw()
         
+        
     def on_xlabel(self, evnt):
+        """
+        Event handler for the x-axis title text box.
+        """
         ax = self.subplot.get_mpl_axes()
         ax.set_xlabel(evnt.GetString())
         ax.figure.canvas.draw()
     
+    
     def on_ylabel(self, evnt):
+        """
+        Event handler for the y-axis title text box.
+        """
         ax = self.subplot.get_mpl_axes()
         ax.set_ylabel(evnt.GetString())
         ax.figure.canvas.draw()
     
+    
     def on_bkgd_colour(self, evnt):
+        """
+        Event handler for the background colour selector.
+        """
         ax = self.subplot.get_mpl_axes()
         ax.set_axis_bgcolor(evnt.GetColour().GetAsString(wx.C2S_HTML_SYNTAX))
         ax.figure.canvas.draw()

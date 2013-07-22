@@ -65,6 +65,9 @@ SRC_FILE_HEADER = ('#%s\n\nThis file is part of %s.\n\n%s'
 
 ####################################################################
 
+#attempt to import the build_info module - this is dynamically generated at 
+#install time and contains information about where the various files got 
+#installed to.
 try:
     import build_info
 

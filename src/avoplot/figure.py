@@ -28,12 +28,23 @@ from avoplot.gui import widgets
        
 
 class FigureControls(controls.AvoPlotControlPanelBase):
+    """
+    Control panel for figure elements allowing the user to change the 
+    background colour, title etc. of the figure.
+    
+    The figure argument must be an instance of AvoPlotFigure (or a subclass).
+    """
     def __init__(self, figure):
+        assert isinstance(figure, AvoPlotFigure), ('figure argument must be an '
+                                                   'instance of AvoPlotFigure')
         super(FigureControls, self).__init__("Figure")
         self.figure = figure
         
            
     def setup(self, parent):
+        """
+        Creates all the figure editing controls.
+        """
         super(FigureControls, self).setup(parent)
         mpl_fig = self.figure.get_mpl_figure()
         
@@ -59,12 +70,18 @@ class FigureControls(controls.AvoPlotControlPanelBase):
     
     
     def on_bkgd_colour_change(self, evnt):
+        """
+        Event handler for background colour selections.
+        """
         fig = self.figure.get_mpl_figure()
         fig.set_facecolor(evnt.GetColour().GetAsString(wx.C2S_HTML_SYNTAX))
         fig.canvas.draw()
         
     
     def on_suptitle_change(self, evnt):
+        """
+        Event handler for figure title changes.
+        """
         fig = self.figure.get_mpl_figure()
         if self.__suptitle_text is None:
             self.__suptitle_text = fig.suptitle(evnt.GetString())
@@ -76,7 +93,10 @@ class FigureControls(controls.AvoPlotControlPanelBase):
 
 
 class AvoPlotFigure(core.AvoPlotElementBase, wx.ScrolledWindow):
-    
+    """
+    The AvoPlotFigure class represents a single plot tab in the plotting window.
+    The parent argument should be the plotting window.
+    """
     def __init__(self, parent, name):
         core.AvoPlotElementBase.__init__(self, name)       
         self.parent = parent
@@ -89,8 +109,6 @@ class AvoPlotFigure(core.AvoPlotElementBase, wx.ScrolledWindow):
         wx.ScrolledWindow.__init__(self, parent, wx.ID_ANY)
         self.SetScrollRate(2, 2)
         self.v_sizer = wx.BoxSizer(wx.VERTICAL)
-        
-
         
         #the figure size is a bit arbitrary, but seems to work ok on my small 
         #screen - all this does is to set the minSize size hints for the 
@@ -112,6 +130,13 @@ class AvoPlotFigure(core.AvoPlotElementBase, wx.ScrolledWindow):
     
     
     def finalise(self):
+        """
+        Creates the canvas for the figure to be drawn into. This is done here
+        rather than in __init__ so that we have the option of vetoing the 
+        displaying of the figure if something goes wrong during its 
+        construction, e.g. if the file cannot be loaded etc.
+        """
+        
         #embed the figure in a wx canvas, ready to be put into the main window
         self.canvas = FigureCanvasWxAgg(self, -1, self._mpl_figure)
         self.cid = self.canvas.mpl_connect('button_press_event', 
@@ -127,10 +152,16 @@ class AvoPlotFigure(core.AvoPlotElementBase, wx.ScrolledWindow):
     
     
     def get_mpl_figure(self):
+        """
+        Returns the matplotlib figure object associated with this figure.
+        """
         return self._mpl_figure
     
     
     def on_mouse_button(self,evnt):
+        """
+        Event handler for mouse click events in the figure canvas.
+        """
         #if the zoom tools are active, then skip the event
         if self._is_panned or self._is_zoomed:
             return
@@ -139,33 +170,26 @@ class AvoPlotFigure(core.AvoPlotElementBase, wx.ScrolledWindow):
         for subplot in self.get_child_elements():
             subplot.on_mouse_button(evnt)
         
-    
-    
-    def close(self):
-        #don't explicitly delete the window since it is managed by a notebook
-        #but need to close each subplot held by the figure in case the subplot
-        #is executing some background task that needs to be stopped (e.g. a
-        #realtime plotting thread)
-        for s_name in self.subplots.keys():
-            self.subplots[s_name].close()
-            
-            #also remove the subplot from the figure, in case someone tries
-            #to reuse the figure object for some reason
-            self.subplots.pop(s_name)
-
         
     def set_status_bar(self, statbar):
+        """
+        Associates a status bar with this figure.
+        """
         self.tb.set_status_bar(statbar)
     
     
     def set_subplot_layout_basic(self, positions):
         """
+        Not yet implemented!
         positions = {name1:(row, col),name2:(row,col)}
         """
         raise NotImplementedError
     
     
     def go_home(self):
+        """
+        Returns all subplots within the figure to their default zoom level.
+        """
         #return all the subplots to their default (home) zoom level
         for s in self.get_child_elements():
             ax = s.get_mpl_axes()
@@ -179,19 +203,28 @@ class AvoPlotFigure(core.AvoPlotElementBase, wx.ScrolledWindow):
  
     
     def zoom(self):
+        """
+        Toggles the zoom functionality for the figure.
+        """
         self._is_panned = False
         self._is_zoomed = not self._is_zoomed
         self.tb.zoom()
     
     
     def pan(self):
+        """
+        Toggles the pan/zoom functionality for the figure.
+        """
         self._is_zoomed = False
         self._is_panned = not self._is_panned
         self.tb.pan()
 
     
-    
     def save_figure_as_image(self):
+        """
+        Opens a file save dialog for exporting the figure to an image file - all
+        matplotlib output formats are supported.
+        """
         try:
             self.tb.save_figure(None)
         except NotImplementedError:

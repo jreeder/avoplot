@@ -165,26 +165,53 @@ class AvoPlotPluginBase(object):
         
     
     def get_supported_series_type(self):
+        """
+        Returns the series type (class) that this plugin is compatible with.
+        """
         return self.__supported_series_type
         
         
     def get_controls(self):
+        """
+        Returns a list of control panels (subclasses of AvoPlotControlPanelBase)
+        that are provided by this plugin.
+        """
         return self._controls
     
     
     def get_menu_entry_labels(self):
+        """
+        Returns a list of menu entry labels (strings) for this plugin.
+        
+        get_menu_entry_labels()[:-1] are labels for submenus
+        get_menu_entry_labels()[-1] is the label for the actual menu entry
+        """
         return self._menu_entry_labels
     
     
     def get_menu_entry_tooltip(self):
+        """
+        Returns the tooltip for the menu entry for this plugin.
+        """
         return self._menu_entry_tooltip
        
        
     def get_parent(self):
+        """
+        Returns the parent window to be used for windows created by the plugin.
+        (This will be the main AvoPlot window)
+        """
         return wx.GetApp().GetTopWindow() 
 
 
     def set_menu_entry(self, labels, tooltip):
+        """
+        Set the File->New menu entries for this plugin.
+        
+        labels - list of the form ['submenu name','subsubmenu name','menu entry']
+                 Any level of submenu nesting may be requested (including none).
+        tooltip - the tooltip for the menu entry
+        """
         if type(labels) not in (list, tuple):
             raise TypeError("labels must be a list or tuple of strings")
         
@@ -211,6 +238,9 @@ class AvoPlotPluginSimple(AvoPlotPluginBase):
         
          
     def show_figure(self, fig, select=True):
+        """
+        Adds the figure object into the main AvoPlot window as a new tab.
+        """
         self.get_parent().add_figure(fig)
     
     

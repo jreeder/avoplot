@@ -47,6 +47,10 @@ class ControlPanel(aui.AuiNotebook):
 
         self.Show(True)
         self.Thaw()
+        
+        #send a size event to force redraw of window contents - this is only
+        #really needed in windows
+        self.SendSizeEvent()
     
     
     def on_element_delete(self, evnt):

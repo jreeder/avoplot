@@ -35,8 +35,8 @@ setup_script_path = os.path.dirname(os.path.abspath(sys.argv[0]))
 
 required_modules = [("matplotlib", "the Matplotlib plotting library"),
                     ("numpy", "NumPy (Numerical Python)"),
-                    ("wx", "wxPython"),
-                    ("magic", "the libmagic Python bindings (python-magic)")
+                    ("wx", "wxPython")
+                    #("magic", "the libmagic Python bindings (python-magic)")
                    ]
 
 #check that all the required modules are available

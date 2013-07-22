@@ -20,8 +20,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="shortcut icon" href="_static/avoplot16.ico"/>
-    <link rel="top" title="AvoPlot v1 documentation" href="index.html" />
-    <link rel="prev" title="Writing Plugins" href="writing_plugins.html" /> 
+    <link rel="top" title="AvoPlot v1 documentation" href="index.html" /> 
   </head>
   <body>
     <div class="related">
@@ -33,17 +32,11 @@
         <li class="right" >
           <a href="modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
-        <li class="right" >
-          <a href="writing_plugins.html" title="Writing Plugins"
-             accesskey="P">previous</a> |</li>
         <li><a href="index.html">AvoPlot v1 documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-            <h4>Previous topic</h4>
-            <p class="topless"><a href="writing_plugins.html"
-                                  title="previous chapter">Writing Plugins</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="_sources/API.txt"
@@ -75,7 +68,49 @@
 <dl class="class">
 <dt id="avoplot.plugins.AvoPlotPluginBase">
 <em class="property">class </em><tt class="descclassname">avoplot.plugins.</tt><tt class="descname">AvoPlotPluginBase</tt><big>(</big><em>name</em>, <em>series_type</em><big>)</big><a class="headerlink" href="#avoplot.plugins.AvoPlotPluginBase" title="Permalink to this definition">¶</a></dt>
-<dd>Base class for AvoPlot plugins. All plugins should inherit from this class.</dd></dl>
+<dd><p>Base class for AvoPlot plugins.</p>
+<dl class="method">
+<dt id="avoplot.plugins.AvoPlotPluginBase.get_controls">
+<tt class="descname">get_controls</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.plugins.AvoPlotPluginBase.get_controls" title="Permalink to this definition">¶</a></dt>
+<dd>Returns a list of control panels (subclasses of AvoPlotControlPanelBase)
+that are provided by this plugin.</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.AvoPlotPluginBase.get_menu_entry_labels">
+<tt class="descname">get_menu_entry_labels</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.plugins.AvoPlotPluginBase.get_menu_entry_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of menu entry labels (strings) for this plugin.</p>
+<p>get_menu_entry_labels()[:-1] are labels for submenus
+get_menu_entry_labels()[-1] is the label for the actual menu entry</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.AvoPlotPluginBase.get_menu_entry_tooltip">
+<tt class="descname">get_menu_entry_tooltip</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.plugins.AvoPlotPluginBase.get_menu_entry_tooltip" title="Permalink to this definition">¶</a></dt>
+<dd>Returns the tooltip for the menu entry for this plugin.</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.AvoPlotPluginBase.get_parent">
+<tt class="descname">get_parent</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.plugins.AvoPlotPluginBase.get_parent" title="Permalink to this definition">¶</a></dt>
+<dd>Returns the parent window to be used for windows created by the plugin.
+(This will be the main AvoPlot window)</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.AvoPlotPluginBase.get_supported_series_type">
+<tt class="descname">get_supported_series_type</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.plugins.AvoPlotPluginBase.get_supported_series_type" title="Permalink to this definition">¶</a></dt>
+<dd>Returns the series type (class) that this plugin is compatible with.</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.AvoPlotPluginBase.set_menu_entry">
+<tt class="descname">set_menu_entry</tt><big>(</big><em>labels</em>, <em>tooltip</em><big>)</big><a class="headerlink" href="#avoplot.plugins.AvoPlotPluginBase.set_menu_entry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the File-&gt;New menu entries for this plugin.</p>
+<dl class="docutils">
+<dt>labels - list of the form [&#8216;submenu name&#8217;,&#8217;subsubmenu name&#8217;,&#8217;menu entry&#8217;]</dt>
+<dd>Any level of submenu nesting may be requested (including none).</dd>
+</dl>
+<p>tooltip - the tooltip for the menu entry</p>
+</dd></dl>
+
+</dd></dl>
 
 <dl class="class">
 <dt id="avoplot.plugins.AvoPlotPluginInstaller">
@@ -91,10 +126,34 @@ get_plugin_install_path())</dd></dl>
 
 </dd></dl>
 
+<dl class="class">
+<dt id="avoplot.plugins.AvoPlotPluginSimple">
+<em class="property">class </em><tt class="descclassname">avoplot.plugins.</tt><tt class="descname">AvoPlotPluginSimple</tt><big>(</big><em>name</em>, <em>series_type</em><big>)</big><a class="headerlink" href="#avoplot.plugins.AvoPlotPluginSimple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for plugins only requiring a single subplot</p>
+<dl class="method">
+<dt id="avoplot.plugins.AvoPlotPluginSimple.create_new">
+<tt class="descname">create_new</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.plugins.AvoPlotPluginSimple.create_new" title="Permalink to this definition">¶</a></dt>
+<dd>Generate a new figure object, put a subplot into it,
+call plot_into_subplot() on the new subplot and then call
+show_figure() to add the new figure to the main window.</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.AvoPlotPluginSimple.show_figure">
+<tt class="descname">show_figure</tt><big>(</big><em>fig</em>, <em>select=True</em><big>)</big><a class="headerlink" href="#avoplot.plugins.AvoPlotPluginSimple.show_figure" title="Permalink to this definition">¶</a></dt>
+<dd>Adds the figure object into the main AvoPlot window as a new tab.</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="avoplot.plugins.PluginImportError">
+<em class="property">exception </em><tt class="descclassname">avoplot.plugins.</tt><tt class="descname">PluginImportError</tt><a class="headerlink" href="#avoplot.plugins.PluginImportError" title="Permalink to this definition">¶</a></dt>
+<dd>Exception class for plugin import errors</dd></dl>
+
 <dl class="function">
 <dt id="avoplot.plugins.get_plugin_install_path">
 <tt class="descclassname">avoplot.plugins.</tt><tt class="descname">get_plugin_install_path</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.plugins.get_plugin_install_path" title="Permalink to this definition">¶</a></dt>
-<dd>Returns the path where plug-ins should be installed.</dd></dl>
+<dd>Returns the path where plug-ins should be installed. This will be the path
+that this module is in.</dd></dl>
 
 <dl class="function">
 <dt id="avoplot.plugins.get_plugins">
@@ -126,7 +185,8 @@ will be skipped and a warning message issued.</dd></dl>
 <dl class="function">
 <dt id="avoplot.plugins.load_plugin_from_file">
 <tt class="descclassname">avoplot.plugins.</tt><tt class="descname">load_plugin_from_file</tt><big>(</big><em>filename</em><big>)</big><a class="headerlink" href="#avoplot.plugins.load_plugin_from_file" title="Permalink to this definition">¶</a></dt>
-<dd>Loads a plugin from a file.</dd></dl>
+<dd>Loads a plugin from a file. This function is for loading plugins which 
+have not been installed.</dd></dl>
 
 <dl class="function">
 <dt id="avoplot.plugins.register">
@@ -161,15 +221,12 @@ get_plugin_install_path()).</dd></dl>
         <li class="right" >
           <a href="modindex.html" title="Global Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="writing_plugins.html" title="Writing Plugins"
-             >previous</a> |</li>
         <li><a href="index.html">AvoPlot v1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
       &copy; Copyright 2013, Nial Peters.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.5.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.4.
     </div>
   </body>
 </html>

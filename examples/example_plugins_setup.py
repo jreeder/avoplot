@@ -6,5 +6,5 @@ setup(name='AvoPlot Sine wave example',
       description='AvoPlot plugin for plotting a sine wave', 
       author = 'Nial Peters', 
       author_email='nonbiostudent@hotmail.com',
-      py_modules=['example_plugin']
+      py_modules=['sine_wave','adv_sine_wave']
       )

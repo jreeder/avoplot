@@ -15,12 +15,12 @@
 #You should have received a copy of the GNU General Public License
 #along with AvoPlot.  If not, see <http://www.gnu.org/licenses/>.
 
-import magic
+import warnings
+import mimetypes
 import wx
 import re
 import StringIO
 import os.path
-from std_ops.iter_ import multi_sort, tuple_compare
 from avoplot.plugins import AvoPlotPluginSimple
 from avoplot.series import XYDataSeries
 from avoplot.persist import PersistentStorage
@@ -28,8 +28,53 @@ from column_selector import TxtFileDataSeriesSelectFrame
 #from avoplot.plugins.avoplot_fromfile_plugin.loader import FileLoaderBase
 import loader
 
+
+try:
+    import magic
+    have_magic = True
+    
+    try:
+        magic.Magic()
+    except Exception, e:
+        warnings.warn(("Your python-magic installation seems to be broken. "
+                      "Error message was \'%s\'. Using mimetypes module instead."%e.args))
+        have_magic = False
+        
+except ImportError:
+    have_magic = False
+
+
 #required otherwise plugin will not be loaded!
 plugin_is_GPL_compatible = True
+
+
+def tuple_compare(first, second, element=0):
+    """
+    Compares two tuples based on their values at the index given by element.
+    Use functools.partial() to build comparators for any element value for use
+    in sort() functions.
+    >>> print tuple_compare((1,2),(1,2))
+    0
+    >>> print tuple_compare((1,2),(2,1))
+    -1
+    >>> print tuple_compare((1,2),(2,1),element=1)
+    1
+    """
+    return cmp(first[element], second[element])
+
+
+def multi_sort(*lists):
+    """
+    Sorts multiple lists based on the contents of the first list.
+    >>> print multi_sort([3,2,1],['a','b','c'],['d','e','f'])
+    ([1, 2, 3], ['c', 'b', 'a'], ['f', 'e', 'd'])
+    >>> print multi_sort([3,2,1])
+    ([1, 2, 3],)
+    """
+    l = zip(*lists)
+    l.sort(cmp=tuple_compare)
+    return tuple([list(t) for t in zip(*l)])
+
 
 def load(filename):
     with open(filename,'rb') as ifp:
@@ -80,6 +125,19 @@ class TextFilePlugin(AvoPlotPluginSimple):
         if series_select_dialog.ShowModal() == wx.ID_OK:
             return series_select_dialog.get_series()
             
+
+def is_binary(ifp):
+    """Return true if the given filename is binary. This is done
+    based on finding null bytes in the file - it will only be used
+    when python-magic is not available.
+    """
+    while 1:
+        chunk = ifp.read(2048)
+        if '\0' in chunk: # found null byte
+            return True
+        if len(chunk) < 2048:
+            break # done
+    return False
         
         
 class TextFileLoader(loader.FileLoaderBase):
@@ -90,18 +148,32 @@ class TextFileLoader(loader.FileLoaderBase):
         
     def test(self, filename, ifp):
         
-        try:
-            file_type = magic.from_buffer(ifp.read(),mime=True)
-        except Exception, e:
-            print e.args
-            return False
-        finally:
-            ifp.seek(0)
-        print file_type
-        if file_type.startswith('text/'):
-            return True
+        if have_magic:
+            try:
+                file_type = magic.from_buffer(ifp.read(),mime=True)
+            except Exception, e:
+                print e.args
+                return False
+            finally:
+                ifp.seek(0)
+            print file_type
+            if file_type.startswith('text/'):
+                return True
+            else:
+                return False
         else:
-            return False
+            try:
+                file_type = mimetypes.guess_type(filename)[0]
+                if file_type and file_type.startswith('text/'):
+                    return True
+                else:
+                    if is_binary(ifp):
+                        return False
+                    return True
+            except Exception, e:
+                print e.args
+                return False
+            
     
     
     def load(self, filename,ifp):

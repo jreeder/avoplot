@@ -17,6 +17,11 @@
 import wx
 
 class AvoPlotControlPanelBase(wx.ScrolledWindow):
+    """
+    Base class for control panels - these are the tabs shown in the 
+    "Control Panel" frame.
+    """
+    
     def __init__(self, name):
         self.__name = name
         self.__sizer = wx.BoxSizer(wx.VERTICAL)
@@ -24,7 +29,17 @@ class AvoPlotControlPanelBase(wx.ScrolledWindow):
         
            
     def setup(self, parent):
+        """
+        Control panels are typically instanciated before their parent frame is
+        known. Therefore, the majority of the setup of the panel should be done
+        in the setup method - this is passed the parent window as its only 
+        argument. Subclasses that override this method should be sure to call
+        the setup method of their parent class *before* doing anything else.
+        """
+        #call the __init__ method of the wx.Window class (we can do this now
+        #we know who our parent is)
         super(AvoPlotControlPanelBase, self).__init__(parent, wx.ID_ANY)
+        
         self.old_parent = parent
         self.SetScrollRate(2, 2)
         self.SetSizer(self.__sizer)
@@ -34,12 +49,25 @@ class AvoPlotControlPanelBase(wx.ScrolledWindow):
     
     
     def is_initialised(self):
+        """
+        Returns True if the setup() method has already been run for this 
+        control panel, False otherwise.
+        """
         return self.__is_initialised
     
+    
     def get_name(self):
+        """
+        Returns the name of this control panel - this will be the text displayed
+        in the tab heading.
+        """
         return self.__name
     
     
     def Add(self,*args, **kwargs):
+        """
+        Adds a new element into the control panel's sizer - *args and **kwargs
+        are the same as for a wx.BoxSizer.
+        """
         self.__sizer.Add(*args, **kwargs)
         

@@ -109,7 +109,7 @@ This line actually plots the data into the subplot.
 
     return True
 
-Finally, we should return True to tell AvoPlot that everything went ok with the plotting and that we want it to add our plot to the main window. If something goes wrong, and you decide at this point that you don't want to plot anything (for example the user clicks cancel in you file select dialog) then you should return False.
+Finally, we should return True to tell AvoPlot that everything went ok with the plotting and that we want it to add our plot to the main window. If something goes wrong, and you decide at this point that you don't want to plot anything (for example the user clicks cancel in your file select dialog) then you should return False.
 
 .. code-block:: python
 
@@ -130,6 +130,6 @@ In order to use your plugins they will have to be installed. This is done in exa
 
     from avoplot.plugins import setup
 
-This can be used in exactly the same way as the distutils setup function. See the example_plugin_setup.py file in the "examples" folder.
+This can be used in exactly the same way as the distutils setup function. See the example_plugins_setup.py file in the "examples" folder of the AvoPlot distribution.
 
 

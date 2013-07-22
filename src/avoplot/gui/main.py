@@ -17,6 +17,7 @@
 import wx
 from wx import aui
 from matplotlib.backends import backend_wx
+import sys
 
 import avoplot
 from avoplot import core
@@ -49,7 +50,10 @@ class MainFrame(wx.Frame):
         self.session = AvoPlotSession('/')
         
         #set up the icon for the frame
-        self.SetIcon(wx.ArtProvider.GetIcon("avoplot"))
+        if sys.platform == "win32":
+            self.SetIcon(wx.ArtProvider.GetIcon("avoplot", size=(16,16)))
+        else:
+            self.SetIcon(wx.ArtProvider.GetIcon("avoplot", size=(64,64)))
         
         #create main GUI panels
         self.plots_panel = plots_panel.PlotsPanel(self)
@@ -99,7 +103,7 @@ class MainFrame(wx.Frame):
         menu.EVT_AVOPLOT_NAV_PANEL_STATE(self, self.on_show_nav_panel)  
                     
         aui.EVT_AUI_PANE_CLOSE(self, self.on_pane_close)
-        #aui.EVT_AUI_PANE_RESTORE(self, self.on_pane_restore)
+
         wx.EVT_CLOSE(self, self.on_close)
 
         
@@ -125,7 +129,6 @@ class MainFrame(wx.Frame):
         self.Show()
     
     
-
     def on_pane_close(self, evnt):
         p = evnt.GetPane()
         if p.caption == "Control Panel":
@@ -155,7 +158,8 @@ class MainFrame(wx.Frame):
         wx.PostEvent(self.menu, evnt)
         wx.PostEvent(self.toolbar, evnt)
         
-        #this has to come last since fig.Destroy() will get called here and
+        #this has to come last since fig.Destroy() will get called inside the
+        # plots panel event handler and
         #so subsequent access to fig will raise an exception
         wx.PostEvent(self.plots_panel, evnt) 
    
@@ -173,7 +177,6 @@ class MainFrame(wx.Frame):
         
         if not self.IsMaximized():
             self.persistant.set_value('main_frame_size', self.GetSize())
-        
         
         #save the state of the manager so that the panels will restore to 
         #the same size etc.

@@ -30,7 +30,7 @@ class MainToolbar(wx.ToolBar):
         wx.ToolBar.__init__(self,parent, wx.ID_ANY)
         
         #file tools    
-        new_tool = self.AddTool(-1, wx.ArtProvider.GetBitmap(wx.ART_NEW, wx.ART_TOOLBAR), shortHelpString="New plot")    
+        self.new_tool = self.AddTool(-1, wx.ArtProvider.GetBitmap(wx.ART_NEW, wx.ART_TOOLBAR), shortHelpString="New plot")    
         self.save_tool = self.AddTool(-1, wx.ArtProvider.GetBitmap(wx.ART_FILE_SAVE, wx.ART_TOOLBAR), shortHelpString="Save plot")
         self.AddSeparator()
 
@@ -53,7 +53,7 @@ class MainToolbar(wx.ToolBar):
         core.EVT_AVOPLOT_ELEM_DELETE(self, self.on_element_delete)
         
         #register events
-        wx.EVT_TOOL(self.parent, new_tool.GetId(), self.on_new)
+        wx.EVT_TOOL(self.parent, self.new_tool.GetId(), self.on_new)
         wx.EVT_TOOL(self.parent, self.save_tool.GetId(), self.on_save_plot)        
         wx.EVT_TOOL(self.parent, self.home_tool.GetId(), self.on_home)
         wx.EVT_TOOL(self.parent, self.zoom_tool.GetId(), self.on_zoom)
@@ -103,9 +103,21 @@ class MainToolbar(wx.ToolBar):
     
     def on_new(self,evnt):
         """Handle menu button pressed."""
-        x, y = self.GetPositionTuple()
-        w, h = self.GetSizeTuple()
-        self.PopupMenuXY(self.parent.menu.new_menu, x, y+h-34)
+        #Get the position of the toolbar relative to
+        #the frame. This will be the upper left corner of the first tool
+        bar_pos = self.GetScreenPosition()-self.parent.GetScreenPosition()
+
+        # This is the position of the tool along the tool bar (1st, 2nd, 3rd, etc...)
+        tool_index = self.GetToolPos(evnt.GetId())
+
+        # Get the size of the tool
+        tool_size = self.GetToolSize()
+
+        # This is the lowerr left corner of the clicked tool
+        lower_left_pos = (bar_pos[0]+self.GetToolSeparation()*(tool_index+1)+tool_size[0]*tool_index, bar_pos[1]+tool_size[1]+self.GetToolSeparation())#-tool_size[1])
+
+        menu_pos = (lower_left_pos[0]-bar_pos[0],lower_left_pos[1]-bar_pos[1])
+        self.PopupMenu(self.parent.menu.new_menu, menu_pos)
 
         
     def on_home(self, evnt):

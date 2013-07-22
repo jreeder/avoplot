@@ -88,8 +88,7 @@ class PlotsPanel(aui.AuiNotebook):
                 try:
                     self.ChangeSelection(idx) #only available in wx >V2.9.3
                 except AttributeError:
-                    self.SetSelection(idx)
-                    
+                    self.SetSelection(idx)                 
     
     
     def on_delete_element(self, evnt):
@@ -99,6 +98,7 @@ class PlotsPanel(aui.AuiNotebook):
             idx = self.GetPageIndex(el)
             if idx >= 0:
                 self.DeletePage(idx)
+            
             
     def on_rename_element(self, evnt):
         el = evnt.element
@@ -162,11 +162,16 @@ class PlotsPanel(aui.AuiNotebook):
             self.RemovePage(idx)
             # re-add in the same position so it will tab
             self.InsertPage(idx, win, title, False, bmp)
+        
         # restore orignial selected tab
         self.SetSelection(nowSelected)
 
         self.Thaw()
         
         self.Bind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.on_tab_change)
+        
+        #send a size event to force redraw of window contents - this is only
+        #really needed in windows
+        self.SendSizeEvent()
         
         
