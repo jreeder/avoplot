@@ -249,3 +249,13 @@ class AvoPlotElementBase(object):
         wx.PostEvent(wx.GetApp().GetTopWindow(), evt)
     
     
+    def update(self):
+        """
+        Redraws the element in the display. This should be called after the 
+        element is changed to reflect the changes in the display. This must
+        be overridden in subclasses.
+        """
+        raise (NotImplementedError, "Subclasses of AvoPlotElementBase must "
+               "override the update method")
+    
+    

@@ -1,0 +1,4 @@
+#a few notes to remind myself of features that need to be included in the next release.
+
+
+* implement animated redraw and blitting in element update methods to speed up redraws. (use element selected event to choose which elements to make animated)

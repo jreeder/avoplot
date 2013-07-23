@@ -83,7 +83,7 @@ if __name__ == '__main__':
     
     #parse any command line args
     options, args = __parse_cmd_line()
-        
+    
+    #create and run the wx app    
     app = AvoPlotApp(options, args)
-          
     app.MainLoop()

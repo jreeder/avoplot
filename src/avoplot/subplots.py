@@ -154,11 +154,17 @@ class AvoPlotXYSubplot(AvoPlotSubplotBase):
         """
         super(AvoPlotXYSubplot, self).add_data_series(data)
         data._plot(self)
+        self.update()
+        
+    
+    def update(self):
+        """
+        Redraws the subplot.
+        """
         canvas = self.get_figure().canvas
         if canvas:
             canvas.draw()
         
-    
 
 class XYSubplotControls(controls.AvoPlotControlPanelBase):
     """
@@ -219,7 +225,8 @@ class XYSubplotControls(controls.AvoPlotControlPanelBase):
         """
         ax = self.subplot.get_mpl_axes()
         ax.set_title(evnt.GetString())
-        ax.figure.canvas.draw()
+
+        self.subplot.update()
         
         
     def on_xlabel(self, evnt):
@@ -228,7 +235,7 @@ class XYSubplotControls(controls.AvoPlotControlPanelBase):
         """
         ax = self.subplot.get_mpl_axes()
         ax.set_xlabel(evnt.GetString())
-        ax.figure.canvas.draw()
+        self.subplot.update()
     
     
     def on_ylabel(self, evnt):
@@ -237,7 +244,7 @@ class XYSubplotControls(controls.AvoPlotControlPanelBase):
         """
         ax = self.subplot.get_mpl_axes()
         ax.set_ylabel(evnt.GetString())
-        ax.figure.canvas.draw()
+        self.subplot.update()
     
     
     def on_bkgd_colour(self, evnt):
@@ -246,7 +253,7 @@ class XYSubplotControls(controls.AvoPlotControlPanelBase):
         """
         ax = self.subplot.get_mpl_axes()
         ax.set_axis_bgcolor(evnt.GetColour().GetAsString(wx.C2S_HTML_SYNTAX))
-        ax.figure.canvas.draw()
+        self.subplot.update()
             
     
         

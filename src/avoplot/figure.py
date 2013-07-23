@@ -75,7 +75,8 @@ class FigureControls(controls.AvoPlotControlPanelBase):
         """
         fig = self.figure.get_mpl_figure()
         fig.set_facecolor(evnt.GetColour().GetAsString(wx.C2S_HTML_SYNTAX))
-        fig.canvas.draw()
+        
+        self.figure.update()
         
     
     def on_suptitle_change(self, evnt):
@@ -87,7 +88,8 @@ class FigureControls(controls.AvoPlotControlPanelBase):
             self.__suptitle_text = fig.suptitle(evnt.GetString())
         else:
             self.__suptitle_text.set_text(evnt.GetString())
-        fig.canvas.draw()
+        
+        self.figure.update()
 
 
 
@@ -127,6 +129,16 @@ class AvoPlotFigure(core.AvoPlotElementBase, wx.ScrolledWindow):
         self.SetSizer(self.v_sizer)
         self.v_sizer.Fit(self)
         self.SetAutoLayout(True)
+    
+    
+    def update(self):
+        """
+        Redraws the entire figure.
+        """
+        if self.canvas is None:
+            raise RuntimeError, "update() called before finalise()"
+        
+        self.canvas.draw()
     
     
     def finalise(self):
