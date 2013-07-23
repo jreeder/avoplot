@@ -14,3 +14,7 @@
 #
 #You should have received a copy of the GNU General Public License
 #along with AvoPlot.  If not, see <http://www.gnu.org/licenses/>.
+"""
+As the name suggests, the gui module contains a collection of modules that 
+make up the AvoPlot GUI.
+"""

@@ -19,14 +19,21 @@ import avoplot
 import os.path
 
 
-
-
 class AvoplotArtProvider(wx.ArtProvider):
+    """
+    Customised art provider class for serving the AvoPlot specific icons.
+    """
     def __init__(self):
         wx.ArtProvider.__init__(self)
 
     def CreateBitmap(self, artid, client, size):
-        
+        """
+        Overrides CreateBitmap from wx.ArtProvider. This method looks in the 
+        AvoPlot icons directory (as returned by avoplot.get_avoplot_icons_dir())
+        for the icon specified by artid. The icons are split up into subfolders
+        by size (for example "16x16") and this method will only look in the 
+        relevant size subfolder for the requested icon.
+        """
         if size.width == -1:
             sizerq = wx.ArtProvider.GetSizeHint(client)
             
@@ -40,5 +47,5 @@ class AvoplotArtProvider(wx.ArtProvider):
                                 '%dx%d'%(sizerq.width, sizerq.width), 
                                 artid+'.png')
 
-        return wx.Bitmap(filename,wx.BITMAP_TYPE_PNG)
+        return wx.Bitmap(filename, wx.BITMAP_TYPE_PNG)
 

@@ -21,6 +21,9 @@ from avoplot import core
 from avoplot import figure
 
 class MainToolbar(wx.ToolBar):
+    """
+    Main program toolbar
+    """
     def __init__(self,parent):
         self.parent = parent
         
@@ -38,11 +41,7 @@ class MainToolbar(wx.ToolBar):
         self.home_tool = self.AddTool(-1, wx.ArtProvider.GetBitmap(wx.ART_GO_HOME, wx.ART_TOOLBAR),shortHelpString="Return to initial zoom setting")
         self.zoom_tool = self.AddCheckTool(-1, load_matplotlib_bitmap('zoom_to_rect.png'), shortHelp="Zoom selection")
         self.pan_tool = self.AddCheckTool(-1, load_matplotlib_bitmap('move.png'),shortHelp='Pan',longHelp='Pan with left, zoom with right')
-        #self.follow_data_tool = self.AddCheckTool(-1, wx.ArtProvider.GetBitmap("avoplot_grid",wx.ART_TOOLBAR),shortHelp='Inspect the data values' )
         self.AddSeparator()
-
-        #self.grid_tool = self.AddCheckTool(-1, wx.ArtProvider.GetBitmap("avoplot_grid",wx.ART_TOOLBAR),shortHelp='Toggle gridlines' )
-        #self.AddSeparator()
         
         self.Realize()
         self.enable_plot_tools(False)
@@ -58,11 +57,17 @@ class MainToolbar(wx.ToolBar):
         wx.EVT_TOOL(self.parent, self.home_tool.GetId(), self.on_home)
         wx.EVT_TOOL(self.parent, self.zoom_tool.GetId(), self.on_zoom)
         wx.EVT_TOOL(self.parent, self.pan_tool.GetId(), self.on_pan)
-        #wx.EVT_TOOL(self.parent, self.follow_data_tool.GetId(), self.on_follow_data)
-        #wx.EVT_TOOL(self.parent, self.grid_tool.GetId(), self.onGrid)
    
     
     def on_element_add(self, evnt):
+        """
+        Event handler for new element events. If the element is not a figure
+        then nothing gets done. For figures, their zoom and pan settings are
+        updated depending on the toggle state of the zoom/pan tools.
+        
+        This method also enables the plot navigation tools if they were 
+        previously disabled.
+        """
         el = evnt.element
         if isinstance(el, figure.AvoPlotFigure):
             if not self.__all_figures:
@@ -79,6 +84,11 @@ class MainToolbar(wx.ToolBar):
     
     
     def on_element_delete(self, evnt):
+        """
+        Event handler for element delete events.If the element is not a figure
+        then nothing gets done. If the element being deleted was the last figure
+        in the session, then this disables the plot navigation tools. 
+        """
         el = evnt.element
         if isinstance(el, figure.AvoPlotFigure):
             self.__all_figures.remove(el)
@@ -87,6 +97,10 @@ class MainToolbar(wx.ToolBar):
     
     
     def on_element_select(self, evnt):
+        """
+        Event handler for element select events. Just keeps track of what the 
+        curretly selected element is.
+        """
         el = evnt.element
         if isinstance(el, figure.AvoPlotFigure):
             self.__active_figure = el
@@ -94,15 +108,21 @@ class MainToolbar(wx.ToolBar):
     
     
     def enable_plot_tools(self, state):
+        """
+        Enables the plot tools if state=True or disables them if state=False
+        """
         self.EnableTool(self.save_tool.GetId(),state)
         self.EnableTool(self.home_tool.GetId(),state)
         self.EnableTool(self.pan_tool.GetId(),state)
         self.EnableTool(self.zoom_tool.GetId(),state)
-        #self.EnableTool(self.grid_tool.GetId(),state)
+
    
     
     def on_new(self,evnt):
-        """Handle menu button pressed."""
+        """Handle 'new' button pressed.
+        Creates a popup menu over the tool button containing the same entries as
+        the File->New menu.
+        """
         #Get the position of the toolbar relative to
         #the frame. This will be the upper left corner of the first tool
         bar_pos = self.GetScreenPosition()-self.parent.GetScreenPosition()
@@ -121,32 +141,40 @@ class MainToolbar(wx.ToolBar):
 
         
     def on_home(self, evnt):
+        """
+        Event handler for "home zoom level" events. Resets all subplots in the 
+        current figure to their default zoom levels.
+        """
         if self.__active_figure is not None:
             self.__active_figure.go_home()
  
     
     def on_zoom(self,evnt):
+        """
+        Event handler for zoom tool toggle events. Enables or disables zooming
+        in all figures accordingly.
+        """
         self.ToggleTool(self.pan_tool.GetId(),False) 
         for p in self.__all_figures:
             p.zoom()
 
    
     def on_pan(self,evnt):
+        """
+        Event handler for pan tool toggle events. Enables or disables panning
+        in all figures accordingly.
+        """
         self.ToggleTool(self.zoom_tool.GetId(),False) 
         for p in self.__all_figures:
             p.pan()
 
     
     def on_save_plot(self, *args):
-
+        """
+        Event handler for save tool events. Opens a file save dialog for saving
+        the currently selected figure as an image file.
+        """
         if self.__active_figure is not None:
             self.__active_figure.save_figure_as_image()
-       
-            
-    def on_follow_data(self, evnt):
-        #TODO - disable the other navigation tools on all the plots
-        follow_state = self.GetToolState(self.follow_data_tool.GetId())
-        for p in self.__all_figures:
-            p.follow_data(follow_state)
             
         

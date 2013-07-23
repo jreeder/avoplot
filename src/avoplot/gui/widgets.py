@@ -15,9 +15,17 @@
 #You should have received a copy of the GNU General Public License
 #along with AvoPlot.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+The widgets module contains a set of convenience widgets for building
+control panels for elements.
+"""
+
 import wx
 
 class SettingBase(wx.BoxSizer):
+    """
+    Base class for settings controls.
+    """
     def __init__(self, parent, label):
         wx.BoxSizer.__init__(self, wx.HORIZONTAL)
         if label:
@@ -26,6 +34,9 @@ class SettingBase(wx.BoxSizer):
             
 
 class ColourSetting(SettingBase):
+    """
+    A text label next to a wx colour picker control.
+    """
     def __init__(self, parent, label, default_colour, callback):
         SettingBase.__init__(self, parent, label)
         
@@ -35,6 +46,9 @@ class ColourSetting(SettingBase):
 
 
 class TextSetting(SettingBase):
+    """
+    A text label next to a wx text entry control.
+    """
     def __init__(self, parent, label, default_text, callback):
         SettingBase.__init__(self, parent, label)
         
@@ -45,6 +59,9 @@ class TextSetting(SettingBase):
 
 
 class ChoiceSetting(SettingBase):
+    """
+    A text label next to a wx choice control.
+    """   
     def __init__(self, parent, label, current_selection, selections, callback):
         SettingBase.__init__(self, parent, label)
         

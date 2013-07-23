@@ -22,12 +22,17 @@ import avoplot.plugins
 from avoplot import core
 from avoplot import figure
 
+#define some new events to be used when panes are hidden/restored
 AvoPlotCtrlPanelChangeState, EVT_AVOPLOT_CTRL_PANEL_STATE = wx.lib.newevent.NewEvent()
 AvoPlotNavPanelChangeState, EVT_AVOPLOT_NAV_PANEL_STATE = wx.lib.newevent.NewEvent()
 
 #TODO - add keyboard shortcuts
 
 class CallbackWrapper:
+    """
+    Thin wrapper class to allow callables along with a set of arguments for them 
+    to be set as callback handlers.
+    """
     def __init__(self, func, *args, **kwargs):
         self.func = func
         self.args = args
@@ -39,6 +44,12 @@ class CallbackWrapper:
         
 
 def get_subplot_right_click_menu(subplot):
+    """
+    Returns a wx.Menu object which is relevant for the subplot which was passed
+    as an arg. This ensures that only menu entries provided by plugins which
+    are compatible with the subplot are included. For example, there is no point
+    in the menu for a 2D subplot to have a "New 3D data series" option.
+    """
     menu = wx.Menu()
     new_series_menu = wx.Menu()
     menu.AppendSubMenu(new_series_menu,"Add series")
@@ -73,6 +84,9 @@ def get_subplot_right_click_menu(subplot):
         
 
 class MainMenu(wx.MenuBar):
+    """
+    The main program menu.
+    """
     def __init__(self, parent):
         wx.MenuBar.__init__(self)
         self.parent=parent
@@ -260,6 +274,9 @@ class MainMenu(wx.MenuBar):
         about_info.SetVersion(str(avoplot.VERSION))
         about_info.SetCopyright(avoplot.COPYRIGHT)
         about_info.SetDescription(avoplot.LONG_DESCRIPTION)
+        
+        #read the license text from the COPYING file that was installed along
+        #with the program
         with open(os.path.join(avoplot.get_avoplot_sys_dir(),'COPYING'),
                   'r') as ifp:
             license = ifp.read()
@@ -274,6 +291,10 @@ class MainMenu(wx.MenuBar):
         
         
 class TabRightClickMenu(wx.Menu):
+    """
+    The menu displayed when a tab in the plots panel (which is an AuiNotebook) 
+    is right clicked on.
+    """
     def __init__(self, main_frame):
         
         wx.Menu.__init__(self)

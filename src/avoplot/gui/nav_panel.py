@@ -20,6 +20,9 @@ from avoplot import core
 from avoplot import figure
 
 class NavigationPanel(wx.ScrolledWindow):
+    """
+    Navigation panel for selecting plot elements in a tree ctrl.
+    """
     def __init__(self, parent, session):
         super(NavigationPanel, self).__init__(parent)
         self.SetScrollRate(2, 2)
@@ -51,6 +54,10 @@ class NavigationPanel(wx.ScrolledWindow):
         
     
     def on_tree_select_el(self, evnt):
+        """
+        Event handler for tree item select. Selects the corresponding AvoPlot
+        element (which generates an AvoPlotElementSelect) 
+        """
         #get the avoplot element and set it selected
         tree_node_id = evnt.GetItem()
         el = self.tree.GetPyData(tree_node_id)
@@ -59,6 +66,10 @@ class NavigationPanel(wx.ScrolledWindow):
     
         
     def on_element_select(self, evnt):
+        """
+        Event handler for AvoPlotElementSelect events. Selects the tree item 
+        corresponding to the element which has been selected.
+        """
         el = evnt.element
         
         #if the element is our current selection, then do nothing
@@ -76,7 +87,10 @@ class NavigationPanel(wx.ScrolledWindow):
 
                
     def on_element_delete(self, evnt):
-
+        """
+        Event handler for AvoPlotElementDelete events. Removes the tree item 
+        corresponding to the element which has been deleted.
+        """
         el = evnt.element
         if self.__el_id_mapping.has_key(el.get_avoplot_id()):
             tree_item = self.__el_id_mapping.pop(el.get_avoplot_id())
@@ -84,16 +98,26 @@ class NavigationPanel(wx.ScrolledWindow):
     
         
     def on_element_add(self, evnt):
+        """
+        Event handler for AvoPlotElementAdd events. Adds a tree item 
+        for the element which has been added and all its children (recursively).
+        """
         el = evnt.element
         parent_id = el.get_parent_element().get_avoplot_id()
         if self.__el_id_mapping.has_key(parent_id):
             parent_node = self.__el_id_mapping[parent_id]
+            
+            #add the elements children to the tree recursively
             self._add_all_child_nodes(parent_node, el)
             
             self.tree.ExpandAllChildren(parent_node)
 
         
     def on_element_rename(self, evnt):
+        """
+        Event handler for AvoPlotElementRename events. Renames the tree item 
+        for the element which has been renamed.       
+        """
         el = evnt.element
         if self.__el_id_mapping.has_key(el.get_avoplot_id()):
             tree_node = self.__el_id_mapping[el.get_avoplot_id()]
@@ -101,7 +125,10 @@ class NavigationPanel(wx.ScrolledWindow):
         
             
     def _add_all_child_nodes(self, parent_node, element):
-        
+        """
+        Creates tree items recursively for all child elements below element, and 
+        also adds a tree item for element to parent_node.
+        """
         node = self.tree.AppendItem(parent_node, element.get_name(), 
                                     data=wx.TreeItemData(element))
         self.__el_id_mapping[element.get_avoplot_id()] = node

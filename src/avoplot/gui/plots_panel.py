@@ -24,6 +24,11 @@ from avoplot.gui import menu
 
 
 class PlotsPanel(aui.AuiNotebook):
+    """
+    AuiNotebook for displaying figures in. Multiple figures may be viewed 
+    simultaneously by splitting the notebook.
+    """
+    
     def __init__(self, parent):
         aui.AuiNotebook.__init__(self, parent, id=wx.ID_ANY, 
                                  style=aui.AUI_NB_DEFAULT_STYLE)

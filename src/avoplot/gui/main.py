@@ -14,6 +14,10 @@
 #
 #You should have received a copy of the GNU General Public License
 #along with AvoPlot.  If not, see <http://www.gnu.org/licenses/>.
+"""
+The main module contains the code for the main frame of the AvoPlot GUI. 
+"""
+
 import wx
 from wx import aui
 from matplotlib.backends import backend_wx
@@ -30,10 +34,19 @@ from avoplot import persist
 
 
 class AvoPlotSession(core.AvoPlotElementBase):
+    """
+    A session is the "root" element for an AvoPlot program instance. It doesn't
+    really do anything by itself, but provides a parent to any figures that get
+    created.
+    """
     pass
 
 
-class MainFrame(wx.Frame):      
+class MainFrame(wx.Frame):
+    """
+    Main frame of the GUI. This is set as the top level window when the 
+    AvoPlot App is created in the AvoPlot.py script.
+    """   
     def __init__(self):
         wx.Frame.__init__(self, None, wx.ID_ANY, avoplot.PROG_SHORT_NAME)
         
@@ -130,6 +143,11 @@ class MainFrame(wx.Frame):
     
     
     def on_pane_close(self, evnt):
+        """
+        Event handler for pane close events (where the panes are those managed
+        by the AUI manager of the MainFrame object - currently just the control
+        pane and the navigation pane).
+        """
         p = evnt.GetPane()
         if p.caption == "Control Panel":
             evt = menu.AvoPlotCtrlPanelChangeState(state=False)
@@ -140,18 +158,29 @@ class MainFrame(wx.Frame):
     
     
     def on_show_ctrl_panel(self, evnt):
+        """
+        Event handler for the "unhiding" of the control pane.
+        """
         p = self._mgr.GetPane(self.ctrl_panel)    
         p.Show(evnt.state)
         self._mgr.Update()
         
         
     def on_show_nav_panel(self, evnt):
+        """
+        Event handler for the "unhiding" of the navigation pane.
+        """       
         p = self._mgr.GetPane(self.nav_panel)    
         p.Show(evnt.state)
         self._mgr.Update()
     
     
     def on_avoplot_event(self, evnt):
+        """
+        All AvoPlot events (see the 'core' module) are posted to the MainFrame
+        where they are handled by this method. All it does is to repost the 
+        event to all the GUI components so that they can react as needed.
+        """
         #pass the event on to all the GUI elements
         wx.PostEvent(self.nav_panel, evnt)
         wx.PostEvent(self.ctrl_panel, evnt)
@@ -166,6 +195,13 @@ class MainFrame(wx.Frame):
 
         
     def on_close(self, *args):
+        """
+        Handler called when the MainFrame is closed. This performs all the tidy
+        up operations such as saving program state. Note that all elements that
+        can be reached through the AvoPlotSession - i.e. all those that have a 
+        parent that isn't None, will have their delete() method called before 
+        the program exits.
+        """
         #unregister handlers for selection changed events to prevent on_select
         #handlers from attempting to access destroyed frames
         self.Unbind(core.EVT_AVOPLOT_ELEM_SELECT)
@@ -188,6 +224,10 @@ class MainFrame(wx.Frame):
         
         
     def add_figure(self, figure):
+        """
+        Adds a figure element (an avoplot.figure.AvoPlotFigureBase instance) to 
+        the current session.
+        """
         figure.finalise()
         figure.set_status_bar(self.statbar)
         figure.set_parent_element(self.session)
