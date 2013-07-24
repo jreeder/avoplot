@@ -49,7 +49,7 @@ class MainFrame(wx.Frame):
     """   
     def __init__(self):
         wx.Frame.__init__(self, None, wx.ID_ANY, avoplot.PROG_SHORT_NAME)
-        
+    
     def launch(self):
         """
         Create all the GUI elements and show the main window. Note that this 

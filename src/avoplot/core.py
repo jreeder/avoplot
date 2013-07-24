@@ -31,7 +31,7 @@ the plots panel and the navigation panel handle this event and use it to update
 their appearance. Adding and deleting elements works in a similar way.
 
 """
-
+import avoplot
 from avoplot import controls
 import re
 import wx
@@ -54,7 +54,8 @@ def new_id():
         new_id.n = 0
     new_id.n += 1
     return new_id.n
-
+    
+    
   
   
 class AvoPlotElementBase(object):
@@ -68,7 +69,7 @@ class AvoPlotElementBase(object):
         self.__control_panels = []
         self.__parent_element = None
         self.__child_elements = set()
-        
+        self.__alive = True
         self.set_name(name)
     
     
@@ -102,6 +103,10 @@ class AvoPlotElementBase(object):
         Sets the element's parent to None, and calls the delete() method of any
         child elements. Generates a AvoPlotElementDeleteEvent event.
         """
+        if not self.__alive:
+            print "warning! delete() called on element %s more than once"%self.get_name()
+            return
+        self.__alive = False
         #recursively call delete on all child elements
         while self.__child_elements:
             el = list(self.__child_elements)[-1]
@@ -114,7 +119,22 @@ class AvoPlotElementBase(object):
         #send the element delete event
         evt = AvoPlotElementDeleteEvent(element=self)
         wx.PostEvent(wx.GetApp().GetTopWindow(), evt)
+        
+        avoplot.call_on_idle(self._destroy)
     
+       
+    def _destroy(self):
+        """
+        The destroy method is used to perform "final" deletion operations
+        such as calling Destroy on wx window objects etc. This is called 
+        once the event loop is empty (triggered on an EVT_IDLE) to prevent
+        dead object access exceptions. Subclasses that need to override this
+        method should make sure that they call the base class's method too.
+        """
+        for p in self.get_control_panels():
+            p.Destroy()
+        self.__control_panels = []
+        
     
     def get_control_panels(self):
         """
@@ -244,9 +264,12 @@ class AvoPlotElementBase(object):
         """
         Generates an AvoPlotElementSelectEvent for the element.
         """
-        #fire an element selected event
-        evt = AvoPlotElementSelectEvent(element=self)
-        wx.PostEvent(wx.GetApp().GetTopWindow(), evt)
+        if self.__alive:
+            #fire an element selected event
+            evt = AvoPlotElementSelectEvent(element=self)
+            wx.PostEvent(wx.GetApp().GetTopWindow(), evt)
+        else:
+            print "Warning! Attempt to select deleted object\'%s\'"%self.get_name()
     
     
     def update(self):

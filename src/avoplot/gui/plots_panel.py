@@ -56,12 +56,24 @@ class PlotsPanel(aui.AuiNotebook):
     
     
     def on_tab_change(self, evnt):
+        """
+        Event handler for tab change events. Calls on set_selected() on the 
+        figure associated with the newly selected tab.
+        """
         idx = self.GetSelection()
         fig = self.GetPage(idx)
         fig.set_selected()
     
     
     def on_tab_close(self, evnt):
+        """
+        Event handler for tab close events. This vetos the event to prevent the
+        notebook from destroying the window and then calls delete() on the 
+        figure object associated with the tab that has just been closed, relying
+        on the event handlers for the AvoPlotElementDelete event to actually
+        destroy the window when it is finished with (this is done by 
+        on_delete_element() in this class)
+        """
         #don't let the notebook actually close the tab, otherwise it will 
         #destroy the window as well
         evnt.Veto() 
@@ -74,12 +86,24 @@ class PlotsPanel(aui.AuiNotebook):
         
     
     def on_new_element(self, evnt):
+        """
+        Event handler for AvoPlotElementAdd events. Adds a page to the notebook
+        for newly created figure objects.
+        """
         el = evnt.element
         if isinstance(el, figure.AvoPlotFigure):
             self.AddPage(el, el.get_name())
     
     
     def on_select_element(self, evnt):
+        """
+        Event handler for AvoPlotElementSelect events. Changes the currently
+        selected notebook page to that containing the newly selected element.
+        
+        If the selected element is not a figure, then the figure which contains
+        the element is selected.
+        
+        """
         el = evnt.element
         while not isinstance(el, figure.AvoPlotFigure):
             el = el.get_parent_element()
@@ -97,15 +121,25 @@ class PlotsPanel(aui.AuiNotebook):
     
     
     def on_delete_element(self, evnt):
+        """
+        Event handler for AvoPlotElementDelete events. If the element is a figure
+        then the notebook page associated with the figure is deleted - note that
+        this destroys the window, and so future attempts to access the figure
+        object will cause an exception.
+        """
         el = evnt.element
         
         if isinstance(el, figure.AvoPlotFigure):
             idx = self.GetPageIndex(el)
             if idx >= 0:
-                self.DeletePage(idx)
+                self.RemovePage(idx)
             
             
     def on_rename_element(self, evnt):
+        """
+        Event handler for AvoPlotElementRename events. If the element is a 
+        figure then the relevant notebook page is renamed accordingly.
+        """
         el = evnt.element
         if isinstance(el, figure.AvoPlotFigure):
             idx = self.GetPageIndex(el)
@@ -114,7 +148,11 @@ class PlotsPanel(aui.AuiNotebook):
             
     
     def on_tab_right_click(self, evnt):
-
+        """
+        Event handler for right click events on the notebook tabs. Creates
+        a popup menu allowing the user to close the tab, split the tab and 
+        rename the tab.
+        """
         idx = evnt.GetSelection()
         fig = self.GetPage(idx)
         fig.set_selected()
@@ -122,6 +160,13 @@ class PlotsPanel(aui.AuiNotebook):
     
     
     def rename_current_figure(self, evnt):
+        """
+        Event handler for rename events (from the tab right click menu) for 
+        notebook pages. Opens a rename dialog and then sets the name of the 
+        relevant figure object. Note that this generates an AvoPlotElementRename
+        event and the actual renaming of the notebook tab is left up to the event
+        handler for this event - on_rename_element()
+        """
         idx = self.GetSelection()
         fig = self.GetPage(idx)
         current_name = fig.get_name()
@@ -137,14 +182,23 @@ class PlotsPanel(aui.AuiNotebook):
 
 
     def split_figure_horiz(self, *args):
+        """
+        Splits the selected pane horizontally.
+        """
         self.Split(self.GetSelection(), wx.RIGHT)
        
         
     def split_figure_vert(self, *args):
+        """
+        Splits the selected pane vertically.
+        """
         self.Split(self.GetSelection(), wx.BOTTOM)    
         
         
     def unsplit_panes(self, *args):
+        """
+        Unsplits all the panes.
+        """
         #need to unbind the tab change handler - otherwise get stuck in an 
         #infinite event loop
         self.Unbind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED)

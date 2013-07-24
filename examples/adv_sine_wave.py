@@ -63,8 +63,7 @@ class SineWaveFreqCtrl(controls.AvoPlotControlPanelBase):
         y_data = numpy.sin(x_data*f)
         
         self.series.set_xy_data(xdata=x_data, ydata=y_data)
-        l, = self.series.get_mpl_lines()
-        l.axes.figure.canvas.draw() 
+        self.series.update()
         
 
 plugins.register(AdvExamplePlugin())

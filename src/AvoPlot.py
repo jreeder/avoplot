@@ -25,6 +25,7 @@ import wx
 import optparse
 import warnings
 
+
 import avoplot
 import avoplot.plugins
 from avoplot.gui import artwork, main
@@ -53,12 +54,33 @@ def display_warning(message, category, filename, *args):
 
 
 
+
+
+
 class AvoPlotApp(wx.App):
+    """
+    wx app for the AvoPlot program. Overrides the OnInit method to do some 
+    startup tasks.
+    """
     def __init__(self, options, args):
         self.options = options
         self.args = args
         
         super(AvoPlotApp, self).__init__()
+        
+        self.Bind(wx.EVT_IDLE, self.on_idle)
+    
+    
+    def on_idle(self, evnt):
+        while avoplot.call_on_idle.idle_q:
+            f, args, kwargs = avoplot.call_on_idle.idle_q.popleft()
+            f(*args, **kwargs)
+    
+    def MainLoop(self):
+        super(AvoPlotApp, self).MainLoop()
+        
+        #execute any pending on_idle events.
+        self.on_idle(None)
     
     
     def OnInit(self):

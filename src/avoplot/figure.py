@@ -131,6 +131,14 @@ class AvoPlotFigure(core.AvoPlotElementBase, wx.ScrolledWindow):
         self.SetAutoLayout(True)
     
     
+    def _destroy(self):
+        """
+        Overrides the base class method in order to call self.Destroy() to 
+        free the figure window.
+        """
+        core.AvoPlotElementBase._destroy(self)
+        self.Destroy()
+    
     def update(self):
         """
         Redraws the entire figure.

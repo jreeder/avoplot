@@ -103,6 +103,10 @@ class MainMenu(wx.MenuBar):
     
     
     def on_element_select(self, evnt):
+        """
+        Event handler for AvoPlotElementSelect events. Just keeps track of which
+        element is currently selected.
+        """
         el = evnt.element
 
         if isinstance(el, figure.AvoPlotFigure):
@@ -110,6 +114,13 @@ class MainMenu(wx.MenuBar):
     
     
     def on_element_add(self, evnt):
+        """
+        Event handler for AvoPlotElementAdd events. Enables menu entries when 
+        there are a sufficient number of figures open for it to make sense to do
+        so. For example - you can't split the display if you only have one
+        figure open.
+        """
+        
         el = evnt.element
         
         if isinstance(el, figure.AvoPlotFigure):
@@ -125,6 +136,11 @@ class MainMenu(wx.MenuBar):
     
     
     def on_element_delete(self, evnt):
+        """
+        Event handler for AvoPlotElementDelete events. Disables menu entries when 
+        there are an insufficient number of figures open for them to make sense.
+        For example - you can't save a figure if there are none open.
+        """
         el = evnt.element
         if isinstance(el, figure.AvoPlotFigure):
             if el == self.__current_figure:
@@ -143,6 +159,9 @@ class MainMenu(wx.MenuBar):
         
                         
     def create_file_menu(self):
+        """
+        Creates the file menu for the main menubar.
+        """
         file_menu = wx.Menu()
         
         #create submenu for creating new plots of different types.
@@ -197,11 +216,18 @@ class MainMenu(wx.MenuBar):
         
     
     def on_save_plot(self, evnt):
+        """
+        Event handler for File->Save menu events. Opens a dialog to allow the 
+        user to save the currently selected figure as an image.
+        """
         if self.__current_figure is not None:
             self.__current_figure.save_figure_as_image()
         
         
     def create_help_menu(self):
+        """
+        Creates the help menu for the main menubar
+        """
         help_menu = wx.Menu()
         
         about = help_menu.Append(-1, "&About", "Information about the %s"
@@ -214,6 +240,9 @@ class MainMenu(wx.MenuBar):
     
     
     def create_view_menu(self):
+        """
+        Creates the view menu for the main menubar
+        """        
         view_menu = wx.Menu()
         self.h_split = view_menu.Append(-1, "Split &Horizontal", "Split the current"
                                    " plot into a new pane")
@@ -249,24 +278,46 @@ class MainMenu(wx.MenuBar):
     
     
     def on_show_ctrl_panel(self, evnt):
+        """
+        Event handler for View->Control Panel menu events. Sends a 
+        AvoPlotCtrlPanelChangeState event to the main window and lets that sort 
+        out hiding/restoring the pane.
+        """
         evt = AvoPlotCtrlPanelChangeState(state=evnt.Checked())
         wx.PostEvent(self.parent, evt)
     
     
     def on_ctrl_panel_change_state(self, evnt):
+        """
+        Event handler for AvoPlotCtrlPanelChangeState events. Updates the 
+        toggle state of the View->Control Panel menu entry.
+        """
         self.ctrl_panel.Check(evnt.state)
         
     
     def on_show_nav_panel(self, evnt):
+        """
+        Event handler for View->Navigation Panel menu events. Sends a 
+        AvoPlotNavPanelChangeState event to the main window and lets that sort 
+        out hiding/restoring the pane.
+        """
         evt = AvoPlotNavPanelChangeState(state=evnt.Checked())
         wx.PostEvent(self.parent, evt)
     
     
     def on_nav_panel_change_state(self, evnt):
+        """
+        Event handler for AvoPlotNavPanelChangeState events. Updates the 
+        toggle state of the View->Navigation Panel menu entry.
+        """
         self.nav_panel.Check(evnt.state)
         
         
-    def onAbout(self, evnt):       
+    def onAbout(self, evnt):
+        """
+        Event handler for Help->About menu events. Creates a standard "About" 
+        dialog.
+        """   
         about_info = wx.AboutDialogInfo()
         about_info.SetIcon(wx.ArtProvider.GetIcon('avoplot',
                                                   size=wx.Size(96,96)))
@@ -295,22 +346,22 @@ class TabRightClickMenu(wx.Menu):
     The menu displayed when a tab in the plots panel (which is an AuiNotebook) 
     is right clicked on.
     """
-    def __init__(self, main_frame):
+    def __init__(self, plots_frame):
         
         wx.Menu.__init__(self)
         
-        self.main_frame = main_frame
+        self.plots_frame = plots_frame
                        
         rename = self.Append(wx.ID_ANY,"Rename", "Rename the current tab")
-        wx.EVT_MENU(self, rename.GetId(), self.main_frame.rename_current_figure)
+        wx.EVT_MENU(self, rename.GetId(), self.plots_frame.rename_current_figure)
         self.AppendSeparator()
         
         h_split = self.Append(-1, "Split Horizontal", "Split the current plot "
                               "into a new pane")
         v_split = self.Append(-1, "Split Vertical", "Split the current plot "
                               "into a new pane")
-        wx.EVT_MENU(self, h_split.GetId(), self.main_frame.split_figure_horiz)
-        wx.EVT_MENU(self, v_split.GetId(), self.main_frame.split_figure_vert)
+        wx.EVT_MENU(self, h_split.GetId(), self.plots_frame.split_figure_horiz)
+        wx.EVT_MENU(self, v_split.GetId(), self.plots_frame.split_figure_vert)
         
         self.AppendSeparator()
         close_current = self.Append(wx.ID_ANY,"Close", "Close the current tab")
@@ -324,32 +375,50 @@ class TabRightClickMenu(wx.Menu):
     
     
     def close_current(self, evnt):
-        idx = self.main_frame.notebook.GetSelection()
-        self.main_frame.close_plot(idx)
+        """
+        Event handler for "Close" menu events. Closes the currently selected
+        figure.
+        """
+        idx = self.plots_frame.GetSelection()
+        fig = self.plots_frame.GetPage(idx)
+        fig.delete()
     
     
     def close_others(self, evnt):
-        cur_idx = self.main_frame.notebook.GetSelection()
-        self.main_frame.Freeze()
+        """
+        Event handler for "Close Others" menu events. Closes all figures except 
+        the currently selected one.
+        """        
+        cur_idx = self.plots_frame.GetSelection()
+        self.plots_frame.Freeze()
+        figs_to_delete = []
         #close all the plots with lower index than current
         for i in range(cur_idx):
-            self.main_frame.close_plot(0)
-        
+            figs_to_delete.append(self.plots_frame.GetPage(i))
+
         #close all plots with higher index
-        for i in range(self.main_frame.notebook.GetPageCount() - 1):
-            self.main_frame.close_plot(1)
+        for i in range(cur_idx +1, self.plots_frame.GetPageCount()):
+            figs_to_delete.append(self.plots_frame.GetPage(i))
+            
+        for f in figs_to_delete:
+            f.delete()
         
-        self.main_frame.Thaw()
+        self.plots_frame.Thaw()
     
     
     def close_all(self, evnt):
-        self.main_frame.Freeze()
-        idx = self.main_frame.notebook.GetSelection()
-       
-        while idx >= 0:
-            self.main_frame.close_plot(idx)
-            idx = self.main_frame.notebook.GetSelection()
-        self.main_frame.Thaw()
+        """
+        Event handler for "Close All" menu events. Closes all figures.
+        """         
+        
+        self.plots_frame.Freeze()
+
+        figs_to_delete = [self.plots_frame.GetPage(i) for i in range(self.plots_frame.GetPageCount())]
+        
+        for fig in figs_to_delete:
+            fig.delete()
+
+        self.plots_frame.Thaw()
         
         
         

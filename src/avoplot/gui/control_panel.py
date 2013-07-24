@@ -77,7 +77,12 @@ class ControlPanel(aui.AuiNotebook):
 
         if el == self._current_element:
             while self.GetPageCount():
-                self.DeletePage(0)
+                # get rid of the old pages and reparent them back to whatever
+                #window was their parent before they were added to the notebook
+                p = self.GetPage(0)
+                self.RemovePage(0)
+                p.Show(False)
+                p.Reparent(p.old_parent)
             self._current_element = None
     
     
@@ -86,7 +91,9 @@ class ControlPanel(aui.AuiNotebook):
         Event handler for element select events. Adds any relevant control 
         panels for the newly selected element to the notebook.
         """
+
         el = evnt.element
+
         if el != self._current_element: 
             self.set_control_panels(el.get_control_panels())
             self._current_element = el

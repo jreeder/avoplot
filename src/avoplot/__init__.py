@@ -19,6 +19,7 @@ import os
 import os.path
 import warnings
 import sys
+import collections
 
 import matplotlib
 matplotlib.use('WXAgg')
@@ -108,6 +109,18 @@ def get_avoplot_icons_dir():
     are stored.
     """
     return os.path.join(get_avoplot_sys_dir(),'icons')
+
+
+
+def call_on_idle(func, *args, **kwargs):
+    """
+    Registers a callable to be executed when the event loop is empty. The
+    callable will only be called once. This is used to execute the _destroy()
+    method of AvoPlotElementBase. 
+    """
+    call_on_idle.idle_q.append((func, args, kwargs))
+
+call_on_idle.idle_q = collections.deque()
 
 
 #make sure that all the directories that we are expecting to exist actually do.
