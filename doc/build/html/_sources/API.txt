@@ -1,5 +1,7 @@
 API
 ===
 
-.. automodule:: avoplot.plugins
-    :members:
+.. toctree::
+   :maxdepth: 1
+
+   avoplot

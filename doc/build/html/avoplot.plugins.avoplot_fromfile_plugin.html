@@ -1,0 +1,535 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>avoplot_fromfile_plugin Package &mdash; AvoPlot 1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/avoplot16.ico"/>
+    <link rel="top" title="AvoPlot 1 documentation" href="index.html" />
+    <link rel="up" title="plugins Package" href="avoplot.plugins.html" />
+    <link rel="prev" title="plugins Package" href="avoplot.plugins.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="avoplot.plugins.html" title="plugins Package"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">AvoPlot 1 documentation</a> &raquo;</li>
+          <li><a href="modules.html" >avoplot</a> &raquo;</li>
+          <li><a href="avoplot.html" >avoplot Package</a> &raquo;</li>
+          <li><a href="avoplot.plugins.html" accesskey="U">plugins Package</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">avoplot_fromfile_plugin Package</a><ul>
+<li><a class="reference internal" href="#id1"><tt class="docutils literal"><span class="pre">avoplot_fromfile_plugin</span></tt> Package</a></li>
+<li><a class="reference internal" href="#module-avoplot.plugins.avoplot_fromfile_plugin.column_selector"><tt class="docutils literal"><span class="pre">column_selector</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-avoplot.plugins.avoplot_fromfile_plugin.loader"><tt class="docutils literal"><span class="pre">loader</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader"><tt class="docutils literal"><span class="pre">txt_file_loader</span></tt> Module</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="avoplot.plugins.html"
+                        title="previous chapter">plugins Package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/avoplot.plugins.avoplot_fromfile_plugin.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="avoplot-fromfile-plugin-package">
+<h1>avoplot_fromfile_plugin Package<a class="headerlink" href="#avoplot-fromfile-plugin-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id1">
+<h2><tt class="xref py py-mod docutils literal"><span class="pre">avoplot_fromfile_plugin</span></tt> Package<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-avoplot.plugins.avoplot_fromfile_plugin"></span></div>
+<div class="section" id="module-avoplot.plugins.avoplot_fromfile_plugin.column_selector">
+<span id="column-selector-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">column_selector</span></tt> Module<a class="headerlink" href="#module-avoplot.plugins.avoplot_fromfile_plugin.column_selector" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnDataPanel">
+<em class="property">class </em><tt class="descclassname">avoplot.plugins.avoplot_fromfile_plugin.column_selector.</tt><tt class="descname">ColumnDataPanel</tt><big>(</big><em>parent</em>, <em>file_contents</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnDataPanel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx._windows.ScrolledWindow</span></tt></p>
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnDataPanel.enable_select_mode">
+<tt class="descname">enable_select_mode</tt><big>(</big><em>val</em>, <em>data_series</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnDataPanel.enable_select_mode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnDataPanel.get_selection">
+<tt class="descname">get_selection</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnDataPanel.get_selection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a tuple (selection string, col_idx, data mask) where selection string is 
+a human readable string of the selection made, col_idx is the index of the column that the mask relates to and data mask is a numpy 
+mask array where True indicates a selection and False indicates a value to
+mask out.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnDataPanel.on_column_resize">
+<tt class="descname">on_column_resize</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnDataPanel.on_column_resize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle column resize events - this requires all the data_type choices
+to be resized to match the columns</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnDataPanel.set_editable">
+<tt class="descname">set_editable</tt><big>(</big><em>value</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnDataPanel.set_editable" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnSelectorFrame">
+<em class="property">class </em><tt class="descclassname">avoplot.plugins.avoplot_fromfile_plugin.column_selector.</tt><tt class="descname">ColumnSelectorFrame</tt><big>(</big><em>parent</em>, <em>file_contents</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnSelectorFrame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx._windows.Frame</span></tt></p>
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnSelectorFrame.on_plot">
+<tt class="descname">on_plot</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnSelectorFrame.on_plot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnSelectorFrame.on_x_range_selected">
+<tt class="descname">on_x_range_selected</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnSelectorFrame.on_x_range_selected" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnSelectorFrame.on_x_select">
+<tt class="descname">on_x_select</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnSelectorFrame.on_x_select" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnSelectorFrame.on_y_range_selected">
+<tt class="descname">on_y_range_selected</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnSelectorFrame.on_y_range_selected" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnSelectorFrame.on_y_select">
+<tt class="descname">on_y_select</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnSelectorFrame.on_y_select" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.DataSeriesSelectPanel">
+<em class="property">class </em><tt class="descclassname">avoplot.plugins.avoplot_fromfile_plugin.column_selector.</tt><tt class="descname">DataSeriesSelectPanel</tt><big>(</big><em>parent</em>, <em>main_frame</em>, <em>file_contents</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.DataSeriesSelectPanel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx._windows.ScrolledWindow</span></tt></p>
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.DataSeriesSelectPanel.enable_select_mode">
+<tt class="descname">enable_select_mode</tt><big>(</big><em>val</em>, <em>series</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.DataSeriesSelectPanel.enable_select_mode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.DataSeriesSelectPanel.on_add_data_series">
+<tt class="descname">on_add_data_series</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.DataSeriesSelectPanel.on_add_data_series" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.DataSeriesSelectPanel.on_remove_data_series">
+<tt class="descname">on_remove_data_series</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.DataSeriesSelectPanel.on_remove_data_series" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.FileContentsPanel">
+<em class="property">class </em><tt class="descclassname">avoplot.plugins.avoplot_fromfile_plugin.column_selector.</tt><tt class="descname">FileContentsPanel</tt><big>(</big><em>parent</em>, <em>file_contents</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.FileContentsPanel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx._windows.Panel</span></tt></p>
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.FileContentsPanel.enable_select_mode">
+<tt class="descname">enable_select_mode</tt><big>(</big><em>val</em>, <em>data_series</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.FileContentsPanel.enable_select_mode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.FileContentsPanel.on_cols_chkbox">
+<tt class="descname">on_cols_chkbox</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.FileContentsPanel.on_cols_chkbox" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.FileContentsPanel.on_expand">
+<tt class="descname">on_expand</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.FileContentsPanel.on_expand" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.FileContentsPanel.on_rows_chkbox">
+<tt class="descname">on_rows_chkbox</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.FileContentsPanel.on_rows_chkbox" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.InvalidSelectionError">
+<em class="property">exception </em><tt class="descclassname">avoplot.plugins.avoplot_fromfile_plugin.column_selector.</tt><tt class="descname">InvalidSelectionError</tt><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.InvalidSelectionError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">exceptions.ValueError</span></tt></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.TxtFileDataSeriesSelectFrame">
+<em class="property">class </em><tt class="descclassname">avoplot.plugins.avoplot_fromfile_plugin.column_selector.</tt><tt class="descname">TxtFileDataSeriesSelectFrame</tt><big>(</big><em>parent</em>, <em>file_contents</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.TxtFileDataSeriesSelectFrame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx._windows.Dialog</span></tt></p>
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.TxtFileDataSeriesSelectFrame.enable_select_mode">
+<tt class="descname">enable_select_mode</tt><big>(</big><em>val</em>, <em>data_series</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.TxtFileDataSeriesSelectFrame.enable_select_mode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.TxtFileDataSeriesSelectFrame.get_series">
+<tt class="descname">get_series</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.TxtFileDataSeriesSelectFrame.get_series" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.TxtFileDataSeriesSelectFrame.on_cancel">
+<tt class="descname">on_cancel</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.TxtFileDataSeriesSelectFrame.on_cancel" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.TxtFileDataSeriesSelectFrame.on_plot">
+<tt class="descname">on_plot</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.TxtFileDataSeriesSelectFrame.on_plot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.XYDataSeriesPanel">
+<em class="property">class </em><tt class="descclassname">avoplot.plugins.avoplot_fromfile_plugin.column_selector.</tt><tt class="descname">XYDataSeriesPanel</tt><big>(</big><em>parent</em>, <em>file_contents</em>, <em>main_frame</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.XYDataSeriesPanel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx._windows.Panel</span></tt></p>
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.XYDataSeriesPanel.enable_select_mode">
+<tt class="descname">enable_select_mode</tt><big>(</big><em>val</em>, <em>series</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.XYDataSeriesPanel.enable_select_mode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.XYDataSeriesPanel.get_add_button_id">
+<tt class="descname">get_add_button_id</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.XYDataSeriesPanel.get_add_button_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.XYDataSeriesPanel.get_remove_button_id">
+<tt class="descname">get_remove_button_id</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.XYDataSeriesPanel.get_remove_button_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.XYDataSeriesPanel.get_series_data">
+<tt class="descname">get_series_data</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.XYDataSeriesPanel.get_series_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a tuple of (xdata, ydata)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.XYDataSeriesPanel.get_x_series_data">
+<tt class="descname">get_x_series_data</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.XYDataSeriesPanel.get_x_series_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.XYDataSeriesPanel.get_y_series_data">
+<tt class="descname">get_y_series_data</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.XYDataSeriesPanel.get_y_series_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.XYDataSeriesPanel.on_select_x_series">
+<tt class="descname">on_select_x_series</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.XYDataSeriesPanel.on_select_x_series" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.XYDataSeriesPanel.on_select_y_series">
+<tt class="descname">on_select_y_series</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.XYDataSeriesPanel.on_select_y_series" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.XYDataSeriesPanel.plot_into_axes">
+<tt class="descname">plot_into_axes</tt><big>(</big><em>axes</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.XYDataSeriesPanel.plot_into_axes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.XYDataSeriesPanel.set_button_visibility">
+<tt class="descname">set_button_visibility</tt><big>(</big><em>add_button</em>, <em>remove_button</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.XYDataSeriesPanel.set_button_visibility" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.XYDataSeriesPanel.set_selection">
+<tt class="descname">set_selection</tt><big>(</big><em>selection_str</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.XYDataSeriesPanel.set_selection" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.XYDataSeriesPanel.validate_selection">
+<tt class="descname">validate_selection</tt><big>(</big><em>row_selection</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.XYDataSeriesPanel.validate_selection" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-avoplot.plugins.avoplot_fromfile_plugin.loader">
+<span id="loader-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">loader</span></tt> Module<a class="headerlink" href="#module-avoplot.plugins.avoplot_fromfile_plugin.loader" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.loader.ColumnData">
+<em class="property">class </em><tt class="descclassname">avoplot.plugins.avoplot_fromfile_plugin.loader.</tt><tt class="descname">ColumnData</tt><big>(</big><em>raw_data</em>, <em>title=''</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.loader.ColumnData" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.loader.ColumnData.get_data">
+<tt class="descname">get_data</tt><big>(</big><em>d_type=None</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.loader.ColumnData.get_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.loader.ColumnData.get_data_mask">
+<tt class="descname">get_data_mask</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.loader.ColumnData.get_data_mask" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.loader.ColumnData.get_data_type">
+<tt class="descname">get_data_type</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.loader.ColumnData.get_data_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.loader.ColumnData.get_number_of_rows">
+<tt class="descname">get_number_of_rows</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.loader.ColumnData.get_number_of_rows" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.loader.FileContents">
+<em class="property">class </em><tt class="descclassname">avoplot.plugins.avoplot_fromfile_plugin.loader.</tt><tt class="descname">FileContents</tt><big>(</big><em>filename</em>, <em>columns</em>, <em>header=None</em>, <em>comment_symbols=</em><span class="optional">[</span><span class="optional">]</span>, <em>skipped_rows=</em><span class="optional">[</span><span class="optional">]</span>, <em>footer=None</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.loader.FileContents" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.loader.FileContents.get_col_name">
+<tt class="descname">get_col_name</tt><big>(</big><em>n</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.loader.FileContents.get_col_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.loader.FileContents.get_column_by_index">
+<tt class="descname">get_column_by_index</tt><big>(</big><em>idx</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.loader.FileContents.get_column_by_index" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.loader.FileContents.get_column_by_name">
+<tt class="descname">get_column_by_name</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.loader.FileContents.get_column_by_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.loader.FileContents.get_columns">
+<tt class="descname">get_columns</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.loader.FileContents.get_columns" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.loader.FileContents.get_number_of_columns">
+<tt class="descname">get_number_of_columns</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.loader.FileContents.get_number_of_columns" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.loader.FileContents.get_number_of_rows">
+<tt class="descname">get_number_of_rows</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.loader.FileContents.get_number_of_rows" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.loader.FileContents.print_summary">
+<tt class="descname">print_summary</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.loader.FileContents.print_summary" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.loader.FileLoaderBase">
+<em class="property">class </em><tt class="descclassname">avoplot.plugins.avoplot_fromfile_plugin.loader.</tt><tt class="descname">FileLoaderBase</tt><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.loader.FileLoaderBase" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.loader.FileLoaderBase.load">
+<tt class="descname">load</tt><big>(</big><em>filename</em>, <em>ifp</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.loader.FileLoaderBase.load" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.loader.FileLoaderBase.test">
+<tt class="descname">test</tt><big>(</big><em>filename</em>, <em>ifp</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.loader.FileLoaderBase.test" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.loader.load_file">
+<tt class="descclassname">avoplot.plugins.avoplot_fromfile_plugin.loader.</tt><tt class="descname">load_file</tt><big>(</big><em>filename</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.loader.load_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.loader.register_loader">
+<tt class="descclassname">avoplot.plugins.avoplot_fromfile_plugin.loader.</tt><tt class="descname">register_loader</tt><big>(</big><em>loader_instance</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.loader.register_loader" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.loader.to_float">
+<tt class="descclassname">avoplot.plugins.avoplot_fromfile_plugin.loader.</tt><tt class="descname">to_float</tt><big>(</big><em>data</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.loader.to_float" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader">
+<span id="txt-file-loader-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">txt_file_loader</span></tt> Module<a class="headerlink" href="#module-avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.TextFileLoader">
+<em class="property">class </em><tt class="descclassname">avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.</tt><tt class="descname">TextFileLoader</tt><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.TextFileLoader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#avoplot.plugins.avoplot_fromfile_plugin.loader.FileLoaderBase" title="avoplot.plugins.avoplot_fromfile_plugin.loader.FileLoaderBase"><tt class="xref py py-class docutils literal"><span class="pre">avoplot.plugins.avoplot_fromfile_plugin.loader.FileLoaderBase</span></tt></a></p>
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.TextFileLoader.get_columns">
+<tt class="descname">get_columns</tt><big>(</big><em>ifp</em>, <em>n_cols</em>, <em>start_idx</em>, <em>end_idx</em>, <em>lines_to_skip</em>, <em>headings</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.TextFileLoader.get_columns" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.TextFileLoader.guess_column_titles">
+<tt class="descname">guess_column_titles</tt><big>(</big><em>ifp</em>, <em>n_cols</em>, <em>start_idx</em>, <em>comment_symbol</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.TextFileLoader.guess_column_titles" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.TextFileLoader.guess_comment_symbol">
+<tt class="descname">guess_comment_symbol</tt><big>(</big><em>ifp</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.TextFileLoader.guess_comment_symbol" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.TextFileLoader.guess_data_lines">
+<tt class="descname">guess_data_lines</tt><big>(</big><em>ifp</em>, <em>n_cols</em>, <em>comment=None</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.TextFileLoader.guess_data_lines" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.TextFileLoader.guess_number_of_columns">
+<tt class="descname">guess_number_of_columns</tt><big>(</big><em>ifp</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.TextFileLoader.guess_number_of_columns" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.TextFileLoader.load">
+<tt class="descname">load</tt><big>(</big><em>filename</em>, <em>ifp</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.TextFileLoader.load" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.TextFileLoader.test">
+<tt class="descname">test</tt><big>(</big><em>filename</em>, <em>ifp</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.TextFileLoader.test" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.TextFilePlugin">
+<em class="property">class </em><tt class="descclassname">avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.</tt><tt class="descname">TextFilePlugin</tt><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.TextFilePlugin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="avoplot.plugins.html#avoplot.plugins.AvoPlotPluginSimple" title="avoplot.plugins.AvoPlotPluginSimple"><tt class="xref py py-class docutils literal"><span class="pre">avoplot.plugins.AvoPlotPluginSimple</span></tt></a></p>
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.TextFilePlugin.get_data_series">
+<tt class="descname">get_data_series</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.TextFilePlugin.get_data_series" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.TextFilePlugin.plot_into_subplot">
+<tt class="descname">plot_into_subplot</tt><big>(</big><em>subplot</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.TextFilePlugin.plot_into_subplot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.is_binary">
+<tt class="descclassname">avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.</tt><tt class="descname">is_binary</tt><big>(</big><em>ifp</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.is_binary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return true if the given filename is binary. This is done
+based on finding null bytes in the file - it will only be used
+when python-magic is not available.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.load">
+<tt class="descclassname">avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.</tt><tt class="descname">load</tt><big>(</big><em>filename</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.load" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.multi_sort">
+<tt class="descclassname">avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.</tt><tt class="descname">multi_sort</tt><big>(</big><em>*lists</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.multi_sort" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sorts multiple lists based on the contents of the first list.
+&gt;&gt;&gt; print multi_sort([3,2,1],[&#8216;a&#8217;,&#8217;b&#8217;,&#8217;c&#8217;],[&#8216;d&#8217;,&#8217;e&#8217;,&#8217;f&#8217;])
+([1, 2, 3], [&#8216;c&#8217;, &#8216;b&#8217;, &#8216;a&#8217;], [&#8216;f&#8217;, &#8216;e&#8217;, &#8216;d&#8217;])
+&gt;&gt;&gt; print multi_sort([3,2,1])
+([1, 2, 3],)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.tuple_compare">
+<tt class="descclassname">avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.</tt><tt class="descname">tuple_compare</tt><big>(</big><em>first</em>, <em>second</em>, <em>element=0</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.txt_file_loader.tuple_compare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compares two tuples based on their values at the index given by element.
+Use functools.partial() to build comparators for any element value for use
+in sort() functions.
+&gt;&gt;&gt; print tuple_compare((1,2),(1,2))
+0
+&gt;&gt;&gt; print tuple_compare((1,2),(2,1))
+-1
+&gt;&gt;&gt; print tuple_compare((1,2),(2,1),element=1)
+1</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="avoplot.plugins.html" title="plugins Package"
+             >previous</a> |</li>
+        <li><a href="index.html">AvoPlot 1 documentation</a> &raquo;</li>
+          <li><a href="modules.html" >avoplot</a> &raquo;</li>
+          <li><a href="avoplot.html" >avoplot Package</a> &raquo;</li>
+          <li><a href="avoplot.plugins.html" >plugins Package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nial Peters.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>A First Plot &mdash; AvoPlot 1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/avoplot16.ico"/>
+    <link rel="top" title="AvoPlot 1 documentation" href="index.html" />
+    <link rel="next" title="Writing Plugins" href="writing_plugins.html" />
+    <link rel="prev" title="Installation" href="installation.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="writing_plugins.html" title="Writing Plugins"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Installation"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">AvoPlot 1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="installation.html"
+                        title="previous chapter">Installation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="writing_plugins.html"
+                        title="next chapter">Writing Plugins</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/a_first_plot.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="a-first-plot">
+<h1>A First Plot<a class="headerlink" href="#a-first-plot" title="Permalink to this headline">¶</a></h1>
+<p>Creating plots with AvoPlot is simple! In this example we will guide you through plotting some data from a text file. We will use the data in the spectrum_data.txt file, which you can find in the examples folder of the AvoPlot package. The file starts with some header data, and then has two columns of numbers (wavelengths and intensities recorded with an ultraviolet spectrometer).</p>
+<dl class="docutils">
+<dt>To create a plot of the data:</dt>
+<dd><ul class="first last simple">
+<li>Open the AvoPlot program.</li>
+<li>Go to <cite>File-&gt;New-&gt;From File</cite> or use the <cite>New plot</cite> icon on the toolbar.</li>
+<li>Select the file you want to plot (in this case spectrum_data.txt)</li>
+<li>You should be presented with the file import dialog shown below.</li>
+</ul>
+</dd>
+</dl>
+<a class="reference internal image-reference" href="_images/data_import_screenshot.png"><img alt="_images/data_import_screenshot.png" class="align-center" src="_images/data_import_screenshot.png" style="width: 403.0px; height: 283.0px;" /></a>
+<dl class="docutils">
+<dt>Now you are ready to select the data you want to plot:</dt>
+<dd><ul class="first last simple">
+<li>Click on the data selection button next to the <cite>x-data</cite> box, select the first column using the mouse and then click the data selection button again to end selection.</li>
+<li>The <cite>x-data</cite> box should now display <em>A[:]</em>, repeat the above step for the <cite>y-data</cite>.</li>
+<li>When you have your data selected, click the <cite>Plot</cite> button in the lower right of the window.</li>
+<li>You should see the data beautifully plotted in the main AvoPlot window as shown below.</li>
+</ul>
+</dd>
+</dl>
+<a class="reference internal image-reference" href="_images/example_plot_screenshot.png"><img alt="_images/example_plot_screenshot.png" class="align-center" src="_images/example_plot_screenshot.png" style="width: 572.0px; height: 334.5px;" /></a>
+<p>Easy! Now the you have a plot, you might want to explore some of the other features of AvoPlot, a summary of the main features is given below:</p>
+<dl class="docutils">
+<dt><strong>Plot Navigation</strong></dt>
+<dd>AvoPlot provides access to the standard <a class="reference external" href="http://matplotlib.org/">matplotlib</a> plot navigation tools which can be used to pan and zoom the plot. These tools are accessed from the AvoPlot toolbar.</dd>
+<dt><strong>Plot Properties</strong></dt>
+<dd><p class="first">The Navigation Panel allows different elements of the plot to be selected. As different plot elements are selected the Control Panel displays relevant editing controls which can be used to adjust plot parameters. If specialised data analysis tools are provided by the plugin which created the plot, then they will also be displayed in the control panel.</p>
+<p class="last">All text labels on plots can contain LaTex markup enclosed with dollar signs (in the same way as <a class="reference external" href="http://matplotlib.org/">matplotlib</a> text items)</p>
+</dd>
+<dt><strong>Adding Data Series</strong></dt>
+<dd>Additional data series may be added to a subplot by right clicking on the subplot and selecting <cite>Add series</cite> from the displayed menu.</dd>
+<dt><strong>Viewing Plots Simultaneously</strong></dt>
+<dd>The plots panel of AvoPlot may be split into any number of panels to allow multiple plots to be viewed simultaneously. This can be done either by using the split options in the <cite>View</cite> menu, right clicking on the plot tab (the actual tab, not the plot area) and using the split options in the resulting menu, or by simply dragging the plot tab to the desired area of the plot window.</dd>
+</dl>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="writing_plugins.html" title="Writing Plugins"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Installation"
+             >previous</a> |</li>
+        <li><a href="index.html">AvoPlot 1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nial Peters.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

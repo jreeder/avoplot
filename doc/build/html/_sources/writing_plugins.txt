@@ -3,7 +3,7 @@ Writing Plugins
 
 The whole point of AvoPlot is to provide a plotting interface that can be easily extended to deal with specific types of data. To facilitate this, AvoPlot provides a plugin interface which allows end-users to create plugins that not only import data into AvoPlot, but also provide tools for manipulating it. Writing plugins for AvoPlot is relatively straightforward, but there are several steps that need to be followed. These are best explained by example.
 
-A simple example
+A Simple Example
 ----------------
 
 As a simple example of writing a plugin, lets create a plugin that plots a sine wave. The complete plugin file for this example can be found in the "examples" folder of the AvoPlot package. The contents of the file looks like this:
@@ -65,7 +65,7 @@ AvoPlot is licensed under the terms of the Gnu Public License (GPL_). A requirem
 
     class ExamplePlugin(plugins.AvoPlotPluginSimple):
 
-AvoPlot plugins are just Python objects. Simple plugins that only require one subplot (set of axes) should inherit from :py:class:`AvoPlotPluginSimple`.
+AvoPlot plugins are just Python objects. Simple plugins that only require one subplot (set of axes) should inherit from :py:class:`~avoplot.plugins.AvoPlotPluginSimple`.
 
 .. code-block:: python
 
@@ -79,7 +79,7 @@ If your plugin class defines and __init__ method, then you must call the __init_
     self.set_menu_entry(['Examples','Sine Wave'], 
                         "Plot a sine wave")
 
-To get our plugin to show up in the AvoPlot menus, we need to call set_menu_entry. The first argument to this method, is a list of menu entries. The final entry in the list will be the menu entry for the plugin and the preceding entries will form submenus. So in the example above, we will get an 'Examples' submenu with a 'Sine Wave' entry. This allows us to group similar plugins together, for example if we wanted to create a cosine example as well then we might call set_menu_entry with ['Examples', 'Cosine Wave']. This would result in an 'Examples' submenu with 'Sine Wave' and 'Cosine Wave' entries. More nested menus can be created by simply extending the list e.g. ['Examples', 'Trig. Functions', 'Sine Wave'] etc. The second argument to set_menu_entry is the tooltip that will be displayed when the mouse is hovered over the menu entry.
+To get our plugin to show up in the AvoPlot menus, we need to call :py:meth:`~avoplot.plugins.AvoPlotPluginBase.set_menu_entry`. The first argument to this method, is a list of menu entries. The final entry in the list will be the menu entry for the plugin and the preceding entries will form submenus. So in the example above, we will get an 'Examples' submenu with a 'Sine Wave' entry. This allows us to group similar plugins together, for example if we wanted to create a cosine example as well then we might call set_menu_entry with ['Examples', 'Cosine Wave']. This would result in an 'Examples' submenu with 'Sine Wave' and 'Cosine Wave' entries. More nested menus can be created by simply extending the list e.g. ['Examples', 'Trig. Functions', 'Sine Wave'] etc. The second argument to set_menu_entry is the tooltip that will be displayed when the mouse is hovered over the menu entry.
 
 .. code-block:: python
 
@@ -89,14 +89,14 @@ To get our plugin to show up in the AvoPlot menus, we need to call set_menu_entr
         y_data = numpy.sin(x_data)
 
 
-If your plugin inherits from :py:class:`AvoPlotPluginSimple` then this is the only other method that you have to define. The subplot argument that is passed to the method will be an AvoPlot subplot object. This method is the place to do all of your data loading/processing etc. Basically, eveything you need to do before your data gets plotted. In our example we simply create some arrays of values, but you are free to open dialogs to get the user to select files, perform complex operations etc etc.
+If your plugin inherits from :py:class:`~avoplot.plugins.AvoPlotPluginSimple` then this is the only other method that you have to define. The subplot argument that is passed to the method will be an AvoPlot subplot object. This method is the place to do all of your data loading/processing etc. Basically, eveything you need to do before your data gets plotted. In our example we simply create some arrays of values, but you are free to open dialogs to get the user to select files, perform complex operations etc etc.
 
 .. code-block:: python
 
     data_series = series.XYDataSeries("sine wave", xdata=x_data, 
                                       ydata=y_data)
                                      
-Once we have our data, then we need to wrap it into a data series object. The first argument to the data series constructor is the name of the data that we are plotting.
+Once we have our data, then we need to wrap it into a data series object. Since our sine wave is only has simple x,y data we use a :py:class:`~avoplot.series.XYDataSeries`. The first argument to the data series constructor is the name of the data that we are plotting.
 
 
 .. code-block:: python
@@ -130,6 +130,10 @@ In order to use your plugins they will have to be installed. This is done in exa
 
     from avoplot.plugins import setup
 
-This can be used in exactly the same way as the distutils setup function. See the example_plugin_setup.py file in the "examples" folder.
+This can be used in exactly the same way as the distutils setup function. See the example_plugins_setup.py file in the "examples" folder of the AvoPlot distribution.
 
+
+A More Advanced Example
+-----------------------
+This part of the documentation is still incomplete! For now, please refer to the adv_sine_wave.py file in the examples folder of the AvoPlot distribution. This shows how to create your own subplot and data series types and add controls to them. The file is well commented and should be self explanatory.
 

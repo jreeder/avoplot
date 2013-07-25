@@ -1,0 +1,668 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>gui Package &mdash; AvoPlot 1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/avoplot16.ico"/>
+    <link rel="top" title="AvoPlot 1 documentation" href="index.html" />
+    <link rel="up" title="avoplot Package" href="avoplot.html" />
+    <link rel="next" title="plugins Package" href="avoplot.plugins.html" />
+    <link rel="prev" title="avoplot Package" href="avoplot.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="avoplot.plugins.html" title="plugins Package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="avoplot.html" title="avoplot Package"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">AvoPlot 1 documentation</a> &raquo;</li>
+          <li><a href="modules.html" >avoplot</a> &raquo;</li>
+          <li><a href="avoplot.html" accesskey="U">avoplot Package</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">gui Package</a><ul>
+<li><a class="reference internal" href="#id1"><tt class="docutils literal"><span class="pre">gui</span></tt> Package</a></li>
+<li><a class="reference internal" href="#module-avoplot.gui.analysis_tools"><tt class="docutils literal"><span class="pre">analysis_tools</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-avoplot.gui.artwork"><tt class="docutils literal"><span class="pre">artwork</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-avoplot.gui.control_panel"><tt class="docutils literal"><span class="pre">control_panel</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-avoplot.gui.main"><tt class="docutils literal"><span class="pre">main</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-avoplot.gui.menu"><tt class="docutils literal"><span class="pre">menu</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-avoplot.gui.nav_panel"><tt class="docutils literal"><span class="pre">nav_panel</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-avoplot.gui.plots_panel"><tt class="docutils literal"><span class="pre">plots_panel</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-avoplot.gui.toolbar"><tt class="docutils literal"><span class="pre">toolbar</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-avoplot.gui.widgets"><tt class="docutils literal"><span class="pre">widgets</span></tt> Module</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="avoplot.html"
+                        title="previous chapter">avoplot Package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="avoplot.plugins.html"
+                        title="next chapter">plugins Package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/avoplot.gui.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="gui-package">
+<h1>gui Package<a class="headerlink" href="#gui-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id1">
+<h2><tt class="xref py py-mod docutils literal"><span class="pre">gui</span></tt> Package<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-avoplot.gui"></span><p>As the name suggests, the gui module contains a collection of modules that 
+make up the AvoPlot GUI.</p>
+</div>
+<div class="section" id="module-avoplot.gui.analysis_tools">
+<span id="analysis-tools-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">analysis_tools</span></tt> Module<a class="headerlink" href="#module-avoplot.gui.analysis_tools" title="Permalink to this headline">¶</a></h2>
+<p>This module is still under construction! Eventually, it will contain a set of
+data analysis tools for working with data.</p>
+</div>
+<div class="section" id="module-avoplot.gui.artwork">
+<span id="artwork-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">artwork</span></tt> Module<a class="headerlink" href="#module-avoplot.gui.artwork" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="avoplot.gui.artwork.AvoplotArtProvider">
+<em class="property">class </em><tt class="descclassname">avoplot.gui.artwork.</tt><tt class="descname">AvoplotArtProvider</tt><a class="headerlink" href="#avoplot.gui.artwork.AvoplotArtProvider" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx._misc.ArtProvider</span></tt></p>
+<p>Customised art provider class for serving the AvoPlot specific icons.</p>
+<dl class="method">
+<dt id="avoplot.gui.artwork.AvoplotArtProvider.CreateBitmap">
+<tt class="descname">CreateBitmap</tt><big>(</big><em>artid</em>, <em>client</em>, <em>size</em><big>)</big><a class="headerlink" href="#avoplot.gui.artwork.AvoplotArtProvider.CreateBitmap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overrides CreateBitmap from wx.ArtProvider. This method looks in the 
+AvoPlot icons directory (as returned by avoplot.get_avoplot_icons_dir())
+for the icon specified by artid. The icons are split up into subfolders
+by size (for example &#8220;16x16&#8221;) and this method will only look in the 
+relevant size subfolder for the requested icon.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-avoplot.gui.control_panel">
+<span id="control-panel-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">control_panel</span></tt> Module<a class="headerlink" href="#module-avoplot.gui.control_panel" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="avoplot.gui.control_panel.ControlPanel">
+<em class="property">class </em><tt class="descclassname">avoplot.gui.control_panel.</tt><tt class="descname">ControlPanel</tt><big>(</big><em>parent</em><big>)</big><a class="headerlink" href="#avoplot.gui.control_panel.ControlPanel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx.aui.AuiNotebook</span></tt></p>
+<p>Notebook control which holds all the controls for the currently selected
+element. Each set of controls (as returned by element.get_control_panels())
+is added as a new tab in the notebook.</p>
+<dl class="method">
+<dt id="avoplot.gui.control_panel.ControlPanel.on_element_delete">
+<tt class="descname">on_element_delete</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.control_panel.ControlPanel.on_element_delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for element delete events. Removes any control panels 
+associated with the deleted element from the notebook.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.control_panel.ControlPanel.on_element_select">
+<tt class="descname">on_element_select</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.control_panel.ControlPanel.on_element_select" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for element select events. Adds any relevant control 
+panels for the newly selected element to the notebook.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.control_panel.ControlPanel.set_control_panels">
+<tt class="descname">set_control_panels</tt><big>(</big><em>control_panels</em><big>)</big><a class="headerlink" href="#avoplot.gui.control_panel.ControlPanel.set_control_panels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the control panels shown in the notebook. &#8216;control_panels&#8217; should
+be a list of AvoPlotControlPanelBase objects.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-avoplot.gui.main">
+<span id="main-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">main</span></tt> Module<a class="headerlink" href="#module-avoplot.gui.main" title="Permalink to this headline">¶</a></h2>
+<p>The main module contains the code for the main frame of the AvoPlot GUI.</p>
+<dl class="class">
+<dt id="avoplot.gui.main.AvoPlotSession">
+<em class="property">class </em><tt class="descclassname">avoplot.gui.main.</tt><tt class="descname">AvoPlotSession</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#avoplot.gui.main.AvoPlotSession" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="avoplot.html#avoplot.core.AvoPlotElementBase" title="avoplot.core.AvoPlotElementBase"><tt class="xref py py-class docutils literal"><span class="pre">avoplot.core.AvoPlotElementBase</span></tt></a></p>
+<p>A session is the &#8220;root&#8221; element for an AvoPlot program instance. It doesn&#8217;t
+really do anything by itself, but provides a parent to any figures that get
+created.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="avoplot.gui.main.MainFrame">
+<em class="property">class </em><tt class="descclassname">avoplot.gui.main.</tt><tt class="descname">MainFrame</tt><a class="headerlink" href="#avoplot.gui.main.MainFrame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx._windows.Frame</span></tt></p>
+<p>Main frame of the GUI. This is set as the top level window when the 
+AvoPlot App is created in the AvoPlot.py script.</p>
+<dl class="method">
+<dt id="avoplot.gui.main.MainFrame.add_figure">
+<tt class="descname">add_figure</tt><big>(</big><em>figure</em><big>)</big><a class="headerlink" href="#avoplot.gui.main.MainFrame.add_figure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a figure element (an avoplot.figure.AvoPlotFigureBase instance) to 
+the current session.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.main.MainFrame.launch">
+<tt class="descname">launch</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.gui.main.MainFrame.launch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create all the GUI elements and show the main window. Note that this 
+needs to be separate from the __init__ method, since we need set the top
+level window for wx before calling launch().</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.main.MainFrame.on_avoplot_event">
+<tt class="descname">on_avoplot_event</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.main.MainFrame.on_avoplot_event" title="Permalink to this definition">¶</a></dt>
+<dd><p>All AvoPlot events (see the &#8216;core&#8217; module) are posted to the MainFrame
+where they are handled by this method. All it does is to repost the 
+event to all the GUI components so that they can react as needed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.main.MainFrame.on_close">
+<tt class="descname">on_close</tt><big>(</big><em>*args</em><big>)</big><a class="headerlink" href="#avoplot.gui.main.MainFrame.on_close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handler called when the MainFrame is closed. This performs all the tidy
+up operations such as saving program state. Note that all elements that
+can be reached through the AvoPlotSession - i.e. all those that have a 
+parent that isn&#8217;t None, will have their delete() method called before 
+the program exits.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.main.MainFrame.on_pane_close">
+<tt class="descname">on_pane_close</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.main.MainFrame.on_pane_close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for pane close events (where the panes are those managed
+by the AUI manager of the MainFrame object - currently just the control
+pane and the navigation pane).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.main.MainFrame.on_show_ctrl_panel">
+<tt class="descname">on_show_ctrl_panel</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.main.MainFrame.on_show_ctrl_panel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for the &#8220;unhiding&#8221; of the control pane.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.main.MainFrame.on_show_nav_panel">
+<tt class="descname">on_show_nav_panel</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.main.MainFrame.on_show_nav_panel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for the &#8220;unhiding&#8221; of the navigation pane.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-avoplot.gui.menu">
+<span id="menu-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">menu</span></tt> Module<a class="headerlink" href="#module-avoplot.gui.menu" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="avoplot.gui.menu.CallbackWrapper">
+<em class="property">class </em><tt class="descclassname">avoplot.gui.menu.</tt><tt class="descname">CallbackWrapper</tt><big>(</big><em>func</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#avoplot.gui.menu.CallbackWrapper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Thin wrapper class to allow callables along with a set of arguments for them 
+to be set as callback handlers.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="avoplot.gui.menu.MainMenu">
+<em class="property">class </em><tt class="descclassname">avoplot.gui.menu.</tt><tt class="descname">MainMenu</tt><big>(</big><em>parent</em><big>)</big><a class="headerlink" href="#avoplot.gui.menu.MainMenu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx._core.MenuBar</span></tt></p>
+<p>The main program menu.</p>
+<dl class="method">
+<dt id="avoplot.gui.menu.MainMenu.create_file_menu">
+<tt class="descname">create_file_menu</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.gui.menu.MainMenu.create_file_menu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates the file menu for the main menubar.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.menu.MainMenu.create_help_menu">
+<tt class="descname">create_help_menu</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.gui.menu.MainMenu.create_help_menu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates the help menu for the main menubar</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.menu.MainMenu.create_view_menu">
+<tt class="descname">create_view_menu</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.gui.menu.MainMenu.create_view_menu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates the view menu for the main menubar</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.menu.MainMenu.onAbout">
+<tt class="descname">onAbout</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.menu.MainMenu.onAbout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for Help-&gt;About menu events. Creates a standard &#8220;About&#8221; 
+dialog.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.menu.MainMenu.on_ctrl_panel_change_state">
+<tt class="descname">on_ctrl_panel_change_state</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.menu.MainMenu.on_ctrl_panel_change_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for AvoPlotCtrlPanelChangeState events. Updates the 
+toggle state of the View-&gt;Control Panel menu entry.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.menu.MainMenu.on_element_add">
+<tt class="descname">on_element_add</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.menu.MainMenu.on_element_add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for AvoPlotElementAdd events. Enables menu entries when 
+there are a sufficient number of figures open for it to make sense to do
+so. For example - you can&#8217;t split the display if you only have one
+figure open.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.menu.MainMenu.on_element_delete">
+<tt class="descname">on_element_delete</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.menu.MainMenu.on_element_delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for AvoPlotElementDelete events. Disables menu entries when 
+there are an insufficient number of figures open for them to make sense.
+For example - you can&#8217;t save a figure if there are none open.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.menu.MainMenu.on_element_select">
+<tt class="descname">on_element_select</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.menu.MainMenu.on_element_select" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for AvoPlotElementSelect events. Just keeps track of which
+element is currently selected.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.menu.MainMenu.on_nav_panel_change_state">
+<tt class="descname">on_nav_panel_change_state</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.menu.MainMenu.on_nav_panel_change_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for AvoPlotNavPanelChangeState events. Updates the 
+toggle state of the View-&gt;Navigation Panel menu entry.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.menu.MainMenu.on_save_plot">
+<tt class="descname">on_save_plot</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.menu.MainMenu.on_save_plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for File-&gt;Save menu events. Opens a dialog to allow the 
+user to save the currently selected figure as an image.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.menu.MainMenu.on_show_ctrl_panel">
+<tt class="descname">on_show_ctrl_panel</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.menu.MainMenu.on_show_ctrl_panel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for View-&gt;Control Panel menu events. Sends a 
+AvoPlotCtrlPanelChangeState event to the main window and lets that sort 
+out hiding/restoring the pane.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.menu.MainMenu.on_show_nav_panel">
+<tt class="descname">on_show_nav_panel</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.menu.MainMenu.on_show_nav_panel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for View-&gt;Navigation Panel menu events. Sends a 
+AvoPlotNavPanelChangeState event to the main window and lets that sort 
+out hiding/restoring the pane.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="avoplot.gui.menu.TabRightClickMenu">
+<em class="property">class </em><tt class="descclassname">avoplot.gui.menu.</tt><tt class="descname">TabRightClickMenu</tt><big>(</big><em>plots_frame</em><big>)</big><a class="headerlink" href="#avoplot.gui.menu.TabRightClickMenu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx._core.Menu</span></tt></p>
+<p>The menu displayed when a tab in the plots panel (which is an AuiNotebook) 
+is right clicked on.</p>
+<dl class="method">
+<dt id="avoplot.gui.menu.TabRightClickMenu.close_all">
+<tt class="descname">close_all</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.menu.TabRightClickMenu.close_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for &#8220;Close All&#8221; menu events. Closes all figures.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.menu.TabRightClickMenu.close_current">
+<tt class="descname">close_current</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.menu.TabRightClickMenu.close_current" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for &#8220;Close&#8221; menu events. Closes the currently selected
+figure.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.menu.TabRightClickMenu.close_others">
+<tt class="descname">close_others</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.menu.TabRightClickMenu.close_others" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for &#8220;Close Others&#8221; menu events. Closes all figures except 
+the currently selected one.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="avoplot.gui.menu.get_subplot_right_click_menu">
+<tt class="descclassname">avoplot.gui.menu.</tt><tt class="descname">get_subplot_right_click_menu</tt><big>(</big><em>subplot</em><big>)</big><a class="headerlink" href="#avoplot.gui.menu.get_subplot_right_click_menu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a wx.Menu object which is relevant for the subplot which was passed
+as an arg. This ensures that only menu entries provided by plugins which
+are compatible with the subplot are included. For example, there is no point
+in the menu for a 2D subplot to have a &#8220;New 3D data series&#8221; option.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-avoplot.gui.nav_panel">
+<span id="nav-panel-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">nav_panel</span></tt> Module<a class="headerlink" href="#module-avoplot.gui.nav_panel" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="avoplot.gui.nav_panel.NavigationPanel">
+<em class="property">class </em><tt class="descclassname">avoplot.gui.nav_panel.</tt><tt class="descname">NavigationPanel</tt><big>(</big><em>parent</em>, <em>session</em><big>)</big><a class="headerlink" href="#avoplot.gui.nav_panel.NavigationPanel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx._windows.ScrolledWindow</span></tt></p>
+<p>Navigation panel for selecting plot elements in a tree ctrl.</p>
+<dl class="method">
+<dt id="avoplot.gui.nav_panel.NavigationPanel.on_element_add">
+<tt class="descname">on_element_add</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.nav_panel.NavigationPanel.on_element_add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for AvoPlotElementAdd events. Adds a tree item 
+for the element which has been added and all its children (recursively).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.nav_panel.NavigationPanel.on_element_delete">
+<tt class="descname">on_element_delete</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.nav_panel.NavigationPanel.on_element_delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for AvoPlotElementDelete events. Removes the tree item 
+corresponding to the element which has been deleted.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.nav_panel.NavigationPanel.on_element_rename">
+<tt class="descname">on_element_rename</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.nav_panel.NavigationPanel.on_element_rename" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for AvoPlotElementRename events. Renames the tree item 
+for the element which has been renamed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.nav_panel.NavigationPanel.on_element_select">
+<tt class="descname">on_element_select</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.nav_panel.NavigationPanel.on_element_select" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for AvoPlotElementSelect events. Selects the tree item 
+corresponding to the element which has been selected.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.nav_panel.NavigationPanel.on_tree_select_el">
+<tt class="descname">on_tree_select_el</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.nav_panel.NavigationPanel.on_tree_select_el" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for tree item select. Selects the corresponding AvoPlot
+element (which generates an AvoPlotElementSelect)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-avoplot.gui.plots_panel">
+<span id="plots-panel-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">plots_panel</span></tt> Module<a class="headerlink" href="#module-avoplot.gui.plots_panel" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="avoplot.gui.plots_panel.PlotsPanel">
+<em class="property">class </em><tt class="descclassname">avoplot.gui.plots_panel.</tt><tt class="descname">PlotsPanel</tt><big>(</big><em>parent</em><big>)</big><a class="headerlink" href="#avoplot.gui.plots_panel.PlotsPanel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx.aui.AuiNotebook</span></tt></p>
+<p>AuiNotebook for displaying figures in. Multiple figures may be viewed 
+simultaneously by splitting the notebook.</p>
+<dl class="method">
+<dt id="avoplot.gui.plots_panel.PlotsPanel.on_delete_element">
+<tt class="descname">on_delete_element</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.plots_panel.PlotsPanel.on_delete_element" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for AvoPlotElementDelete events. If the element is a figure
+then the notebook page associated with the figure is deleted - note that
+this destroys the window, and so future attempts to access the figure
+object will cause an exception.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.plots_panel.PlotsPanel.on_new_element">
+<tt class="descname">on_new_element</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.plots_panel.PlotsPanel.on_new_element" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for AvoPlotElementAdd events. Adds a page to the notebook
+for newly created figure objects.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.plots_panel.PlotsPanel.on_rename_element">
+<tt class="descname">on_rename_element</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.plots_panel.PlotsPanel.on_rename_element" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for AvoPlotElementRename events. If the element is a 
+figure then the relevant notebook page is renamed accordingly.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.plots_panel.PlotsPanel.on_select_element">
+<tt class="descname">on_select_element</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.plots_panel.PlotsPanel.on_select_element" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for AvoPlotElementSelect events. Changes the currently
+selected notebook page to that containing the newly selected element.</p>
+<p>If the selected element is not a figure, then the figure which contains
+the element is selected.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.plots_panel.PlotsPanel.on_tab_change">
+<tt class="descname">on_tab_change</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.plots_panel.PlotsPanel.on_tab_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for tab change events. Calls on set_selected() on the 
+figure associated with the newly selected tab.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.plots_panel.PlotsPanel.on_tab_close">
+<tt class="descname">on_tab_close</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.plots_panel.PlotsPanel.on_tab_close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for tab close events. This vetos the event to prevent the
+notebook from destroying the window and then calls delete() on the 
+figure object associated with the tab that has just been closed, relying
+on the event handlers for the AvoPlotElementDelete event to actually
+destroy the window when it is finished with (this is done by 
+on_delete_element() in this class)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.plots_panel.PlotsPanel.on_tab_right_click">
+<tt class="descname">on_tab_right_click</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.plots_panel.PlotsPanel.on_tab_right_click" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for right click events on the notebook tabs. Creates
+a popup menu allowing the user to close the tab, split the tab and 
+rename the tab.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.plots_panel.PlotsPanel.rename_current_figure">
+<tt class="descname">rename_current_figure</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.plots_panel.PlotsPanel.rename_current_figure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for rename events (from the tab right click menu) for 
+notebook pages. Opens a rename dialog and then sets the name of the 
+relevant figure object. Note that this generates an AvoPlotElementRename
+event and the actual renaming of the notebook tab is left up to the event
+handler for this event - on_rename_element()</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.plots_panel.PlotsPanel.split_figure_horiz">
+<tt class="descname">split_figure_horiz</tt><big>(</big><em>*args</em><big>)</big><a class="headerlink" href="#avoplot.gui.plots_panel.PlotsPanel.split_figure_horiz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Splits the selected pane horizontally.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.plots_panel.PlotsPanel.split_figure_vert">
+<tt class="descname">split_figure_vert</tt><big>(</big><em>*args</em><big>)</big><a class="headerlink" href="#avoplot.gui.plots_panel.PlotsPanel.split_figure_vert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Splits the selected pane vertically.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.plots_panel.PlotsPanel.unsplit_panes">
+<tt class="descname">unsplit_panes</tt><big>(</big><em>*args</em><big>)</big><a class="headerlink" href="#avoplot.gui.plots_panel.PlotsPanel.unsplit_panes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unsplits all the panes.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-avoplot.gui.toolbar">
+<span id="toolbar-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">toolbar</span></tt> Module<a class="headerlink" href="#module-avoplot.gui.toolbar" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="avoplot.gui.toolbar.MainToolbar">
+<em class="property">class </em><tt class="descclassname">avoplot.gui.toolbar.</tt><tt class="descname">MainToolbar</tt><big>(</big><em>parent</em><big>)</big><a class="headerlink" href="#avoplot.gui.toolbar.MainToolbar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx._controls.ToolBar</span></tt></p>
+<p>Main program toolbar</p>
+<dl class="method">
+<dt id="avoplot.gui.toolbar.MainToolbar.enable_plot_tools">
+<tt class="descname">enable_plot_tools</tt><big>(</big><em>state</em><big>)</big><a class="headerlink" href="#avoplot.gui.toolbar.MainToolbar.enable_plot_tools" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enables the plot tools if state=True or disables them if state=False</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.toolbar.MainToolbar.on_element_add">
+<tt class="descname">on_element_add</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.toolbar.MainToolbar.on_element_add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for new element events. If the element is not a figure
+then nothing gets done. For figures, their zoom and pan settings are
+updated depending on the toggle state of the zoom/pan tools.</p>
+<p>This method also enables the plot navigation tools if they were 
+previously disabled.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.toolbar.MainToolbar.on_element_delete">
+<tt class="descname">on_element_delete</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.toolbar.MainToolbar.on_element_delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for element delete events.If the element is not a figure
+then nothing gets done. If the element being deleted was the last figure
+in the session, then this disables the plot navigation tools.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.toolbar.MainToolbar.on_element_select">
+<tt class="descname">on_element_select</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.toolbar.MainToolbar.on_element_select" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for element select events. Just keeps track of what the 
+curretly selected element is.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.toolbar.MainToolbar.on_home">
+<tt class="descname">on_home</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.toolbar.MainToolbar.on_home" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for &#8220;home zoom level&#8221; events. Resets all subplots in the 
+current figure to their default zoom levels.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.toolbar.MainToolbar.on_new">
+<tt class="descname">on_new</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.toolbar.MainToolbar.on_new" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle &#8216;new&#8217; button pressed.
+Creates a popup menu over the tool button containing the same entries as
+the File-&gt;New menu.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.toolbar.MainToolbar.on_pan">
+<tt class="descname">on_pan</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.toolbar.MainToolbar.on_pan" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for pan tool toggle events. Enables or disables panning
+in all figures accordingly.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.toolbar.MainToolbar.on_save_plot">
+<tt class="descname">on_save_plot</tt><big>(</big><em>*args</em><big>)</big><a class="headerlink" href="#avoplot.gui.toolbar.MainToolbar.on_save_plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for save tool events. Opens a file save dialog for saving
+the currently selected figure as an image file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.toolbar.MainToolbar.on_zoom">
+<tt class="descname">on_zoom</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.toolbar.MainToolbar.on_zoom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for zoom tool toggle events. Enables or disables zooming
+in all figures accordingly.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-avoplot.gui.widgets">
+<span id="widgets-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">widgets</span></tt> Module<a class="headerlink" href="#module-avoplot.gui.widgets" title="Permalink to this headline">¶</a></h2>
+<p>The widgets module contains a set of convenience widgets for building
+control panels for elements.</p>
+<dl class="class">
+<dt id="avoplot.gui.widgets.ChoiceSetting">
+<em class="property">class </em><tt class="descclassname">avoplot.gui.widgets.</tt><tt class="descname">ChoiceSetting</tt><big>(</big><em>parent</em>, <em>label</em>, <em>current_selection</em>, <em>selections</em>, <em>callback</em><big>)</big><a class="headerlink" href="#avoplot.gui.widgets.ChoiceSetting" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#avoplot.gui.widgets.SettingBase" title="avoplot.gui.widgets.SettingBase"><tt class="xref py py-class docutils literal"><span class="pre">avoplot.gui.widgets.SettingBase</span></tt></a></p>
+<p>A text label next to a wx choice control.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="avoplot.gui.widgets.ColourSetting">
+<em class="property">class </em><tt class="descclassname">avoplot.gui.widgets.</tt><tt class="descname">ColourSetting</tt><big>(</big><em>parent</em>, <em>label</em>, <em>default_colour</em>, <em>callback</em><big>)</big><a class="headerlink" href="#avoplot.gui.widgets.ColourSetting" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#avoplot.gui.widgets.SettingBase" title="avoplot.gui.widgets.SettingBase"><tt class="xref py py-class docutils literal"><span class="pre">avoplot.gui.widgets.SettingBase</span></tt></a></p>
+<p>A text label next to a wx colour picker control.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="avoplot.gui.widgets.SettingBase">
+<em class="property">class </em><tt class="descclassname">avoplot.gui.widgets.</tt><tt class="descname">SettingBase</tt><big>(</big><em>parent</em>, <em>label</em><big>)</big><a class="headerlink" href="#avoplot.gui.widgets.SettingBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx._core.BoxSizer</span></tt></p>
+<p>Base class for settings controls.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="avoplot.gui.widgets.TextSetting">
+<em class="property">class </em><tt class="descclassname">avoplot.gui.widgets.</tt><tt class="descname">TextSetting</tt><big>(</big><em>parent</em>, <em>label</em>, <em>default_text</em>, <em>callback</em><big>)</big><a class="headerlink" href="#avoplot.gui.widgets.TextSetting" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#avoplot.gui.widgets.SettingBase" title="avoplot.gui.widgets.SettingBase"><tt class="xref py py-class docutils literal"><span class="pre">avoplot.gui.widgets.SettingBase</span></tt></a></p>
+<p>A text label next to a wx text entry control.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="avoplot.plugins.html" title="plugins Package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="avoplot.html" title="avoplot Package"
+             >previous</a> |</li>
+        <li><a href="index.html">AvoPlot 1 documentation</a> &raquo;</li>
+          <li><a href="modules.html" >avoplot</a> &raquo;</li>
+          <li><a href="avoplot.html" >avoplot Package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nial Peters.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

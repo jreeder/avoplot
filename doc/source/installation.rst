@@ -20,7 +20,7 @@ It is also recommended to install python-magic_, but given how difficult it is t
 .. _repository: http://code.google.com/p/avoplot/source/checkout
 .. _InkScape: http://inkscape.org/
 
-From source
+From Source
 -----------
 
 The commands given in these instructions are for installation under Linux. It is assumed that if you are trying to install AvoPlot from source that you know what you are doing enough to be able to adapt the commands for your specific operating system!

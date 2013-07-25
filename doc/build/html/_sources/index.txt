@@ -6,14 +6,19 @@
 Welcome to AvoPlot's documentation!
 ===================================
 
-
 Contents:
 
 .. toctree::
    :maxdepth: 2
      
    installation
+   a_first_plot
    writing_plugins
+   
+.. toctree::
+   :maxdepth: 1
+      
+   API
     
  
     
