@@ -27,7 +27,7 @@ matplotlib.use('WXAgg')
 ####################################################################
 #                     Program Information
 ####################################################################
-VERSION = "0.0"
+VERSION = "13.07" #year.month of release
 
 AUTHOR = 'Nial Peters'
 
@@ -110,6 +110,12 @@ def get_avoplot_icons_dir():
     """
     return os.path.join(get_avoplot_sys_dir(),'icons')
 
+
+def get_license_file():
+    """
+    Returns the full path to the COPYING file installed with AvoPlot
+    """
+    return os.path.join(__path__[0],'COPYING')
 
 
 def call_on_idle(func, *args, **kwargs):

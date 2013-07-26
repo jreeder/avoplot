@@ -28,7 +28,7 @@ import avoplot.build_info
 
 desktop_folder = get_special_folder_path("CSIDL_DESKTOPDIRECTORY")
 start_menu_folder = get_special_folder_path("CSIDL_STARTMENU")
-avoplot_prog_name = avoplot.build_info.PROG_SHORT_NAME+'.lnk'
+avoplot_prog_name = avoplot.PROG_SHORT_NAME+'.lnk'
 
 if sys.argv[1] == '-install':
     

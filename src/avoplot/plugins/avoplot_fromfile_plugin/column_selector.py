@@ -22,8 +22,8 @@ import wx.grid
 import numpy
 import os
 import avoplot
-#from avoplot.gui.plots import PlotPanelBase
 from avoplot.series import XYDataSeries
+import loader
 
 class InvalidSelectionError(ValueError):
     pass
@@ -35,21 +35,21 @@ class FileContentsPanel(wx.Panel):
         vsizer = wx.StaticBoxSizer(box, wx.VERTICAL)
 
         #create the rows/columns check boxes for selecting data format
-        self.cols_checkbox = wx.CheckBox(self, wx.ID_ANY, "Columns")
-        self.rows_checkbox = wx.CheckBox(self, wx.ID_ANY, "Rows")
-        chkbox_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        chkbox_sizer.Add(wx.StaticText(self, wx.ID_ANY, "Data is in:"), 0,
-                         wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT)
-        chkbox_sizer.Add(self.cols_checkbox, 0
-                         , wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT)
-        chkbox_sizer.Add(self.rows_checkbox, 0,
-                         wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT)
-        self.cols_checkbox.SetValue(True)
-        
-        wx.EVT_CHECKBOX(self, self.cols_checkbox.GetId(), self.on_cols_chkbox)
-        wx.EVT_CHECKBOX(self, self.rows_checkbox.GetId(), self.on_rows_chkbox)
-        
-        vsizer.Add(chkbox_sizer, 0, wx.ALIGN_LEFT | wx.ALL, border=5)
+#        self.cols_checkbox = wx.CheckBox(self, wx.ID_ANY, "Columns")
+#        self.rows_checkbox = wx.CheckBox(self, wx.ID_ANY, "Rows")
+#        chkbox_sizer = wx.BoxSizer(wx.HORIZONTAL)
+#        chkbox_sizer.Add(wx.StaticText(self, wx.ID_ANY, "Data is in:"), 0,
+#                         wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT)
+#        chkbox_sizer.Add(self.cols_checkbox, 0
+#                         , wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT)
+#        chkbox_sizer.Add(self.rows_checkbox, 0,
+#                         wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT)
+#        self.cols_checkbox.SetValue(True)
+#        
+#        wx.EVT_CHECKBOX(self, self.cols_checkbox.GetId(), self.on_cols_chkbox)
+#        wx.EVT_CHECKBOX(self, self.rows_checkbox.GetId(), self.on_rows_chkbox)
+#        
+#        vsizer.Add(chkbox_sizer, 0, wx.ALIGN_LEFT | wx.ALL, border=5)
         
         #add a drop-down panel for displaying the file header contents (if there is any)
         if file_contents.header:
@@ -111,15 +111,15 @@ class FileContentsPanel(wx.Panel):
         self.grid_panel.enable_select_mode(val, data_series)
         
         if val:
-            self.cols_checkbox.Disable()
-            self.rows_checkbox.Disable()
+            #self.cols_checkbox.Disable()
+            #self.rows_checkbox.Disable()
             if self.header_pane is not None:
                 self.header_pane.Disable()
             if self.footer_pane is not None:
                 self.footer_pane.Disable()
         else:
-            self.cols_checkbox.Enable()
-            self.rows_checkbox.Enable()
+            #self.cols_checkbox.Enable()
+            #self.rows_checkbox.Enable()
             if self.header_pane is not None:
                 self.header_pane.Enable()
             if self.footer_pane is not None:
@@ -163,19 +163,30 @@ class ColumnDataPanel(wx.ScrolledWindow):
         text = wx.StaticText(self, wx.ID_ANY,"Data type:")
         self.data_type_sizer.Add(text,0,wx.ALIGN_LEFT| wx.ALIGN_CENTER_VERTICAL)
         self.data_type_sizer.AddSpacer(self.grid.GetRowLabelSize()-text.GetSize()[0])
-        self.data_type_choices = []
+        self.data_type_choices = {}
+        choices_list = []
+        self.dtypes = ["float", "string"]
         for col in file_contents.get_columns():
-            choice = wx.Choice(self, wx.ID_ANY,choices=["Float", "String"])
-            self.data_type_choices.append(choice)
+            choice = wx.Choice(self, wx.ID_ANY, choices=self.dtypes)
+            
+            choice.SetSelection(self.dtypes.index(col.get_data_type()))
+            
+            choices_list.append(choice)
+            
+            self.data_type_choices[choice.GetId()] = (choice, col)
             self.data_type_sizer.Add(choice,0,wx.ALIGN_CENTER_VERTICAL|wx.GROW)
+            
+            #register the event handler for changing the columns dtype
+            wx.EVT_CHOICE(self, choice.GetId(), self.on_change_col_dtype)
+            
                 
         #match the data type choice box sizes to the grid column sizes
-        for idx in range(len(self.data_type_choices)):
-            choice_size = self.data_type_choices[idx].GetSize()[0]
+        for idx, choice in enumerate(choices_list):
+            choice_size = choice.GetSize()[0]
             col_size = self.grid.GetColSize(idx)
             
             if choice_size < col_size:
-                self.data_type_choices[idx].SetMinSize((col_size,-1))
+                choice.SetMinSize((col_size,-1))
             else:
                 self.grid.SetColSize(idx,choice_size)
                 self.grid.SetColMinimalWidth(idx,choice_size)
@@ -189,6 +200,20 @@ class ColumnDataPanel(wx.ScrolledWindow):
         
         #self.grid.EnableGridLines(True)
 
+    
+    def on_change_col_dtype(self, evnt):
+        choice, col = self.data_type_choices[evnt.GetId()]
+            
+        new_dtype = self.dtypes[choice.GetSelection()]
+        
+        try:
+            col.set_data_type(new_dtype)
+        except loader.InvalidDataTypeError:
+            choice.SetSelection(self.dtypes.index(col.get_data_type()))
+            wx.MessageBox("Failed to interpret the data as type \'%s\'"%new_dtype, 
+                          avoplot.PROG_SHORT_NAME, wx.ICON_EXCLAMATION)
+            
+    
     
     def get_selection(self):
         """
@@ -226,6 +251,10 @@ class ColumnDataPanel(wx.ScrolledWindow):
         
         col_idx = cols.pop()
         
+        if self.file_contents.get_columns()[col_idx].get_data_type() == 'string':
+            raise InvalidSelectionError("You cannot plot string data")
+        
+        
         #create a list of (start_row, end_row) tuples for all the cells and blocks selected
         start_idxs = [r for r,c in blocks_TL_selected] + [r for r,c in cells_selected]
         end_idxs = [r for r,c in blocks_BR_selected] + [r for r,c in cells_selected]       
@@ -249,16 +278,16 @@ class ColumnDataPanel(wx.ScrolledWindow):
         if val:
             #self.grid.GetGridWindow().SetCursor(wx.StockCursor(wx.CURSOR_CROSS))
             self.grid.ClearSelection()
-            for choice in self.data_type_choices:
+            for choice, col in self.data_type_choices.values():
                 choice.Disable()
         else:
             #self.grid.GetGridWindow().SetCursor(wx.StockCursor(wx.CURSOR_DEFAULT))
-            for choice in self.data_type_choices:
+            for choice, col in self.data_type_choices.values():
                 choice.Enable()
             try:
                 selection = self.get_selection()
             except InvalidSelectionError,e:
-                wx.MessageBox(e.args[0], "AvoPlot", wx.ICON_EXCLAMATION)
+                wx.MessageBox(e.args[0], avoplot.PROG_SHORT_NAME, wx.ICON_EXCLAMATION)
                 selection = ""
             data_series.set_selection(selection)
         
@@ -480,13 +509,13 @@ class XYDataSeriesPanel(wx.Panel):
         tuple_compare = lambda x1,x2: cmp(x1[0], x2[0])
         blocks.sort(cmp=tuple_compare)
 
-        selection_mask = numpy.zeros_like(data_mask)
+        selection_mask = numpy.ones_like(data_mask)
         
         for start,end in blocks:
-            selection_mask[start:end+1] = True
-        mask = numpy.logical_and(data_mask, selection_mask)
+            selection_mask[start:end+1] = False
+        mask = numpy.logical_or(data_mask, selection_mask)
         
-        return numpy.ma.masked_array(column.get_data(), mask=numpy.logical_not(mask))
+        return numpy.ma.masked_array(column.get_data(), mask=mask)
         
 
           
@@ -654,6 +683,8 @@ class TxtFileDataSeriesSelectFrame(wx.Dialog):
     def enable_select_mode(self, val, data_series):
         self.file_contents_panel.enable_select_mode(val, data_series)
         self.data_series_panel.enable_select_mode(val, data_series)
+        print "settings plot button to ",val
+        self.plot_button.Enable(enable=(not val))
 
 
     def get_series(self):

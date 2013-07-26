@@ -39,6 +39,8 @@ required_modules = [("matplotlib", "the Matplotlib plotting library"),
                     #("magic", "the libmagic Python bindings (python-magic)")
                    ]
 
+data_files_to_install = []
+
 #check that all the required modules are available
 print "Checking for required Python modules..."
 for mod, name in required_modules:
@@ -126,7 +128,7 @@ def create_desktop_file():
                                            'AvoPlot.py'))
         ofp.write('Comment=%s\n'%avoplot.SHORT_DESCRIPTION)
         ofp.write('NoDisplay=false\n')
-        ofp.write('Categories=Science;Education;Geology;\n')
+        ofp.write('Categories=Science;Education;\n')
         ofp.write('Name=%s\n'%avoplot.PROG_SHORT_NAME)
         ofp.write('Icon=%s\n'%os.path.join(avoplot.get_avoplot_icons_dir(),
                                            '64x64','avoplot.png'))
@@ -137,34 +139,30 @@ def create_desktop_file():
         print "Error! Failed to change permissions on \'" + os.path.join(apps_folder, 'avoplot.desktop') + "\'"
                 
 
-def install_icons():
-    icon_dest_dir = avoplot.get_avoplot_icons_dir()
-    
-    #create the destination folders if they don't already exist
-    #and then copy the icons into them
-    dirs = [d for d in os.listdir('icons') if os.path.isdir(os.path.join('icons',d))]
-    for d in dirs:
-        if d.startswith('.'):
-            continue
-        
-        try:
-            os.makedirs(os.path.join(icon_dest_dir,d))
-        except OSError:
-            pass
-        
-        icon_files = os.listdir(os.path.join('icons',d))
-        for f in icon_files:
-            if f.startswith('.'):
-                continue #skip the .svn folder
-            shutil.copy(os.path.join('icons',d,f), os.path.join(icon_dest_dir,d))
-    
-    #if we're in Windows, then install the .ico file too
-    if sys.platform == "win32":
-        shutil.copy(os.path.join('icons','avoplot.ico'), icon_dest_dir)
+#populate the list of data files to be installed
+if sys.platform == "linux2":
+    data_prefix = 'share/AvoPlot'
+else:
+    data_prefix = 'AvoPlot'
 
+dirs = [d for d in os.listdir('icons') if os.path.isdir(os.path.join('icons',d))]
+for d in dirs:
+    if d.startswith('.'):
+        continue
+    
+    icon_files = os.listdir(os.path.join('icons',d))
+    files = []
+    for f in icon_files:
+        if f.startswith('.'):
+            continue #skip the .svn folder
+        files.append(os.path.join('icons', d,f))
+        
+    data_files_to_install.append((os.path.join(data_prefix, 'icons', d),files))
 
-def install_license():
-        shutil.copy('COPYING',avoplot.get_avoplot_sys_dir())
+#if we're in Windows, then install the .ico file too
+if sys.platform == "win32":
+    data_files_to_install.append((os.path.join(data_prefix, 'icons'),
+                                  [os.path.join('icons','avoplot.ico')]))    
 
 
 try:
@@ -192,8 +190,9 @@ try:
           url=avoplot.URL,
           package_dir={'':'src'},
           packages=['avoplot', 'avoplot.gui', 'avoplot.plugins', 'avoplot.plugins.avoplot_fromfile_plugin'],
+          package_data={'avoplot':['COPYING']},
+          data_files=data_files_to_install,
           scripts=scripts_to_install
-
           )
     
     #now the build_info.py file will have been populated, so re-import it
@@ -203,14 +202,11 @@ try:
     reload(avoplot.build_info)
 
     
-
     ####################################################################
     #                    POST INSTALL
     ####################################################################
     
     if sys.argv.count('install') != 0:
-        install_icons()
-        install_license()
         if sys.platform == "linux2":
             create_desktop_file()
             

@@ -1,0 +1,9 @@
+include doc/build/html/*
+include doc/build/html/_images/*
+include doc/build/html/_static/*
+include doc/build/html/_sources/*
+include examples/*
+recursive-include icons *.png
+include misc/*
+include AUTHORS
+include COPYING

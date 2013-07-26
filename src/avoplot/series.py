@@ -219,7 +219,7 @@ class XYSeriesControls(controls.AvoPlotControlPanelBase):
         """
         l, = self.series.get_mpl_lines()
         l.set_markeredgecolor(evnt.GetColour().GetAsString(wx.C2S_HTML_SYNTAX))
-        
+        l.set_markerfacecolor(evnt.GetColour().GetAsString(wx.C2S_HTML_SYNTAX))
         self.series.update()
     
     

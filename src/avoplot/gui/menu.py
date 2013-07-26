@@ -328,10 +328,9 @@ class MainMenu(wx.MenuBar):
         
         #read the license text from the COPYING file that was installed along
         #with the program
-        with open(os.path.join(avoplot.get_avoplot_sys_dir(),'COPYING'),
-                  'r') as ifp:
-            license = ifp.read()
-        about_info.SetLicense(license)
+        with open(avoplot.get_license_file(),'r') as ifp:
+            license_ = ifp.read()
+        about_info.SetLicense(license_)
         
         about_info.AddArtist("Yves Moussallam <ym286@cam.ac.uk>")
         about_info.AddDeveloper("Nial Peters <nonbiostudent@hotmail.com>")

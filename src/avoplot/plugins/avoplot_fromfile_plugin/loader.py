@@ -21,6 +21,8 @@ import numpy
 
 __available_loaders = []
 
+class InvalidDataTypeError(TypeError):
+    pass
 
 def register_loader(loader_instance):
     __available_loaders.append(loader_instance)
@@ -121,8 +123,8 @@ class ColumnData:
         self.title = title
     
     def get_data_mask(self):
-        #TODO - mask out invalid values
-        return numpy.ones((self.get_number_of_rows(),1))
+        return self.get_data().mask
+
     
     def get_number_of_rows(self):
         return len(self.raw_data)
@@ -148,31 +150,57 @@ class ColumnData:
         
         self.d_type ='string'
         
-        is_time = 0
-        not_time = 0
-        for x in self.raw_data:
-            try:
-                datetime.datetime.strptime(x,"%H:%M:%S")
-                is_time += 1
-            except ValueError:
-                not_time += 1
-        if is_time > not_time:
-            self.d_type = 'time'
+#        is_time = 0
+#        not_time = 0
+#        for x in self.raw_data:
+#            try:
+#                datetime.datetime.strptime(x,"%H:%M:%S")
+#                is_time += 1
+#            except ValueError:
+#                not_time += 1
+#        if is_time > not_time:
+#            self.d_type = 'time'
         
         return self.d_type
     
     
-    def get_data(self, d_type=None):
+    def set_data_type(self, dtype):
+        old_dtype = self.d_type
+        self.data = None #force re-interpretation of the data
+        self.d_type = dtype
+        d = self.get_data()
+        if len(d) > 0 and numpy.all(d.mask):
+            self.d_type = old_dtype
+            self.data = None
+            raise InvalidDataTypeError
+        
+    
+    
+    def get_data(self):
         if self.data is not None:
             return self.data
         
         self.data = _converters[self.get_data_type()](self.raw_data)
         return self.data
 
+
+def _float(s):
+    try:
+        return float(s)
+    except ValueError:
+        return numpy.nan
+        
         
 def to_float(data):
-    return numpy.array([float(i) for i in data])    
-_converters = {'float':to_float}
+    return numpy.ma.masked_invalid([_float(i) for i in data])
+
+
+def to_str(data):
+    return numpy.ma.masked_array(data, mask=numpy.zeros_like(data))
+   
+   
+_converters = {'float':to_float,
+               'string':to_str}
 
     
     
