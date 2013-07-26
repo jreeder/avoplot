@@ -17,7 +17,8 @@
 import wx
 import avoplot
 import os.path
-
+import glob
+import numpy
 
 class AvoplotArtProvider(wx.ArtProvider):
     """
@@ -25,7 +26,21 @@ class AvoplotArtProvider(wx.ArtProvider):
     """
     def __init__(self):
         wx.ArtProvider.__init__(self)
-
+        
+        #create a list of available icon sizes based on the names of the 
+        #subfolders in the icons folder
+        icon_dir = os.path.join(avoplot.get_avoplot_icons_dir(), '*x*')
+        szs = [int(os.path.basename(f).split('x')[-1]) for f in glob.glob(icon_dir)]
+        self.avail_sizes = numpy.array(szs)
+        
+            
+    def _get_nearest_avail_size(self, s):
+        """
+        Returns the closest size to s that is available in the icons folder.
+        """
+        return self.avail_sizes[numpy.argmin(numpy.abs(self.avail_sizes-s))]
+    
+    
     def CreateBitmap(self, artid, client, size):
         """
         Overrides CreateBitmap from wx.ArtProvider. This method looks in the 
@@ -43,8 +58,10 @@ class AvoplotArtProvider(wx.ArtProvider):
         else:
             sizerq = size
         
+        avail_size = self._get_nearest_avail_size(sizerq.width)
+        
         filename = os.path.join(avoplot.get_avoplot_icons_dir(),
-                                '%dx%d'%(sizerq.width, sizerq.width), 
+                                '%dx%d'%(avail_size, avail_size), 
                                 artid+'.png')
 
         return wx.Bitmap(filename, wx.BITMAP_TYPE_PNG)

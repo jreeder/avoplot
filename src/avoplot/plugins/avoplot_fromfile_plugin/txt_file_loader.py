@@ -156,7 +156,7 @@ class TextFileLoader(loader.FileLoaderBase):
                 return False
             finally:
                 ifp.seek(0)
-            print file_type
+            
             if file_type.startswith('text/'):
                 return True
             else:
@@ -247,7 +247,7 @@ class TextFileLoader(loader.FileLoaderBase):
             while lines_to_skip and lines_to_skip[-1][0] >= end_idx:
                 lines_to_skip.pop() #otherwise it will include line=end_idx
             
-            print "Data ranges from line %d to line %d"%(start_idx, end_idx)
+            
         finally:
             ifp.seek(0)
             
@@ -272,7 +272,7 @@ class TextFileLoader(loader.FileLoaderBase):
         
         lines = lines[start_idx:end_idx+1]
         for idx in [i[0]-start_idx for i in reversed(sorted(lines_to_skip, cmp=tuple_compare))]:
-            print "popped",lines.pop(idx)
+            lines.pop(idx)
         
         for line in lines:
             vals = line.split()

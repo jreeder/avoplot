@@ -205,6 +205,12 @@ class XYSeriesControls(controls.AvoPlotControlPanelBase):
                                        ['None', '.', '+', 'x'], self.on_marker)
         
         prev_col = matplotlib.colors.colorConverter.to_rgb(mpl_lines[0].get_markeredgecolor())
+        
+        #explicitly set the the marker colour to its existing value, otherwise
+        #it will get changed if we change the line colour
+        mpl_lines[0].set_markeredgecolor(mpl_lines[0].get_markeredgecolor())
+        mpl_lines[0].set_markerfacecolor(mpl_lines[0].get_markerfacecolor())
+        
         prev_col = (255 * prev_col[0], 255 * prev_col[1], 255 * prev_col[2])
         marker_col = widgets.ColourSetting(self, "", prev_col,
                                            self.on_marker_colour)

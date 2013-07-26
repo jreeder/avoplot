@@ -24,6 +24,7 @@ import string
 from distutils.command.build_py import build_py as _build_py
 from distutils.command.install import install
 from distutils.core import setup
+from distutils.version import StrictVersion
 
 #get the absolute path of this setup script
 setup_script_path = os.path.dirname(os.path.abspath(sys.argv[0]))
@@ -52,6 +53,33 @@ for mod, name in required_modules:
                "is correctly installed, then re-run this "
                "installer."%(mod,name))
         sys.exit(1)
+
+#TODO - this version checking should be implemented properly in the next release
+
+#python-magic has no version attribute, so can't do any checks
+import matplotlib
+if StrictVersion('1.0.1') > StrictVersion(matplotlib.__version__):
+    print ("Your version of matplotlib is too old. AvoPlot requires >=1.0.1 "
+           "but you have %s"%matplotlib.__version__)
+    sys.exit()
+
+import numpy
+if StrictVersion('1.4.0') > StrictVersion(numpy.__version__):
+    print ("Your version of numpy is too old. AvoPlot requires >=1.4.0 "
+           "but you have %s"%numpy.__version__)
+    sys.exit()
+    
+import wx
+wx_vers = wx.__version__
+
+if wx_vers.count('.') > 2:
+    wx_vers = '.'.join(wx_vers.split('.')[:3])
+  
+if StrictVersion('2.8.10') > StrictVersion(wx_vers):
+    print ("Your version of wx is too old. AvoPlot requires >=2.8.10 "
+           "but you have %s"%wx.version())
+    sys.exit()
+
 
 #platform specific configuration
 scripts_to_install = [os.path.join('src','AvoPlot.py')]  

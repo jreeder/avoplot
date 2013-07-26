@@ -15,8 +15,7 @@
 #You should have received a copy of the GNU General Public License
 #along with AvoPlot.  If not, see <http://www.gnu.org/licenses/>.
 import wx
-from wx import aui
-import os.path
+import wx.lib.newevent
 import avoplot
 import avoplot.plugins
 from avoplot import core
@@ -125,7 +124,7 @@ class MainMenu(wx.MenuBar):
         
         if isinstance(el, figure.AvoPlotFigure):
             self.__current_figure = el
-            self.save_data_entry.Enable(enable=True)
+            #self.save_data_entry.Enable(enable=True)
             self.save_plot_entry.Enable(enable=True)
             self.__figure_count += 1
         

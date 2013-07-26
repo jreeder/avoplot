@@ -665,14 +665,19 @@ class TxtFileDataSeriesSelectFrame(wx.Dialog):
         self.Show()
 
     def on_plot(self, evnt):
+        data_flag = False
         for series in self.data_series_panel.data_series:
             try:
                 #TODO - read the row data status from the checkbox
                 series.validate_selection(False)
+                if series.get_series_data(): #TODO - this is a hack for now!
+                    data_flag=True
             except InvalidSelectionError,e:
                 wx.MessageBox(e.args[0], avoplot.PROG_SHORT_NAME, wx.ICON_ERROR)
                 return
-        
+        if not data_flag:
+            wx.MessageBox("No data series selected!", avoplot.PROG_SHORT_NAME, wx.ICON_ERROR)
+            return
         self.EndModal(wx.ID_OK)
         
     
@@ -683,7 +688,6 @@ class TxtFileDataSeriesSelectFrame(wx.Dialog):
     def enable_select_mode(self, val, data_series):
         self.file_contents_panel.enable_select_mode(val, data_series)
         self.data_series_panel.enable_select_mode(val, data_series)
-        print "settings plot button to ",val
         self.plot_button.Enable(enable=(not val))
 
 

@@ -36,7 +36,7 @@ def load_file(filename):
     ifp = StringIO.StringIO(s)
     flag=False
     for loader in __available_loaders:
-        print "Trying %s"%loader.name
+        
         flag = loader.test(filename, ifp)
         if flag:
             break
