@@ -25,10 +25,13 @@ import scipy
 import scipy.optimize
 import numpy
 
+from avoplot import plugins, series
+
 from avoplot.gui.plots import PlotPanelBase
 from avoplot.plugins import AvoPlotPluginBase
-from avoplot.persist import PersistantStorage
+from avoplot.persist import PersistentStorage
 
+plugin_is_GPL_compatible = True
 
 def load_ftir_file(filename):
     reader = csv.reader(open(filename, "rb"), dialect="excel") 
@@ -41,6 +44,36 @@ def load_ftir_file(filename):
         absorbance.append(float(line[1]))
     
     return wavenumber, absorbance
+
+
+#Start new-version updates 
+
+class FTIRPlugin(plugins.AvoPlotPluginBase):        
+    def __init__(self, parent, filename): 
+        super(FTIRPlugin, self).__init__("FTIR Plugin", series.DataSeriesBase)
+        
+        self.set_menu_entry(['New FTIR Spectrum'])       
+        #print classify_spectrum(self.wavenumber, self.absorbance)
+    
+    def plot_into_subplot(self, subplot):
+        PlotPanelBase.__init__(self, parent, os.path.basename(filename))
+        self.control_panel = FTIRFittingPanel(self, classify_spectrum(self.wavenumber, self.absorbance))
+        self.h_sizer.Insert(0,self.control_panel, flag=wx.ALIGN_LEFT)
+        
+        self.wavenumber, self.absorbance = load_ftir_file(filename)   
+        
+        x_data = self.wavenumber
+        y_data = self.absorbance 
+        
+        data_series = series.DataSeriesBase("FTIR Spectra", xdata=x_data, ydata=y_data)
+        
+        subplot.add_data_series(data_series)
+        
+        return True
+    
+plugins.register(FTIRPlugin())
+
+#End new-version updates
 
 
 class FTIRFittingPanel(wx.Panel):
@@ -317,7 +350,7 @@ class FTIRSpectrumPlugin(AvoPlotPluginBase):
     
     def open_ftir_spectrum(self, evnt):
         
-        persist = PersistantStorage()
+        persist = PersistentStorage()
         
         try:
             last_path_used = persist.get_value("ftir.spectra_dir")
