@@ -206,8 +206,9 @@ class SineWaveFreqCtrl(controls.AvoPlotControlPanelBase):
                  wx.ALL | wx.EXPAND | wx.ALIGN_CENTER_HORIZONTAL, border=10)
         
         #register an event handler for slider change events
-        wx.EVT_COMMAND_SCROLL_CHANGED(self, self.slider.GetId(), 
-                                      self.on_slider_change)
+        #wx.EVT_COMMAND_SCROLL_CHANGED(self, self.slider.GetId(), 
+        #                              self.on_slider_change)
+        wx.EVT_COMMAND_SCROLL(self, self.slider.GetId(), self.on_slider_change)
     
     
     def on_slider_change(self, evnt):
