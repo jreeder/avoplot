@@ -132,9 +132,23 @@ def load_all_plugins():
     cur_dir = os.getcwd()
     os.chdir(plugins_directory)
     
-    #only attempt to import python files and directories
-    plugin_list = [f for f in os.listdir(os.path.curdir) if (os.path.isdir(f) or 
-                                                             f.endswith('.py'))]
+    #only attempt to import python files and directories   
+    plugin_list = []
+    for f in [f for f in os.listdir(os.path.curdir)]:
+        #exclude any hidden files
+        if f.startswith('.'):
+            continue
+        
+        #include any python modules
+        if f.endswith('.py'):
+            plugin_list.append(f)
+            continue
+        
+        #include directories only if they are Python packages (look 
+        #for __init__.py file)
+        if os.path.isdir(f):
+            if '__init__.py' in os.listdir(f):
+                plugin_list.append(f)
     
     for plugin in plugin_list:
         try:
