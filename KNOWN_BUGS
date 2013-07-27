@@ -1,0 +1,30 @@
+This file lists the known problems with AvoPlot and 
+solutions (where they are known!).
+
+
+###################################################
+
+Bug: Incorrect tab selected when right clicking on
+     tab.
+     
+Cause: wx.Aui (v<2.9) does not keep track of tab 
+       ordering when tabs are rearranged by dragging
+       or splitting. See: http://trac.wxwidgets.org/ticket/10848
+
+Solution: Upgrade to the very latest version of wxPython
+
+###################################################
+
+Bug: Program crashes when dockable panels, or plot 
+     panels are dragged.
+
+Cause: This is only an issue in X-windows (i.e. Linux)
+       sessions with desktop effects enabled. 
+       See: http://trac.wxwidgets.org/ticket/4841
+
+Solution: Turn off compositing in your display manager.
+		  It also looks like it might have been fixed
+		  in the latest versions of wx.
+		  
+###################################################		  
+		  

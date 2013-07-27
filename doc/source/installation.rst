@@ -20,10 +20,38 @@ It is also recommended to install python-magic_, but given how difficult it is t
 .. _repository: http://code.google.com/p/avoplot/source/checkout
 .. _InkScape: http://inkscape.org/
 
-From Source
------------
 
-The commands given in these instructions are for installation under Linux. It is assumed that if you are trying to install AvoPlot from source that you know what you are doing enough to be able to adapt the commands for your specific operating system!
+Windows
+-------
+
+Download the Windows installer program from the downloads page (linked from `here <http://avoplot.googlecode.com>`_) and run it. The main AvoPlot program (AvoPlot.py) will be installed into the "Scripts" folder of your Python installation and a Start menu entry should be created for it.
+
+
+Linux
+-----
+
+Download the tar.gz file from the downloads page (linked from `here <http://avoplot.googlecode.com>`_). Unpack the archive::
+  
+    tar -xzf AvoPlot-13.07.tar.gz
+
+Change into the unpacked folder::
+  
+    cd AvoPlot-13.07
+
+Then build and install using Python::
+  
+    python setup.py build
+    python setup.py install
+
+The second of these commands might require root/admin rights.
+  
+
+From SVN
+--------
+
+For the very latest version of AvoPlot, you can check-out the source tree from the SVN repository_.
+
+The commands given in these instructions are for installation under Linux. It is assumed that if you are trying to install AvoPlot from SVN that you know what you are doing enough to be able to adapt the commands for your specific operating system!
 
 Installing AvoPlot from source requires that you have InkScape_ installed on you computer in addition to the prerequisites listed above. This is used to generate the PNG icons for AvoPlot from their SVG versions. Furthermore, the InkScape_ executable must be on your system path.
 

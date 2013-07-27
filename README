@@ -4,6 +4,15 @@
 #                                               #
 #################################################
 
+To install, run the following commands in the
+same directory as this README:
+   
+   python setup.py build
+   python setup.py install
+   
+The second of these will require root/admin rights.
+
+
 For full documentation please refer to
 doc/build/html/index.html, or the online version
 at http://avoplot.googlecode.com

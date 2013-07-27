@@ -53,7 +53,9 @@
   <ul>
 <li><a class="reference internal" href="#">Installation</a><ul>
 <li><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
-<li><a class="reference internal" href="#from-source">From Source</a></li>
+<li><a class="reference internal" href="#windows">Windows</a></li>
+<li><a class="reference internal" href="#linux">Linux</a></li>
+<li><a class="reference internal" href="#from-svn">From SVN</a></li>
 </ul>
 </li>
 </ul>
@@ -105,9 +107,28 @@
 </dl>
 <p>It is also recommended to install <a class="reference external" href="https://github.com/ahupp/python-magic">python-magic</a>, but given how difficult it is to get this to work on non-Linux systems, it is optional and AvoPlot will work without it.</p>
 </div>
-<div class="section" id="from-source">
-<h2>From Source<a class="headerlink" href="#from-source" title="Permalink to this headline">¶</a></h2>
-<p>The commands given in these instructions are for installation under Linux. It is assumed that if you are trying to install AvoPlot from source that you know what you are doing enough to be able to adapt the commands for your specific operating system!</p>
+<div class="section" id="windows">
+<h2>Windows<a class="headerlink" href="#windows" title="Permalink to this headline">¶</a></h2>
+<p>Download the Windows installer program from the downloads page (linked from <a class="reference external" href="http://avoplot.googlecode.com">here</a>) and run it. The main AvoPlot program (AvoPlot.py) will be installed into the &#8220;Scripts&#8221; folder of your Python installation and a Start menu entry should be created for it.</p>
+</div>
+<div class="section" id="linux">
+<h2>Linux<a class="headerlink" href="#linux" title="Permalink to this headline">¶</a></h2>
+<p>Download the tar.gz file from the downloads page (linked from <a class="reference external" href="http://avoplot.googlecode.com">here</a>). Unpack the archive:</p>
+<div class="highlight-python"><pre>tar -xzf AvoPlot-13.07.tar.gz</pre>
+</div>
+<p>Change into the unpacked folder:</p>
+<div class="highlight-python"><pre>cd AvoPlot-13.07</pre>
+</div>
+<p>Then build and install using Python:</p>
+<div class="highlight-python"><pre>python setup.py build
+python setup.py install</pre>
+</div>
+<p>The second of these commands might require root/admin rights.</p>
+</div>
+<div class="section" id="from-svn">
+<h2>From SVN<a class="headerlink" href="#from-svn" title="Permalink to this headline">¶</a></h2>
+<p>For the very latest version of AvoPlot, you can check-out the source tree from the SVN <a class="reference external" href="http://code.google.com/p/avoplot/source/checkout">repository</a>.</p>
+<p>The commands given in these instructions are for installation under Linux. It is assumed that if you are trying to install AvoPlot from SVN that you know what you are doing enough to be able to adapt the commands for your specific operating system!</p>
 <p>Installing AvoPlot from source requires that you have <a class="reference external" href="http://inkscape.org/">InkScape</a> installed on you computer in addition to the prerequisites listed above. This is used to generate the PNG icons for AvoPlot from their SVG versions. Furthermore, the <a class="reference external" href="http://inkscape.org/">InkScape</a> executable must be on your system path.</p>
 <blockquote>
 <div><ol class="arabic">
