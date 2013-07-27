@@ -1,4 +1,5 @@
 import numpy
+import wx
 import csv
 import os
 import os.path
@@ -39,7 +40,9 @@ class FTIRPlugin(plugins.AvoPlotPluginSimple):
         if spec is None:
             return False
         
-        data_series = series.FTIRSpectrumData("FTIR Spectrum", xdata=spec.wavenumber, ydata=spec.absorbance)
+        data_series = FTIRSpectrumData(os.path.basename(spec.filename), 
+                                       xdata=spec.wavenumber, 
+                                       ydata=spec.absorbance)
         
         subplot.add_data_series(data_series)
         
@@ -47,7 +50,7 @@ class FTIRPlugin(plugins.AvoPlotPluginSimple):
     
     
     
-    def load_ftir_file(filename):
+    def load_ftir_file(self):
         persist = PersistentStorage()
 
         try:
@@ -63,26 +66,23 @@ class FTIRPlugin(plugins.AvoPlotPluginSimple):
         
         persist.set_value("ftir_spectra_dir", os.path.dirname(spectrum_file))
         
-        loader = csv.reader(open(filename, "rb"), dialect="excel") 
+        reader = csv.reader(open(spectrum_file, "rb"), dialect="excel") 
+        
+        wavenumber = []
+        absorbance = []
+
+        for line in reader:
+             wavenumber.append(float(line[0]))
+             absorbance.append(float(line[1]))        
+        
         try:        
-            return loader.open(filename)
+            return wavenumber, absorbance
         except Exception,e:
             print e.args
             wx.MessageBox("Unable to load spectrum file \'%s\'. "
                           "Unrecognised file format."%spectrum_file, 
                           "AvoPlot", wx.ICON_ERROR)
-            return False
-        
-#        reader = csv.reader(open(filename, "rb"), dialect="excel") 
-#
-#        wavenumber = []
-#        absorbance = []
-#
-#        for line in reader:
-#             wavenumber.append(float(line[0]))
-#             absorbance.append(float(line[1]))
-#    
-#        return wavenumber, absorbance
+            return None
 
 
 plugins.register(FTIRPlugin())
