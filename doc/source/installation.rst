@@ -26,6 +26,12 @@ Windows
 
 Download the Windows installer program from the downloads page (linked from `here <http://avoplot.googlecode.com>`_) and run it. The main AvoPlot program (AvoPlot.py) will be installed into the "Scripts" folder of your Python installation and a Start menu entry should be created for it.
 
+OS X
+----
+
+Mac users should follow the Linux instructions below.
+
+
 
 Linux
 -----
