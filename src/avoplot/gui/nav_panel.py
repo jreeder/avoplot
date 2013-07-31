@@ -19,6 +19,13 @@ import warnings
 from avoplot import core
 from avoplot import figure
 
+class RightClickMenu(wx.Menu):
+    def __init__(self, nav_panel):
+        wx.Menu.__init__(self)
+        
+        rename_entry = self.Append(-1, 'Rename', 'Rename the element')
+        wx.EVT_MENU(nav_panel,rename_entry.GetId(), nav_panel.on_rclick_menu_rename)
+
 class NavigationPanel(wx.ScrolledWindow):
     """
     Navigation panel for selecting plot elements in a tree ctrl.
@@ -26,6 +33,9 @@ class NavigationPanel(wx.ScrolledWindow):
     def __init__(self, parent, session):
         super(NavigationPanel, self).__init__(parent)
         self.SetScrollRate(2, 2)
+        
+        self._rclick_menu = RightClickMenu(self)
+        
         self.v_sizer = wx.BoxSizer(wx.VERTICAL)
         self.tree = wx.TreeCtrl(self, wx.ID_ANY, style=(wx.TR_HIDE_ROOT|
                                                         wx.TR_HAS_BUTTONS|
@@ -46,12 +56,34 @@ class NavigationPanel(wx.ScrolledWindow):
         
         #bind wx events
         wx.EVT_TREE_SEL_CHANGED(self, self.tree.GetId(), self.on_tree_select_el)
+        wx.EVT_TREE_ITEM_MENU(self, self.tree.GetId(), self.on_tree_el_menu)
+        
         
         #do the layout 
         self.SetSizer(self.v_sizer)
         self.v_sizer.Fit(self)
         self.SetAutoLayout(True)
         
+    
+    def on_rclick_menu_rename(self, evnt):
+        el = self.tree.GetPyData(self.__el_id_mapping[self.__current_selection_id])
+        
+        current_name = el.get_name()
+        
+        #pass dialog None as parent so that it gets centred within 
+        #the top window
+        d = wx.TextEntryDialog(None, "New name:", "Rename", 
+                               defaultValue=current_name)
+        
+        if d.ShowModal() == wx.ID_OK:
+            new_name = d.GetValue()
+            if (new_name and not new_name.isspace() and 
+                new_name != current_name):
+                el.set_name(str(new_name))
+    
+    def on_tree_el_menu(self, evnt):
+        self.PopupMenu(self._rclick_menu)
+
     
     def on_tree_select_el(self, evnt):
         """
