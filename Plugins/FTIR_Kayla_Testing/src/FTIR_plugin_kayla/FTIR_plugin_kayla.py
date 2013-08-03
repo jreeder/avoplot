@@ -1,9 +1,12 @@
-import numpy
 import wx
 import csv
 import os
 import os.path
 import math
+from scipy.special import erf
+import scipy
+import scipy.optimize
+import numpy
 from avoplot import plugins, series, controls, subplots
 from avoplot.persist import PersistentStorage
 from avoplot.plugins import AvoPlotPluginSimple
@@ -26,7 +29,7 @@ class FTIRSpectrumSubplot(AvoPlotXYSubplot):
         
         
 #define new data series type for FTIR data
-class FTIRSpectrumData(XYDataSeries):
+class FTIRSpectrumData(series.XYDataSeries):
     def __init__(self, *args, **kwargs):
         super(FTIRSpectrumData, self).__init__(*args, **kwargs)
         
@@ -51,7 +54,6 @@ class FTIRPlugin(plugins.AvoPlotPluginSimple):
         self.wavenumber, self.absorbance = self.load_ftir_file()
         if self.wavenumber is None:
             return False
-
         
         data_series = FTIRSpectrumData("FTIR Spectrum", 
                                        xdata=self.wavenumber, 
@@ -65,12 +67,12 @@ class FTIRPlugin(plugins.AvoPlotPluginSimple):
     
     def load_ftir_file(self):
         persist = PersistentStorage()
-
+    
         try:
             last_path_used = persist.get_value("ftir_spectra_dir")
         except KeyError:
             last_path_used = ""
-        
+
         #get filename to open
         spectrum_file = wx.FileSelector("Choose spectrum file to open", 
                                         default_path=last_path_used)
@@ -83,7 +85,7 @@ class FTIRPlugin(plugins.AvoPlotPluginSimple):
         
         wavenumber = []
         absorbance = []
-
+    
         for line in reader:
              wavenumber.append(float(line[0]))
              absorbance.append(float(line[1]))        
@@ -96,7 +98,7 @@ class FTIRPlugin(plugins.AvoPlotPluginSimple):
                           "Unrecognised file format."%spectrum_file, 
                           "AvoPlot", wx.ICON_ERROR)
             return None
-        
+
 
 #Start Extra Control Panel Functions -- created after adv_sine_wave example in AvoPlot documentation
 class BackgroundCalcCtrl(controls.AvoPlotControlPanelBase):
@@ -111,42 +113,67 @@ class BackgroundCalcCtrl(controls.AvoPlotControlPanelBase):
         #store the data series object that this control panel is associated with, 
         #so that we can access it later
         self.series = series
+        self.data = self.series.get_data()
+        self.wavenumber = self.data[0]
+        self.absorbance = self.data[1]
     
+    def define_data(self):
+        wavenumber = self.wavenumber
+        absorbance = self.absorbance
+        return wavenumber, absorbance
+
     
     def setup(self, parent):
+        super(BackgroundCalcCtrl, self).setup(parent)
+        
+        self.axes = AvoPlotXYSubplot.get_mpl_axes
+        
         self.plot_obj = parent
         spec_type = classify_spectrum
-        wx.Panel.__init__(self, parent, wx.ID_ANY,style=wx.BORDER_SIMPLE)
-        sizer = wx.BoxSizer(wx.VERTICAL)
         
         h2o_button = wx.Button(self, wx.ID_ANY, "Fit H2O")
-        self.peak_height_text = wx.StaticText(self, -1, "Peak Height:\n")
-        sizer.Add(h2o_button, 0, wx.ALIGN_TOP|wx.ALL,border=10)
-        sizer.Add(wx.StaticText(self, -1, "Spec Type:\n%s"%spec_type), 0, wx.ALIGN_TOP|wx.ALL,border=10)
-        sizer.Add(self.peak_height_text,0, wx.ALIGN_TOP|wx.ALL,border=10)
+        peak_height_text = wx.StaticText(self, -1, "Peak Height:\n")
+        self.Add(peak_height_text)
+        self.Add(h2o_button, 0, wx.ALIGN_TOP|wx.ALL,border=10)
+#        sizer = wx.StaticText(self, -1, "Spec Type:\n%s"%spec_type, 0, wx.ALIGN_TOP|wx.ALL)
+#        sizer_peak_height = wx.sizer(self.peak_height_text,0,wx.ALIGN_TOP|wx.ALL)
+#        self.Add(sizer)
+#        self.Add(sizer_peak_height)
         wx.EVT_BUTTON(self, h2o_button.GetId(), self.fit_h2o)
         
-        self.SetSizer(sizer)
-        sizer.Fit(self)
+#        self.SetSizer(sizer)
+#        self.sizer.Fit(self)
         self.SetAutoLayout(True)
+        
     
     def set_peak_height(self, height):
         self.peak_height_text.SetLabel("Peak Height:\n%f"%height)
+        
     
     def fit_h2o(self, evnt):
         try:
             wx.BeginBusyCursor()
             bkgd = fit_h2o_peak(self.wavenumber, self.absorbance, self.axes, plot_fit=True)
-            peak_height = calc_h2o_peak_height(self.wavenumber, self.absorbance, bkgd)
+            #bkgd = fit_h2o_peak(self.wavenumber, self.absorbance, ax, plot_fit=True)
+            peak_height = calc_h2o_peak_height(wavenumber, absorbance, bkgd)
             self.control_panel.set_peak_height(peak_height)
             
             self.canvas.draw()
             self.canvas.gui_repaint()
         finally:
             wx.EndBusyCursor()
+    
+    def create_plot(self):
+        self.axes.plot(self.wavenumber, self.absorbance)
+        self.axes.set_xlim((self.axes.get_xlim()[1],self.axes.get_xlim()[0]))
+        self.axes.set_xlabel("Wavenumber")
+        self.axes.set_ylabel("Absorbance")
+
             
 def get_h2o_fitting_points(xdata, ydata, bkgd_func=None, target_wavenumber_range=200, tolerance=30):
     
+    #testing this out
+    xdata, ydata = BackgroundCalcCtrl.define_data()
     #initialise the cropping limits
     l_crop = 2200
     r_crop = 4000
