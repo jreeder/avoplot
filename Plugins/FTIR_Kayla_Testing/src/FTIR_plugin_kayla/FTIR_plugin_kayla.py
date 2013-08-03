@@ -126,14 +126,17 @@ class BackgroundCalcCtrl(controls.AvoPlotControlPanelBase):
     def setup(self, parent):
         super(BackgroundCalcCtrl, self).setup(parent)
         
-        self.axes = AvoPlotXYSubplot.get_mpl_axes
+        #AvoPlotXYSubplot is a class, not an object/instance so you can't do this!
+        #also get_mpl_axes is a method - so you would need () to make this do what you intended
+        #self.axes = AvoPlotXYSubplot.get_mpl_axes
+        self.axes = self.series.get_parent_element().get_mpl_axes()
         
         self.plot_obj = parent
         spec_type = classify_spectrum
         
         h2o_button = wx.Button(self, wx.ID_ANY, "Fit H2O")
-        peak_height_text = wx.StaticText(self, -1, "Peak Height:\n")
-        self.Add(peak_height_text)
+        self.peak_height_text = wx.StaticText(self, -1, "Peak Height:\n")
+        self.Add(self.peak_height_text)
         self.Add(h2o_button, 0, wx.ALIGN_TOP|wx.ALL,border=10)
 #        sizer = wx.StaticText(self, -1, "Spec Type:\n%s"%spec_type, 0, wx.ALIGN_TOP|wx.ALL)
 #        sizer_peak_height = wx.sizer(self.peak_height_text,0,wx.ALIGN_TOP|wx.ALL)
@@ -155,11 +158,10 @@ class BackgroundCalcCtrl(controls.AvoPlotControlPanelBase):
             wx.BeginBusyCursor()
             bkgd = fit_h2o_peak(self.wavenumber, self.absorbance, self.axes, plot_fit=True)
             #bkgd = fit_h2o_peak(self.wavenumber, self.absorbance, ax, plot_fit=True)
-            peak_height = calc_h2o_peak_height(wavenumber, absorbance, bkgd)
-            self.control_panel.set_peak_height(peak_height)
+            peak_height = calc_h2o_peak_height(self.wavenumber, self.absorbance, bkgd)
+            self.set_peak_height(peak_height)
             
-            self.canvas.draw()
-            self.canvas.gui_repaint()
+            self.series.update()
         finally:
             wx.EndBusyCursor()
     
@@ -172,8 +174,11 @@ class BackgroundCalcCtrl(controls.AvoPlotControlPanelBase):
             
 def get_h2o_fitting_points(xdata, ydata, bkgd_func=None, target_wavenumber_range=200, tolerance=30):
     
+    #xdata and ydata are being passed into this function as arguments - so you shouldn't
+    #need to try and get them from the series again. As above, BackgroundCalcCtrl is a 
+    # class not an instance, so you can't call methods on it.
     #testing this out
-    xdata, ydata = BackgroundCalcCtrl.define_data()
+    #xdata, ydata = BackgroundCalcCtrl.define_data()
     #initialise the cropping limits
     l_crop = 2200
     r_crop = 4000
