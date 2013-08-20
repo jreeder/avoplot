@@ -51,7 +51,7 @@ class FTIRPlugin(plugins.AvoPlotPluginSimple):
         
         
     def plot_into_subplot(self, subplot):
-        self.wavenumber, self.absorbance = self.load_ftir_file()
+        self.wavenumber, self.absorbance, self.spectrum_file = self.load_ftir_file()
         if self.wavenumber is None:
             return False
         
@@ -60,6 +60,7 @@ class FTIRPlugin(plugins.AvoPlotPluginSimple):
                                        ydata=self.absorbance)
         
         subplot.add_data_series(data_series)
+        subplot.get_parent_element().set_name(self.spectrum_file)
         
         return True
     
@@ -91,7 +92,7 @@ class FTIRPlugin(plugins.AvoPlotPluginSimple):
              absorbance.append(float(line[1]))        
         
         try:        
-            return wavenumber, absorbance
+            return wavenumber, absorbance, spectrum_file
         except Exception,e:
             print e.args
             wx.MessageBox("Unable to load spectrum file \'%s\'. "
