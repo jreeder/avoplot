@@ -25,6 +25,9 @@ class RightClickMenu(wx.Menu):
         
         rename_entry = self.Append(-1, 'Rename', 'Rename the element')
         wx.EVT_MENU(nav_panel,rename_entry.GetId(), nav_panel.on_rclick_menu_rename)
+        
+        delete_entry = self.Append(-1, 'Delete', 'Delete the element')
+        wx.EVT_MENU(nav_panel,delete_entry.GetId(), nav_panel.on_rclick_menu_delete)
 
 class NavigationPanel(wx.ScrolledWindow):
     """
@@ -63,7 +66,12 @@ class NavigationPanel(wx.ScrolledWindow):
         self.SetSizer(self.v_sizer)
         self.v_sizer.Fit(self)
         self.SetAutoLayout(True)
-        
+ 
+ 
+    def on_rclick_menu_delete(self, evnt):
+        el = self.tree.GetPyData(self.__el_id_mapping[self.__current_selection_id])
+        el.delete()   
+    
     
     def on_rclick_menu_rename(self, evnt):
         el = self.tree.GetPyData(self.__el_id_mapping[self.__current_selection_id])

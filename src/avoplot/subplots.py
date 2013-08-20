@@ -63,7 +63,7 @@ class AvoPlotSubplotBase(core.AvoPlotElementBase):
         #assert isinstance(data, series.DataSeriesBase)
         data.set_parent_element(self)
         
-    
+        
     def set_parent_element(self, parent):
         """
         Overrides the AvoPlotElementBase class's method. Does the exactly
@@ -113,6 +113,19 @@ class AvoPlotXYSubplot(AvoPlotSubplotBase):
                                                            label=self.get_name())
         
         self.add_control_panel(XYSubplotControls(self))
+        
+    
+    def delete(self):
+        ax = self.get_mpl_axes()
+        fig = self.get_parent_element()
+        mpl_fig = fig.get_mpl_figure()
+        
+        mpl_fig.delaxes(ax)
+        
+        fig.update()
+        
+        super(AvoPlotXYSubplot, self).delete()
+        
         
     
     def get_mpl_axes(self):

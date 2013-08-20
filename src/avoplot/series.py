@@ -53,6 +53,13 @@ class DataSeriesBase(core.AvoPlotElementBase):
         return self._mpl_lines
     
     
+    def delete(self):
+
+        self._mpl_lines.pop(0).remove()
+        self.update()
+        super(DataSeriesBase, self).delete()        
+        
+        
     def _plot(self, subplot):
         """
         Called in subplot.add_data_series() to plot the data into the subplot
