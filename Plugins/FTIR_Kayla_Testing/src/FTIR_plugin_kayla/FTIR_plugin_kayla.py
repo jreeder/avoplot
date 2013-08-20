@@ -23,10 +23,20 @@ class FTIRSpectrumSubplot(AvoPlotXYSubplot):
 #This is the "subplot" where the spectrum will appear
     def my_init(self):
         ax = self.get_mpl_axes()
-        ax.set_xlabel('Wavenumber (cm-1)')
+        ax.set_xlabel('Wavenumber (cm$^{-1}$)')
         ax.set_ylabel('Absorbance')
         
+        self.__inverted_x = False
+    
+    
+    def add_data_series(self, data):
+        AvoPlotXYSubplot.add_data_series(self, data)
         
+        if not self.__inverted_x:
+           self.get_mpl_axes().invert_xaxis()
+           self.__inverted_x = True
+    
+     
         
 #define new data series type for FTIR data
 class FTIRSpectrumData(series.XYDataSeries):
@@ -51,18 +61,20 @@ class FTIRPlugin(plugins.AvoPlotPluginSimple):
         
         
     def plot_into_subplot(self, subplot):
-        #TODO see defnition of self.spectrum_file below
-        self.wavenumber, self.absorbance, self.spectrum_file = self.load_ftir_file()
-        if self.wavenumber is None:
+        
+        wavenumber, absorbance, spectrum_file = self.load_ftir_file()
+        if wavenumber is None:
             return False
         
-        data_series = FTIRSpectrumData("FTIR Spectrum", 
-                                       xdata=self.wavenumber, 
-                                       ydata=self.absorbance)
+        data_series = FTIRSpectrumData(os.path.basename(spectrum_file), 
+                                       xdata=wavenumber, 
+                                       ydata=absorbance)
         
         subplot.add_data_series(data_series)
-        #TODO below
-        subplot.get_parent_element().set_name(self.spectrum_file)
+        
+        #TODO - setting the name here means that the figure gets renamed
+        #everytime that a series gets added
+        subplot.get_parent_element().set_name(os.path.basename(spectrum_file))
         
         return True
     
@@ -166,6 +178,10 @@ class BackgroundCalcCtrl(controls.AvoPlotControlPanelBase):
             self.set_peak_height(peak_height)
             
             self.series.update()
+        except ValueError, e:
+            wx.EndBusyCursor()
+            wx.MessageBox( 'Failed to find H2O background.\nReason:%s'%e.args[0], 'AvoPlot FTIR',wx.ICON_ERROR)
+              
         finally:
             wx.EndBusyCursor()
     
@@ -176,40 +192,63 @@ class BackgroundCalcCtrl(controls.AvoPlotControlPanelBase):
         self.axes.set_ylabel("Absorbance")
 
             
-def get_h2o_fitting_points(xdata, ydata, bkgd_func=None, target_wavenumber_range=200, tolerance=30):
+def get_h2o_fitting_points(xdata, ydata, bkgd_func=None, 
+                           target_wavenumber_range=200, tolerance=30):
+    """
+    This function finds (target_wavenumber_range +- tolerance) number of points
+    from either side of the H2O peak. The points are selected from after the 
+    minima on either side of the peak.
     
-    #xdata and ydata are being passed into this function as arguments - so you shouldn't
-    #need to try and get them from the series again. As above, BackgroundCalcCtrl is a 
-    # class not an instance, so you can't call methods on it.
-    #testing this out
-    #xdata, ydata = BackgroundCalcCtrl.define_data()
-    #initialise the cropping limits
+    The H2O peak is searched for between 3000-4000 cm-1 wavenumber.
+    
+    The bkgd_func arg can be used to subtract a global background from the 
+    data before the points are searched for - this can be useful for very skewed
+    spectra. If the function can't find the fitting points without a 
+    background function, then it calls itself again passing get_global_bkgd as
+    the bkgd_func argument.
+    """
+    
+    #initialise the cropping limits (these are in wavenumber)
     l_crop = 2200
+    peak_l_crop = 3000
     r_crop = 4000
     
+    #make a copy of the original data, so that we have an uncropped version
     master_xdata = numpy.array(xdata)
     master_ydata = numpy.array(ydata)   
-     
+    
+    #crop the data to the correct size 
     data_mask = numpy.where(numpy.logical_and(master_xdata > l_crop, master_xdata <=r_crop))
     xdata = master_xdata[data_mask]
     ydata = master_ydata[data_mask]
-       
-    peak_idx = numpy.argmax(ydata)
     
+    #find where the H2O peak is
+    mask = numpy.where(xdata > peak_l_crop)
+    peak_idx = numpy.argmax(ydata[mask]) + mask[0][0]
+    
+    print "H2O peak found at ",xdata[peak_idx]
+    
+    #find the minima either side of the peak
     l_min = numpy.argmin(ydata[:peak_idx])
     r_min = numpy.argmin(ydata[peak_idx:])+peak_idx
-        
+    
+    print "l_min = ",xdata[l_min], "r_min = ", xdata[r_min]
+    
+    #now identify approximately the right number of points beyond
+    #each minimum such that we have     
     while (abs(xdata[l_min]-l_crop - target_wavenumber_range) > tolerance or
           abs(r_crop - xdata[r_min] - target_wavenumber_range) > tolerance):
         
         l_crop -= target_wavenumber_range - (xdata[l_min]-l_crop)
         r_crop -= (r_crop - xdata[r_min]) - target_wavenumber_range
         
-        data_mask = numpy.where(numpy.logical_and(master_xdata > l_crop, master_xdata <=r_crop))
+        data_mask = numpy.where(numpy.logical_and(master_xdata > l_crop, 
+                                                  master_xdata <=r_crop))
         xdata = master_xdata[data_mask]
         ydata = master_ydata[data_mask]
            
-        peak_idx = numpy.argmax(ydata)
+        mask = numpy.where(xdata > peak_l_crop)
+        peak_idx = numpy.argmax(ydata[mask]) + mask[0][0]
         
         if bkgd_func is None:
             if len(ydata[:peak_idx])>0:
@@ -220,12 +259,19 @@ def get_h2o_fitting_points(xdata, ydata, bkgd_func=None, target_wavenumber_range
         else:
             l_min = numpy.argmin(ydata[:peak_idx]-bkgd_func(xdata[:peak_idx]))
         r_min = numpy.argmin(ydata[peak_idx:])+peak_idx
+        
+        print "l_min = ",xdata[l_min], "r_min = ", xdata[r_min]
+        print "l_crop = ",l_crop, "r_crop = ", r_crop, "\n"
     
     if xdata[l_min] < 2000:
         if bkgd_func is not None:
-            raise ValueError("Failed to find fitting points")
-        return get_h2o_fitting_points(master_xdata, master_ydata, bkgd_func=get_global_bkgd(xdata, ydata))
-        
+            raise ValueError("Could not find low wavenumber minimum.")
+        print "calling again with bkgd_func"
+        return get_h2o_fitting_points(master_xdata, master_ydata, bkgd_func=get_global_bkgd(master_xdata, master_ydata))
+    
+    if xdata[r_min] > 5000:  
+         raise ValueError("Could not find high wavenumber minimum.")
+     
     fit_xdata = numpy.concatenate((xdata[:l_min],xdata[r_min:]))
     fit_ydata = numpy.concatenate((ydata[:l_min],ydata[r_min:]))
     return fit_xdata, fit_ydata
