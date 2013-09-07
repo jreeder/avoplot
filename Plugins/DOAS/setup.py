@@ -43,7 +43,7 @@ if not watcher.can_watch_directories():
 #there seems to be a problem with the "decimate" function in versions of scipy earlier
 #than 0.9.0. Check the version here.
 import scipy
-version_as_int = lambda x: int("%02d%02d%02d"%tuple([int(i) for i in '0.12.0'.split('.')]))
+version_as_int = lambda x: int("%02d%02d%02d"%tuple([int(i) for i in x.split('.')]))
 if version_as_int(scipy.version.version) < version_as_int('0.9.0'):
     print "Error! The version of SciPy you have installed is too old. Please install version 0.9.0 or newer."
     sys.exit(1)
