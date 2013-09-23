@@ -23,7 +23,7 @@ from avoplot.plugins import AvoPlotPluginSimple
 from avoplot.subplots import AvoPlotXYSubplot
 from avoplot.series import XYDataSeries
 
-from doas.spectrum_loader import SpectrumIO, UnableToLoad
+from doas.io import SpectrumIO, UnableToLoad
 
 plugin_is_GPL_compatible = True
 
@@ -87,4 +87,4 @@ class DOASSpectrumPlugin(AvoPlotPluginSimple):
             wx.MessageBox("Unable to load spectrum file \'%s\'. "
                           "Unrecognised file format."%spectrum_file, 
                           "AvoPlot", wx.ICON_ERROR)
-            return False
+            return None

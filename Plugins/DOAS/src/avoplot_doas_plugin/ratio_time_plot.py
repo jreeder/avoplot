@@ -22,20 +22,178 @@ import matplotlib
 import datetime
 import time
 
-from doas.spectrum_loader import SpectrumIO
-from doas import spectra_dir
-from doas import spectrum_loader
+from doas.io import SpectrumIO
+from doas import spec_dir
+from doas import io
 from doas import spectrum_maths
 
 from avoplot.persist import PersistentStorage
-from avoplot.gui.plots import PlotPanelBase
-from avoplot.plugins import AvoPlotPluginBase
+#from avoplot.gui.plots import PlotPanelBase
+from avoplot import plugins
+from avoplot import subplots
+from avoplot import series
 from spectrometers import SpectrometerManager
 
 from std_ops.os_ import find_files
 
 
 plugin_is_GPL_compatible = True
+
+#define new subplot type for SO2 time series plots
+class SO2TimeSubplot(subplots.AvoPlotXYSubplot):
+    def my_init(self):
+        super(SO2TimeSubplot, self).my_init()
+        
+        self.plotting_thread = threading.Thread(target=self._update_plot)
+        self.stay_alive = True
+        self.plotting_thread.start()
+        self.update_interval = 1.0
+        
+        fig = self.get_parent_element()
+        
+        #disable the pan/zoom tools if they are selected so that the plot
+        #autoscales to begin with
+        #if fig.is_zoomed:
+        #    fig.zoom()
+        #if fig.is_panned():
+        #    fig.pan()
+
+    
+    def delete(self):
+        self.stay_alive = False
+        self.plotting_thread.join()
+        super(SO2TimeSubplot, self).delete()
+    
+    
+    def _update_plot(self):
+        fig = self.get_parent_element()
+        ax = self.get_mpl_axes()
+        
+        while self.stay_alive:
+            
+            try:
+                wx.MutexGuiEnter()
+                
+                #TODO - need to get exclusive access to data series before 
+                #calling update
+                locked_series = []
+                for  s in self.get_child_elements():
+                    if isinstance(s,SO2TimeSeries):
+                        s.exclusive_lock().acquire()
+                        locked_series.append(s)
+
+                if not fig.is_zoomed() and not fig.is_panned():
+                    ax.relim()
+                    ax.autoscale_view()
+            
+                self.update()
+
+            finally:
+                for s in locked_series:
+                    s.exclusive_lock().release()
+                wx.MutexGuiLeave()
+            
+            time.sleep(self.update_interval)
+
+
+#define data series to represent SO2 amount time series
+class SO2TimeSeries(series.XYDataSeries):
+    def __init__(self, dir_name, inband, outband, recursive, realtime):
+        self.dir_name = dir_name
+        self.inband = inband
+        self.outband = outband
+        self.recursive = recursive
+        self.realtime = realtime
+        self._spec_iter = None
+        self._stay_alive = True
+        self._found_dark_event = threading.Event()
+        #self._found_dark_lock.acquire() #lock is released when dark spectrum is found
+        
+        #call the super class's init method, passing the directory name as
+        #the name of our series
+        super(SO2TimeSeries,self).__init__(os.path.basename(dir_name),xdata=[],ydata=[])
+        
+        self.loader_thread = threading.Thread(target=self._load_spectra)
+        self.loader_thread.start()
+    
+    
+    def wait_for_dark(self):
+        """
+        Blocks until a dark spectrum is found.
+        """
+        self._found_dark_event.wait()
+        #self._found_dark_lock.acquire()
+        #self._found_dark_lock.release()
+        print "exited wait_for_dark"
+    
+    
+    def delete(self):
+        print "time series delete called"
+        self._stay_alive = False
+        while self._spec_iter is None:
+            #this could be true if the close event is handled between the 
+            #plot constructor being called and the plotting thread creating
+            #the iterator object
+            time.sleep(0.001)
+            
+        self._spec_iter.close()
+        print "time series spec iter closed"
+        if not self._found_dark_event.is_set():
+                self._found_dark_event.set()
+#        if self._found_dark_lock.locked():
+#                self._found_dark_lock.release()
+        print "waiting for loader thread"
+        self.loader_thread.join()
+        print "joined loader thread"
+        super(SO2TimeSeries,self).delete()
+        print "time series deleted"
+    
+    
+    def set_dark_spectra(self, spectra):
+        loader = io.SpectrumIO()
+        
+        spectra_objs = [loader.load(f) for f in spectra]
+        spectra_objs = [s for s in spectra_objs if s is not None]
+        if self._spec_iter is not None:
+            print spectra_objs
+            self._spec_iter.set_dark_spectra(spectra_objs)
+            print "finished calling self._spec_iter.set_dark_spectra"
+        else:
+            #TODO - handle this properly
+            raise RuntimeError("Call to set_darks before iterator is initialised")
+    
+    
+    def _load_spectra(self):
+        ratios = []
+        times = []
+        ratio_calc = spectrum_maths.WavelengthRatioCalc(self.outband, self.inband)
+
+        self._spec_iter = spec_dir.DarkSubtractedSpectra(self.dir_name, 
+                                                            recursive=self.recursive,
+                                                            realtime=self.realtime)
+        
+        for s in self._spec_iter:
+            if not self._found_dark_event.is_set():
+                self._found_dark_event.set()
+
+            
+            times.append(s.capture_time)    
+            ratios.append(ratio_calc.get_ratio(s))
+            
+            if not self._stay_alive:
+                return
+            
+
+            self.set_xy_data(times, ratios)
+
+
+             
+    
+    @staticmethod
+    def get_supported_subplot_type():
+        return SO2TimeSubplot
+
+
 
 class TimePlotSettingsFrame(wx.Dialog):
     def __init__(self,parent, name="Time plot settings"):
@@ -128,15 +286,14 @@ class TimePlotSettingsFrame(wx.Dialog):
         self.CenterOnScreen()
         
         
-    def get_plot(self):
+    def get_data_series(self):
         if None in (self.recursive, self.inband, self.outband, self.name):
-            raise RuntimeError("get_plot called before values have been set")
+            raise RuntimeError("get_series called before values have been set")
         
-        if self.realtime_check_box.GetValue():
-            return RealtimeRatioTimePlot(self.parent, self.spec_dir, self.inband, self.outband, self.recursive)
-        else:
-            return RatioTimePlot(self.parent, self.spec_dir, self.inband, self.outband, self.recursive)
-    
+        realtime = self.realtime_check_box.GetValue()
+        
+        return SO2TimeSeries(self.spec_dir, self.inband, self.outband, self.recursive, realtime)
+
     
     def get_name(self):
         return self.name
@@ -238,7 +395,7 @@ class TimePlotSettingsFrame(wx.Dialog):
             else:
                 spec_files = [os.path.join(spec_dir, n) for n in os.listdir(spec_dir)]
             
-            spec_loader = spectrum_loader.SpectrumIO()
+            spec_loader = io.SpectrumIO()
             first_spec = None
             last_spec = None
             first_spec_index = 0
@@ -247,7 +404,7 @@ class TimePlotSettingsFrame(wx.Dialog):
                     first_spec = spec_loader.load(f)
                     first_spec_index += 1
                     break
-                except spectrum_loader.UnableToLoad:
+                except io.UnableToLoad:
                     pass
             
             if first_spec is None:
@@ -267,7 +424,7 @@ class TimePlotSettingsFrame(wx.Dialog):
                     last_spec = spec_loader.load(f)
                     last_spec_index -= 1
                     break
-                except spectrum_loader.UnableToLoad:
+                except io.UnableToLoad:
                     pass
             
             self.num_of_spectra_txt.Enable()
@@ -293,149 +450,149 @@ class TimePlotSettingsFrame(wx.Dialog):
         finally:
             wx.EndBusyCursor()
  
-
-class RatioTimePlot(PlotPanelBase):
-    
-    def __init__(self, parent, dir_name, inband, outband, recursive):
-        self.dir_name = dir_name
-        self.inband = inband
-        self.outband = outband
-        self.recursive = recursive
-        self._spec_iter = None
-        self._stay_alive = True
-        self._found_dark_lock = threading.Lock()
-        self._found_dark_lock.acquire() #lock is released when dark spectrum is found
-        
-        PlotPanelBase.__init__(self,parent,os.path.basename(dir_name))
-        
-        self.plotting_thread = threading.Thread(target=self._create_plot)
-        self.plotting_thread.start()
-    
-    
-    def wait_for_dark(self):
-        """
-        Blocks until a dark spectrum is found.
-        """
-        self._found_dark_lock.acquire()
-        self._found_dark_lock.release()
-        print "exited wait_for_dark"
-    
-    
-    def close(self):
-        self._stay_alive = False
-        while self._spec_iter is None:
-            #this could be true if the close event is handled between the 
-            #plot constructor being called and the plotting thread creating
-            #the iterator object
-            time.sleep(0.001)
-            
-        self._spec_iter.close()
-        if self._found_dark_lock.locked():
-                self._found_dark_lock.release()
-        self.plotting_thread.join()
-        PlotPanelBase.close(self)
-        
-    
-    def draw_plot(self):
-        try:
-            wx.MutexGuiEnter()
-            self.canvas.draw()
-            self.canvas.gui_repaint()
-        finally:
-            wx.MutexGuiLeave()
-    
-    
-    def set_dark_spectra(self, spectra):
-        loader = spectrum_loader.SpectrumIO()
-        
-        spectra_objs = [loader.load(f) for f in spectra]
-        spectra_objs = [s for s in spectra_objs if s is not None]
-        if self._spec_iter is not None:
-            print spectra_objs
-            self._spec_iter.set_dark_spectra(spectra_objs)
-            print "finished calling self._spec_iter.set_dark_spectra"
-        else:
-            #TODO - handle this properly
-            raise RuntimeError("Call to set_darks before iterator is initialised")
-    
-    
-    def _create_plot(self):
-        ratios = []
-        ratio_calc = spectrum_maths.WavelengthRatioCalc(self.outband, self.inband)
-        matplotlib.interactive(True)
-        l, = self.axes.plot([])
-        
-        i = 0
-        j = 0
-        self._spec_iter = spectra_dir.DarkSubtractedSpectra(self.dir_name, recursive=self.recursive)
-        for s in self._spec_iter:
-            if self._found_dark_lock.locked():
-                print "_create_plot released lock"
-                self._found_dark_lock.release()
-                
-            ratios.append(ratio_calc.get_ratio(s))
-            if i > 30:
-                i = 0
-                l.set_data(range(j),ratios[:j])
-                l.axes.relim()
-                if not self._is_zoomed and not self._is_panned:
-                    l.axes.autoscale_view()
-                self.draw_plot()
-            i+=1
-            j+=1
-        
-        if self._stay_alive:
-            l.set_data(range(len(ratios)),ratios)
-            l.axes.relim()
-            
-            if not self._is_zoomed and not self._is_panned:
-                    l.axes.autoscale_view()
-            self.draw_plot()
- 
- 
-            
-class RealtimeRatioTimePlot(RatioTimePlot):
-    
-    def _create_plot(self):
-        ratios = []
-        ratio_calc = spectrum_maths.WavelengthRatioCalc(self.outband, self.inband)
-        matplotlib.interactive(True)
-        l, = self.axes.plot([])
-        #TODO - implement plot updates as a timer in a separate thread
-        t = datetime.datetime.now()
-        j = 0
-        self._spec_iter = spectra_dir.DarkSubtractedSpectra(self.dir_name, recursive=self.recursive, realtime=True)
-        for s in self._spec_iter:
-            if self._found_dark_lock.locked():
-                print "_create_plot released lock"
-                self._found_dark_lock.release()
-            
-            ratios.append(ratio_calc.get_ratio(s))
-            if datetime.datetime.now() - t > datetime.timedelta(seconds=1):
-                t = datetime.datetime.now()
-                l.set_data(range(j),ratios[:j])
-                l.axes.relim()
-
-                if not self._is_zoomed and not self._is_panned:
-                    l.axes.autoscale_view()
-                self.draw_plot()
-            
-            j+=1
-        
-        #remember that you never reach here until you close the spec_iter
-        if self._stay_alive:
-            l.set_data(range(len(ratios)),ratios)
-            l.axes.relim()
-            
-            if not self._is_zoomed and not self._is_panned:
-                    l.axes.autoscale_view()
-            self.draw_plot()            
+#
+#class RatioTimePlot(PlotPanelBase):
+#    
+#    def __init__(self, parent, dir_name, inband, outband, recursive):
+#        self.dir_name = dir_name
+#        self.inband = inband
+#        self.outband = outband
+#        self.recursive = recursive
+#        self._spec_iter = None
+#        self._stay_alive = True
+#        self._found_dark_lock = threading.Lock()
+#        self._found_dark_lock.acquire() #lock is released when dark spectrum is found
+#        
+#        PlotPanelBase.__init__(self,parent,os.path.basename(dir_name))
+#        
+#        self.plotting_thread = threading.Thread(target=self._create_plot)
+#        self.plotting_thread.start()
+#    
+#    
+#    def wait_for_dark(self):
+#        """
+#        Blocks until a dark spectrum is found.
+#        """
+#        self._found_dark_lock.acquire()
+#        self._found_dark_lock.release()
+#        print "exited wait_for_dark"
+#    
+#    
+#    def close(self):
+#        self._stay_alive = False
+#        while self._spec_iter is None:
+#            this could be true if the close event is handled between the 
+#            plot constructor being called and the plotting thread creating
+#            the iterator object
+#            time.sleep(0.001)
+#            
+#        self._spec_iter.close()
+#        if self._found_dark_lock.locked():
+#                self._found_dark_lock.release()
+#        self.plotting_thread.join()
+#        PlotPanelBase.close(self)
+#        
+#    
+#    def draw_plot(self):
+#        try:
+#            wx.MutexGuiEnter()
+#            self.canvas.draw()
+#            self.canvas.gui_repaint()
+#        finally:
+#            wx.MutexGuiLeave()
+#    
+#    
+#    def set_dark_spectra(self, spectra):
+#        loader = spectrum_loader.SpectrumIO()
+#        
+#        spectra_objs = [loader.load(f) for f in spectra]
+#        spectra_objs = [s for s in spectra_objs if s is not None]
+#        if self._spec_iter is not None:
+#            print spectra_objs
+#            self._spec_iter.set_dark_spectra(spectra_objs)
+#            print "finished calling self._spec_iter.set_dark_spectra"
+#        else:
+#            TODO - handle this properly
+#            raise RuntimeError("Call to set_darks before iterator is initialised")
+#    
+#    
+#    def _create_plot(self):
+#        ratios = []
+#        ratio_calc = spectrum_maths.WavelengthRatioCalc(self.outband, self.inband)
+#        matplotlib.interactive(True)
+#        l, = self.axes.plot([])
+#        
+#        i = 0
+#        j = 0
+#        self._spec_iter = spectra_dir.DarkSubtractedSpectra(self.dir_name, recursive=self.recursive)
+#        for s in self._spec_iter:
+#            if self._found_dark_lock.locked():
+#                print "_create_plot released lock"
+#                self._found_dark_lock.release()
+#                
+#            ratios.append(ratio_calc.get_ratio(s))
+#            if i > 30:
+#                i = 0
+#                l.set_data(range(j),ratios[:j])
+#                l.axes.relim()
+#                if not self._is_zoomed and not self._is_panned:
+#                    l.axes.autoscale_view()
+#                self.draw_plot()
+#            i+=1
+#            j+=1
+#        
+#        if self._stay_alive:
+#            l.set_data(range(len(ratios)),ratios)
+#            l.axes.relim()
+#            
+#            if not self._is_zoomed and not self._is_panned:
+#                    l.axes.autoscale_view()
+#            self.draw_plot()
+# 
+# 
+#            
+#class RealtimeRatioTimePlot(RatioTimePlot):
+#    
+#    def _create_plot(self):
+#        ratios = []
+#        ratio_calc = spectrum_maths.WavelengthRatioCalc(self.outband, self.inband)
+#        matplotlib.interactive(True)
+#        l, = self.axes.plot([])
+#        #TODO - implement plot updates as a timer in a separate thread
+#        t = datetime.datetime.now()
+#        j = 0
+#        self._spec_iter = spectra_dir.DarkSubtractedSpectra(self.dir_name, recursive=self.recursive, realtime=True)
+#        for s in self._spec_iter:
+#            if self._found_dark_lock.locked():
+#                print "_create_plot released lock"
+#                self._found_dark_lock.release()
+#            
+#            ratios.append(ratio_calc.get_ratio(s))
+#            if datetime.datetime.now() - t > datetime.timedelta(seconds=1):
+#                t = datetime.datetime.now()
+#                l.set_data(range(j),ratios[:j])
+#                l.axes.relim()
+#
+#                if not self._is_zoomed and not self._is_panned:
+#                    l.axes.autoscale_view()
+#                self.draw_plot()
+#            
+#            j+=1
+#        
+#        #remember that you never reach here until you close the spec_iter
+#        if self._stay_alive:
+#            l.set_data(range(len(ratios)),ratios)
+#            l.axes.relim()
+#            
+#            if not self._is_zoomed and not self._is_panned:
+#                    l.axes.autoscale_view()
+#            self.draw_plot()            
 
 class DarkSelectDialog(wx.Dialog):
-    def __init__(self, plot_obj):
+    def __init__(self, data_series, parent):
         self._wait_for_dark_thread = threading.Thread(target=self.__wait_for_dark)
-        self.plot_obj = plot_obj
-        wx.Dialog.__init__(self,plot_obj, wx.ID_ANY)
+        self.data_series = data_series
+        wx.Dialog.__init__(self,parent, wx.ID_ANY)
         vsizer = wx.BoxSizer(wx.VERTICAL)
         
         vsizer.Add(wx.StaticText(self, wx.ID_ANY, "Waiting for dark spectrum..."),0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL, border=10)
@@ -451,10 +608,9 @@ class DarkSelectDialog(wx.Dialog):
         wx.EVT_BUTTON(self, self.manual_select_button.GetId(), self.onSelect)
         wx.EVT_CLOSE(self, self.onClose)
     
+    
     def onClose(self, evnt):
-        #TODO - this should probably close the plot as well - difficult since it is handled 
-        #by a notebook
-        self.plot_obj.close()
+        self.data_series.delete()
         self._wait_for_dark_thread.join()
         self.Destroy()
     
@@ -470,11 +626,11 @@ class DarkSelectDialog(wx.Dialog):
         dialog = wx.FileDialog(self, "Choose dark spectrum file(s)", defaultDir=default_dir,style=wx.FD_OPEN|wx.FD_FILE_MUST_EXIST|wx.FD_MULTIPLE)
         if dialog.ShowModal() == wx.ID_OK:
             darks = dialog.GetPaths()
-            self.plot_obj.set_dark_spectra(darks)
+            self.data_series.set_dark_spectra(darks)
 
     
     def __wait_for_dark(self):
-        self.plot_obj.wait_for_dark()
+        self.data_series.wait_for_dark()
         while not self.IsModal():
             time.sleep(0.01)
         print "DarkSelectDialog - finished waiting for dark"
@@ -482,41 +638,51 @@ class DarkSelectDialog(wx.Dialog):
         #self.EndModal(wx.ID_OK)
             
             
-class RatioTimePlugin(AvoPlotPluginBase):
+class RatioTimePlugin(plugins.AvoPlotPluginSimple):
     
     def __init__(self):
-        AvoPlotPluginBase.__init__(self, "DOAS Ratio time series")
+
+        super(RatioTimePlugin,self).__init__("DOAS Ratio time series", SO2TimeSeries)  
+        self.set_menu_entry(["DOAS", "Ratio Time Plot"], "Plot time series of ratios")
     
     
-    def get_onNew_handler(self):
-        return ("DOAS", "Ratio Time Plot", "Plot time series of ratios", self.plot_ratio_timeseries)
-    
-    
-    def plot_ratio_timeseries(self, evnt):
-        # TODO - open a time plot and select the zoom tool while it is plotting.
-        # now open a second time plot (the zoom tool is disabled), but if you switch
-        # back to the first time plot once it has finished plotting, then the axes are
-        # not autoscaled. This is not a major issue, but should be fixed.
+    def plot_into_subplot(self, subplot):
+        
         parent = self.get_parent()
         dialog = TimePlotSettingsFrame(parent)
         if (dialog.ShowModal() == wx.OK):
-            time_plot = dialog.get_plot()
-            
-            if parent.toolbar.GetToolState(parent.toolbar.zoom_tool.GetId()):
-                #then diasble the zoom (so that the plot gets autoscaled as data is added)
-                parent.toolbar.ToggleTool(parent.toolbar.zoom_tool.GetId(), False)
-                
-            elif parent.toolbar.GetToolState(parent.toolbar.move_tool.GetId()):
-                #then disable the panning (again so that the plot gets autoscaled as data is added)
-                parent.toolbar.ToggleTool(parent.toolbar.move_tool.GetId(), False)
-            
-            self.add_plot_to_main_window(time_plot)
-            
-            wx.CallAfter(self.create_manual_dark_select_frame, time_plot)
+            s = dialog.get_data_series()
+            subplot.add_data_series(s)
+            wx.CallAfter(self.create_manual_dark_select_frame, s, parent) 
+            return True       
+        else:
+            return False
+        
+#    def plot_ratio_timeseries(self, evnt):
+#        # TODO - open a time plot and select the zoom tool while it is plotting.
+#        # now open a second time plot (the zoom tool is disabled), but if you switch
+#        # back to the first time plot once it has finished plotting, then the axes are
+#        # not autoscaled. This is not a major issue, but should be fixed.
+#        parent = self.get_parent()
+#        dialog = TimePlotSettingsFrame(parent)
+#        if (dialog.ShowModal() == wx.OK):
+#            time_plot = dialog.get_plot()
+#            
+#            if parent.toolbar.GetToolState(parent.toolbar.zoom_tool.GetId()):
+#                #then diasble the zoom (so that the plot gets autoscaled as data is added)
+#                parent.toolbar.ToggleTool(parent.toolbar.zoom_tool.GetId(), False)
+#                
+#            elif parent.toolbar.GetToolState(parent.toolbar.move_tool.GetId()):
+#                #then disable the panning (again so that the plot gets autoscaled as data is added)
+#                parent.toolbar.ToggleTool(parent.toolbar.move_tool.GetId(), False)
+#            
+#            self.add_plot_to_main_window(time_plot)
+#            
+#            wx.CallAfter(self.create_manual_dark_select_frame, time_plot)
     
     
-    def create_manual_dark_select_frame(self, plot_obj):
-        dialog = DarkSelectDialog(plot_obj)
+    def create_manual_dark_select_frame(self, data_series, parent):
+        dialog = DarkSelectDialog(data_series, parent)
         dialog.ShowModal()
         
            

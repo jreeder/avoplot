@@ -18,10 +18,10 @@
 from avoplot.plugins import register
 from doas_spectrum_plot import DOASSpectrumPlugin
 from adv_ret_plot import DOASAdvRetPlugin
-#from ratio_time_plot import RatioTimePlugin
+from ratio_time_plot import RatioTimePlugin
 
 
 #register plugins with AvoPlot so that they are loaded on startup
 register(DOASSpectrumPlugin())
 register(DOASAdvRetPlugin())
-#register(RatioTimePlugin())
+register(RatioTimePlugin())
