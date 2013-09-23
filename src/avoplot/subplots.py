@@ -116,6 +116,10 @@ class AvoPlotXYSubplot(AvoPlotSubplotBase):
         
     
     def delete(self):
+        """
+        Overrides base class delete method in order to remove the axes from 
+        the figure and draw the changes.
+        """
         ax = self.get_mpl_axes()
         fig = self.get_parent_element()
         mpl_fig = fig.get_mpl_figure()

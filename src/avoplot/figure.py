@@ -148,7 +148,18 @@ class AvoPlotFigure(core.AvoPlotElementBase, wx.ScrolledWindow):
         
         self.canvas.draw()
     
+    def is_zoomed(self):
+        """
+        Returns True if the zoom tool is selected, False otherwise.
+        """
+        return self._is_zoomed
     
+    def is_panned(self):
+        """
+        Returns True if the pan tool is selected, False otherwise.
+        """
+        return self._is_panned
+        
     def finalise(self):
         """
         Creates the canvas for the figure to be drawn into. This is done here

@@ -15,6 +15,8 @@
 #You should have received a copy of the GNU General Public License
 #along with AvoPlot.  If not, see <http://www.gnu.org/licenses/>.
 import wx
+import threading
+import numpy
 import matplotlib.colors
 
 from avoplot.subplots import AvoPlotSubplotBase, AvoPlotXYSubplot
@@ -54,7 +56,10 @@ class DataSeriesBase(core.AvoPlotElementBase):
     
     
     def delete(self):
-
+        """
+        Overrides the base class method in order to remove the line(s) from the 
+        axes and draw the changes. 
+        """
         self._mpl_lines.pop(0).remove()
         self.update()
         super(DataSeriesBase, self).delete()        
@@ -118,8 +123,10 @@ class XYDataSeries(DataSeriesBase):
     """
     def __init__(self, name, xdata=None, ydata=None):
         super(XYDataSeries, self).__init__(name)
+        self._data_lock = threading.Lock()
         self.set_xy_data(xdata, ydata)
         self.add_control_panel(XYSeriesControls(self))
+        
         
         
     @staticmethod    
@@ -131,17 +138,24 @@ class XYDataSeries(DataSeriesBase):
         return AvoPlotXYSubplot
     
     
+    def exclusive_lock(self):
+        return self._data_lock
+    
+    
     def set_xy_data(self, xdata=None, ydata=None):
         """
         Sets the x and y values of the data series.
         """
-        self.__xdata = xdata
-        self.__ydata = ydata
+        assert len(xdata)==len(ydata)
         
-        if self.is_plotted():
-            #update the the data in the plotted line
-            line, = self.get_mpl_lines()
-            line.set_data(*self.get_data())
+        with self._data_lock:
+            self.__xdata = xdata
+            self.__ydata = ydata
+            
+            if self.is_plotted():
+                #update the the data in the plotted line
+                line, = self.get_mpl_lines()
+                line.set_data(*self.preprocess(self.__xdata, self.__ydata))
     
     
     def get_raw_data(self):
@@ -150,7 +164,8 @@ class XYDataSeries(DataSeriesBase):
         (without any pre-processing operations performed). In general you should
         use the get_data() method instead.
         """
-        return (self.__xdata, self.__ydata)
+        with self._data_lock:
+            return (self.__xdata, self.__ydata)
     
     
     def get_data(self):
@@ -158,7 +173,8 @@ class XYDataSeries(DataSeriesBase):
         Returns a tuple (xdata, ydata) of the data held by the series, with
         any pre-processing operations applied to it.
         """
-        return self.preprocess(self.__xdata, self.__ydata)
+        with self._data_lock:
+            return self.preprocess(numpy.array(self.__xdata), numpy.array(self.__ydata))
     
     
     def preprocess(self, xdata, ydata):
