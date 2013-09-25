@@ -40,7 +40,7 @@ class AvoplotArtProvider(wx.ArtProvider):
         Returns the closest size to s that is available in the icons folder. If 
         no icons can be found, returns None
         """
-        if not self.avail_sizes:
+        if not len(self.avail_sizes) > 0:
             return None
         
         return self.avail_sizes[numpy.argmin(numpy.abs(self.avail_sizes-s))]
