@@ -48,7 +48,10 @@ class FigureControls(controls.AvoPlotControlPanelBase):
         super(FigureControls, self).setup(parent)
         mpl_fig = self.figure.get_mpl_figure()
         
-        self.__suptitle_text = None
+        #TODO - if the figure already had a suptitle set, then this is going
+        #to ignore it. Need a way to access the current suptitle text from the 
+        #figure. My version of matplotlib doesn't seem to allow this.
+        self.__suptitle_text = mpl_fig.suptitle('')
         
         #add background colour controls
         bkgd_col = mpl_fig.get_facecolor()
@@ -59,12 +62,7 @@ class FigureControls(controls.AvoPlotControlPanelBase):
         self.Add(cs, 0 , wx.ALIGN_LEFT| wx.ALL, border=10)
         
         #add figure title controls
-        #TODO - if the figure already had a suptitle set, then this is going
-        #to ignore it. Need a way to access the current suptitle text from the 
-        #figure. My version of matplotlib doesn't seem to allow this.
-        title = ""
-        
-        ts = widgets.TextSetting(self, "Title:", title, self.on_suptitle_change)
+        ts = widgets.TextSetting(self, "Title:", self.__suptitle_text, self.on_suptitle_change)
         self.Add(ts, 0 , wx.ALIGN_LEFT|wx.EXPAND|wx.ALL, border=10)
         
     
@@ -83,11 +81,7 @@ class FigureControls(controls.AvoPlotControlPanelBase):
         """
         Event handler for figure title changes.
         """
-        fig = self.figure.get_mpl_figure()
-        if self.__suptitle_text is None:
-            self.__suptitle_text = fig.suptitle(evnt.GetString())
-        else:
-            self.__suptitle_text.set_text(evnt.GetString())
+        self.__suptitle_text.set_text(evnt.GetString())
         
         self.figure.update()
 

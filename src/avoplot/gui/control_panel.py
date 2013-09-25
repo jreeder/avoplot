@@ -54,7 +54,8 @@ class ControlPanel(aui.AuiNotebook):
                 p.Show(False)
                 p.Reparent(p.old_parent)
         
-        for p in control_panels:
+        #reverse the order so that plugin-defined panels appear first
+        for p in reversed(control_panels):
             #AuiNotebook requires that any pages have the notebook as a parent -
             #so reparent all the panels to make it so!
             p.Reparent(self)

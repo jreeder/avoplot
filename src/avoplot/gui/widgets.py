@@ -21,6 +21,7 @@ control panels for elements.
 """
 
 import wx
+from avoplot.gui import text
 
 class SettingBase(wx.BoxSizer):
     """
@@ -49,13 +50,24 @@ class TextSetting(SettingBase):
     """
     A text label next to a wx text entry control.
     """
-    def __init__(self, parent, label, default_text, callback):
+    def __init__(self, parent, label, text_obj, callback):
         SettingBase.__init__(self, parent, label)
-        
-        self.tc = wx.TextCtrl(parent, -1, value=default_text, 
+        self.text_obj = text_obj
+        self.parent = parent
+        self.tc = wx.TextCtrl(parent, -1, value=text_obj.get_text(), 
                               style=wx.TE_PROCESS_ENTER)
         wx.EVT_TEXT(parent, self.tc.GetId(), callback)
         self.Add(self.tc, 1, wx.ALIGN_CENTRE_VERTICAL)
+        
+        prop_bmp = wx.ArtProvider.GetBitmap("avoplot_text_prop",wx.ART_BUTTON)
+        self.prop_button = wx.BitmapButton(parent, wx.ID_ANY, prop_bmp)
+        self.prop_button.SetToolTip(wx.ToolTip("Edit font properties"))
+        self.Add(self.prop_button, 0, wx.ALIGN_CENTER_VERTICAL)
+        wx.EVT_BUTTON(parent, self.prop_button.GetId(), self.on_text_prop_button)
+    
+    
+    def on_text_prop_button(self, evnt):
+        text.TextPropertiesEditor(self.parent, self.text_obj)
 
 
 class ChoiceSetting(SettingBase):

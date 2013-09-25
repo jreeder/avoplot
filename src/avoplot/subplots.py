@@ -214,15 +214,15 @@ class XYSubplotControls(controls.AvoPlotControlPanelBase):
                                        self.on_bkgd_colour)
         self.Add(colour, 0, wx.ALIGN_LEFT|wx.EXPAND|wx.ALL, border=10) 
         
-        title = widgets.TextSetting(self, 'Subplot title:', ax.get_title(), 
+        title = widgets.TextSetting(self, 'Subplot title:', ax.title, 
                                      self.on_title)  
         self.Add(title, 0, wx.ALIGN_LEFT|wx.EXPAND|wx.ALL, border=10) 
         
-        xlabel = widgets.TextSetting(self, 'x-axis title:', ax.get_xlabel(), 
+        xlabel = widgets.TextSetting(self, 'x-axis title:', ax.xaxis.label, 
                                      self.on_xlabel)        
         self.Add(xlabel, 0, wx.ALIGN_LEFT|wx.EXPAND|wx.ALL, border=10)
         
-        ylabel = widgets.TextSetting(self, 'y-axis title:', ax.get_ylabel(), 
+        ylabel = widgets.TextSetting(self, 'y-axis title:', ax.yaxis.label, 
                                      self.on_ylabel)        
         self.Add(ylabel, 0, wx.ALIGN_LEFT|wx.EXPAND|wx.ALL, border=10)
     
