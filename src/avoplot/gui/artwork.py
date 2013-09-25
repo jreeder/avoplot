@@ -20,6 +20,7 @@ import os.path
 import glob
 import numpy
 
+
 class AvoplotArtProvider(wx.ArtProvider):
     """
     Customised art provider class for serving the AvoPlot specific icons.
@@ -36,8 +37,12 @@ class AvoplotArtProvider(wx.ArtProvider):
             
     def _get_nearest_avail_size(self, s):
         """
-        Returns the closest size to s that is available in the icons folder.
+        Returns the closest size to s that is available in the icons folder. If 
+        no icons can be found, returns None
         """
+        if not self.avail_sizes:
+            return None
+        
         return self.avail_sizes[numpy.argmin(numpy.abs(self.avail_sizes-s))]
     
     
@@ -59,6 +64,8 @@ class AvoplotArtProvider(wx.ArtProvider):
             sizerq = size
         
         avail_size = self._get_nearest_avail_size(sizerq.width)
+        if avail_size is None:
+            return wx.NullBitmap
         
         filename = os.path.join(avoplot.get_avoplot_icons_dir(),
                                 '%dx%d'%(avail_size, avail_size), 
