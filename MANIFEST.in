@@ -4,6 +4,7 @@ include doc/build/html/_static/*
 include doc/build/html/_sources/*
 include examples/*
 recursive-include icons *.png
+recursive-include icons *.ico
 include misc/*
 include AUTHORS
 include COPYING
