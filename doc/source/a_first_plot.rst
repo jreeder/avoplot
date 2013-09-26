@@ -4,7 +4,7 @@ A First Plot
 Creating plots with AvoPlot is simple! In this example we will guide you through plotting some data from a text file. We will use the data in the spectrum_data.txt file, which you can find in the examples folder of the AvoPlot package. The file starts with some header data, and then has two columns of numbers (wavelengths and intensities recorded with an ultraviolet spectrometer).
 
 To create a plot of the data:
-  * Open the AvoPlot program.
+  * Open the AvoPlot program. For Windows users: a Start menu entry should have been created when you ran the installer but if it is missing then you can double-click on the AvoPlot.py file which will be in the Scripts folder of your Python installation e.g. C:\Python27\Scripts\AvoPlot.py. Linux/OSX users: a shortcut should have been created in your applications menu (under the Science or Education submenu), if it missing for some reason, then you should just be able to run AvoPlot.py in a terminal.
   * Go to `File->New->From File` or use the `New plot` icon on the toolbar.
   * Select the file you want to plot (in this case spectrum_data.txt)
   * You should be presented with the file import dialog shown below.

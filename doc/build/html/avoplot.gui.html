@@ -63,6 +63,7 @@
 <li><a class="reference internal" href="#module-avoplot.gui.menu"><tt class="docutils literal"><span class="pre">menu</span></tt> Module</a></li>
 <li><a class="reference internal" href="#module-avoplot.gui.nav_panel"><tt class="docutils literal"><span class="pre">nav_panel</span></tt> Module</a></li>
 <li><a class="reference internal" href="#module-avoplot.gui.plots_panel"><tt class="docutils literal"><span class="pre">plots_panel</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-avoplot.gui.text"><tt class="docutils literal"><span class="pre">text</span></tt> Module</a></li>
 <li><a class="reference internal" href="#module-avoplot.gui.toolbar"><tt class="docutils literal"><span class="pre">toolbar</span></tt> Module</a></li>
 <li><a class="reference internal" href="#module-avoplot.gui.widgets"><tt class="docutils literal"><span class="pre">widgets</span></tt> Module</a></li>
 </ul>
@@ -416,12 +417,33 @@ corresponding to the element which has been selected.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="avoplot.gui.nav_panel.NavigationPanel.on_rclick_menu_delete">
+<tt class="descname">on_rclick_menu_delete</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.nav_panel.NavigationPanel.on_rclick_menu_delete" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.nav_panel.NavigationPanel.on_rclick_menu_rename">
+<tt class="descname">on_rclick_menu_rename</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.nav_panel.NavigationPanel.on_rclick_menu_rename" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.nav_panel.NavigationPanel.on_tree_el_menu">
+<tt class="descname">on_tree_el_menu</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.nav_panel.NavigationPanel.on_tree_el_menu" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="avoplot.gui.nav_panel.NavigationPanel.on_tree_select_el">
 <tt class="descname">on_tree_select_el</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.nav_panel.NavigationPanel.on_tree_select_el" title="Permalink to this definition">¶</a></dt>
 <dd><p>Event handler for tree item select. Selects the corresponding AvoPlot
 element (which generates an AvoPlotElementSelect)</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="class">
+<dt id="avoplot.gui.nav_panel.RightClickMenu">
+<em class="property">class </em><tt class="descclassname">avoplot.gui.nav_panel.</tt><tt class="descname">RightClickMenu</tt><big>(</big><em>nav_panel</em><big>)</big><a class="headerlink" href="#avoplot.gui.nav_panel.RightClickMenu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx._core.Menu</span></tt></p>
 </dd></dl>
 
 </div>
@@ -517,6 +539,72 @@ handler for this event - on_rename_element()</p>
 <dt id="avoplot.gui.plots_panel.PlotsPanel.unsplit_panes">
 <tt class="descname">unsplit_panes</tt><big>(</big><em>*args</em><big>)</big><a class="headerlink" href="#avoplot.gui.plots_panel.PlotsPanel.unsplit_panes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Unsplits all the panes.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-avoplot.gui.text">
+<span id="text-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">text</span></tt> Module<a class="headerlink" href="#module-avoplot.gui.text" title="Permalink to this headline">¶</a></h2>
+<p>The text module contains classes and functions for editing matplotlib Text 
+objects</p>
+<dl class="class">
+<dt id="avoplot.gui.text.FontPropertiesPanel">
+<em class="property">class </em><tt class="descclassname">avoplot.gui.text.</tt><tt class="descname">FontPropertiesPanel</tt><big>(</big><em>parent</em>, <em>text_obj</em><big>)</big><a class="headerlink" href="#avoplot.gui.text.FontPropertiesPanel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx._windows.Panel</span></tt></p>
+<p>Panel to hold the text property editing controls within the 
+TextPropertiesEditor dialog. The Text object to be edited should be passed
+to the constructor.</p>
+<dl class="method">
+<dt id="avoplot.gui.text.FontPropertiesPanel.get_font_colour">
+<tt class="descname">get_font_colour</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.gui.text.FontPropertiesPanel.get_font_colour" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the currently selected font colour (as a HTML string).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.text.FontPropertiesPanel.get_font_name">
+<tt class="descname">get_font_name</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.gui.text.FontPropertiesPanel.get_font_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the name of the currently selected font.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.text.FontPropertiesPanel.get_font_size">
+<tt class="descname">get_font_size</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.gui.text.FontPropertiesPanel.get_font_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the currently selected font size (integer number of points)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="avoplot.gui.text.TextPropertiesEditor">
+<em class="property">class </em><tt class="descclassname">avoplot.gui.text.</tt><tt class="descname">TextPropertiesEditor</tt><big>(</big><em>parent</em>, <em>text_obj</em><big>)</big><a class="headerlink" href="#avoplot.gui.text.TextPropertiesEditor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx._windows.Dialog</span></tt></p>
+<p>Dialog which allows the user to edit the text properties (colour, font etc.)
+of a matplotlib.text.Text object. The Text object to be edited should be 
+passed to the dialog constructor.</p>
+<dl class="method">
+<dt id="avoplot.gui.text.TextPropertiesEditor.apply_to">
+<tt class="descname">apply_to</tt><big>(</big><em>text_obj</em><big>)</big><a class="headerlink" href="#avoplot.gui.text.TextPropertiesEditor.apply_to" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies the selected properties to text_obj which must be a 
+matplotlib.text.Text object</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.text.TextPropertiesEditor.on_apply">
+<tt class="descname">on_apply</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.text.TextPropertiesEditor.on_apply" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for Apply button clicks</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.text.TextPropertiesEditor.on_close">
+<tt class="descname">on_close</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.text.TextPropertiesEditor.on_close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for frame close events</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.text.TextPropertiesEditor.on_ok">
+<tt class="descname">on_ok</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.text.TextPropertiesEditor.on_ok" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for Ok button clicks.</p>
 </dd></dl>
 
 </dd></dl>
@@ -626,9 +714,14 @@ control panels for elements.</p>
 
 <dl class="class">
 <dt id="avoplot.gui.widgets.TextSetting">
-<em class="property">class </em><tt class="descclassname">avoplot.gui.widgets.</tt><tt class="descname">TextSetting</tt><big>(</big><em>parent</em>, <em>label</em>, <em>default_text</em>, <em>callback</em><big>)</big><a class="headerlink" href="#avoplot.gui.widgets.TextSetting" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">avoplot.gui.widgets.</tt><tt class="descname">TextSetting</tt><big>(</big><em>parent</em>, <em>label</em>, <em>text_obj</em>, <em>callback</em><big>)</big><a class="headerlink" href="#avoplot.gui.widgets.TextSetting" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#avoplot.gui.widgets.SettingBase" title="avoplot.gui.widgets.SettingBase"><tt class="xref py py-class docutils literal"><span class="pre">avoplot.gui.widgets.SettingBase</span></tt></a></p>
 <p>A text label next to a wx text entry control.</p>
+<dl class="method">
+<dt id="avoplot.gui.widgets.TextSetting.on_text_prop_button">
+<tt class="descname">on_text_prop_button</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.widgets.TextSetting.on_text_prop_button" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 </div>

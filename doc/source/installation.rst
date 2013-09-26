@@ -24,7 +24,7 @@ It is also recommended to install python-magic_, but given how difficult it is t
 Windows
 -------
 
-Download the Windows installer program from the downloads page (linked from `here <http://avoplot.googlecode.com>`_) and run it. The main AvoPlot program (AvoPlot.py) will be installed into the "Scripts" folder of your Python installation and a Start menu entry should be created for it.
+Download the Windows installer program from the `downloads <http://dx.doi.org/10.6084/m9.figshare.757683>`_ page and run it. The main AvoPlot program (AvoPlot.py) will be installed into the "Scripts" folder of your Python installation and a Start menu entry should be created for it.
 
 OS X
 ----
@@ -36,7 +36,7 @@ Mac users should follow the Linux instructions below.
 Linux
 -----
 
-Download the tar.gz file from the downloads page (linked from `here <http://avoplot.googlecode.com>`_). Unpack the archive::
+Download the tar.gz file from the `downloads <http://dx.doi.org/10.6084/m9.figshare.757683>`_ page. Unpack the archive::
   
     tar -xzf AvoPlot-13.07.tar.gz
 

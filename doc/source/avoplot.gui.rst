@@ -65,6 +65,14 @@ gui Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`text` Module
+------------------
+
+.. automodule:: avoplot.gui.text
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`toolbar` Module
 ---------------------
 

@@ -135,6 +135,12 @@ files, e.g. icons. On Linux at least this will probably be
 something like /usr/local/share/AvoPlot</p>
 </dd></dl>
 
+<dl class="function">
+<dt id="avoplot.__init__.get_license_file">
+<tt class="descclassname">avoplot.__init__.</tt><tt class="descname">get_license_file</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.__init__.get_license_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the full path to the COPYING file installed with AvoPlot</p>
+</dd></dl>
+
 </div>
 <div class="section" id="module-avoplot.controls">
 <span id="controls-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">controls</span></tt> Module<a class="headerlink" href="#module-avoplot.controls" title="Permalink to this headline">¶</a></h2>
@@ -326,6 +332,18 @@ construction, e.g. if the file cannot be loaded etc.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="avoplot.figure.AvoPlotFigure.is_panned">
+<tt class="descname">is_panned</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.figure.AvoPlotFigure.is_panned" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if the pan tool is selected, False otherwise.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.figure.AvoPlotFigure.is_zoomed">
+<tt class="descname">is_zoomed</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.figure.AvoPlotFigure.is_zoomed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if the zoom tool is selected, False otherwise.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="avoplot.figure.AvoPlotFigure.on_mouse_button">
 <tt class="descname">on_mouse_button</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.figure.AvoPlotFigure.on_mouse_button" title="Permalink to this definition">¶</a></dt>
 <dd><p>Event handler for mouse click events in the figure canvas.</p>
@@ -417,6 +435,13 @@ used for storing settings across program restarts.</p>
 <dd><p>Bases: <a class="reference internal" href="#avoplot.core.AvoPlotElementBase" title="avoplot.core.AvoPlotElementBase"><tt class="xref py py-class docutils literal"><span class="pre">avoplot.core.AvoPlotElementBase</span></tt></a></p>
 <p>Base class for all data series.</p>
 <dl class="method">
+<dt id="avoplot.series.DataSeriesBase.delete">
+<tt class="descname">delete</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.series.DataSeriesBase.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overrides the base class method in order to remove the line(s) from the 
+axes and draw the changes.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="avoplot.series.DataSeriesBase.get_mpl_lines">
 <tt class="descname">get_mpl_lines</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.series.DataSeriesBase.get_mpl_lines" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a list of matplotlib line objects associated with the data 
@@ -464,6 +489,11 @@ that parent is an instance of AvoPlotSubplotBase or a subclass thereof.</p>
 <em class="property">class </em><tt class="descclassname">avoplot.series.</tt><tt class="descname">XYDataSeries</tt><big>(</big><em>name</em>, <em>xdata=None</em>, <em>ydata=None</em><big>)</big><a class="headerlink" href="#avoplot.series.XYDataSeries" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#avoplot.series.DataSeriesBase" title="avoplot.series.DataSeriesBase"><tt class="xref py py-class docutils literal"><span class="pre">avoplot.series.DataSeriesBase</span></tt></a></p>
 <p>Class to represent 2D XY data series.</p>
+<dl class="method">
+<dt id="avoplot.series.XYDataSeries.exclusive_lock">
+<tt class="descname">exclusive_lock</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.series.XYDataSeries.exclusive_lock" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="method">
 <dt id="avoplot.series.XYDataSeries.get_data">
 <tt class="descname">get_data</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.series.XYDataSeries.get_data" title="Permalink to this definition">¶</a></dt>
@@ -606,6 +636,13 @@ avoplot.series.XYDataSeries instance or subclass thereof.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="avoplot.subplots.AvoPlotXYSubplot.delete">
+<tt class="descname">delete</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.subplots.AvoPlotXYSubplot.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overrides base class delete method in order to remove the axes from 
+the figure and draw the changes.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="avoplot.subplots.AvoPlotXYSubplot.get_mpl_axes">
 <tt class="descname">get_mpl_axes</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.subplots.AvoPlotXYSubplot.get_mpl_axes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the matplotlib axes object associated with this subplot.</p>
@@ -699,6 +736,7 @@ instance.</p>
 <li class="toctree-l2"><a class="reference internal" href="avoplot.gui.html#module-avoplot.gui.menu"><tt class="docutils literal"><span class="pre">menu</span></tt> Module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="avoplot.gui.html#module-avoplot.gui.nav_panel"><tt class="docutils literal"><span class="pre">nav_panel</span></tt> Module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="avoplot.gui.html#module-avoplot.gui.plots_panel"><tt class="docutils literal"><span class="pre">plots_panel</span></tt> Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="avoplot.gui.html#module-avoplot.gui.text"><tt class="docutils literal"><span class="pre">text</span></tt> Module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="avoplot.gui.html#module-avoplot.gui.toolbar"><tt class="docutils literal"><span class="pre">toolbar</span></tt> Module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="avoplot.gui.html#module-avoplot.gui.widgets"><tt class="docutils literal"><span class="pre">widgets</span></tt> Module</a></li>
 </ul>
