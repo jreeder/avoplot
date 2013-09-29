@@ -34,22 +34,21 @@ class TextPropertiesEditor(wx.Dialog):
 
         if not isinstance(text_obj, matplotlib.text.Text):
             raise TypeError("Expecting matplotlib.text.Text instance"
-                            ", got %s"%(type(text_obj)))
+                            ", got %s" % (type(text_obj)))
         self.main_text_obj = text_obj
-        wx.Dialog.__init__(self, parent, wx.ID_ANY,"Text properties")
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, "Text properties")
         vsizer = wx.BoxSizer(wx.VERTICAL)
         button_sizer = wx.BoxSizer(wx.HORIZONTAL)
         
         #set up the icon for the frame
         if sys.platform == "win32":
-            self.SetIcon(wx.ArtProvider.GetIcon("avoplot", size=(16,16)))
+            self.SetIcon(wx.ArtProvider.GetIcon("avoplot", size=(16, 16)))
         else:
-            self.SetIcon(wx.ArtProvider.GetIcon("avoplot", size=(64,64)))
+            self.SetIcon(wx.ArtProvider.GetIcon("avoplot", size=(64, 64)))
         
         #add the font properties panel
         self.font_props_panel = FontPropertiesPanel(self, text_obj)
-        vsizer.Add(self.font_props_panel,0,wx.EXPAND)
-        
+        vsizer.Add(self.font_props_panel, 0, wx.EXPAND)
         
         #create main buttons for editor frame
         self.ok_button = wx.Button(self, wx.ID_ANY, "Ok")
@@ -58,7 +57,7 @@ class TextPropertiesEditor(wx.Dialog):
         button_sizer.Add(self.cancel_button, 0, wx.ALIGN_TOP | wx.ALIGN_RIGHT)
         button_sizer.Add(self.apply_button, 0, wx.ALIGN_TOP | wx.ALIGN_RIGHT)
         button_sizer.Add(self.ok_button, 0, wx.ALIGN_TOP | wx.ALIGN_RIGHT)
-        vsizer.Add(button_sizer,0, wx.ALIGN_BOTTOM | wx.ALIGN_RIGHT)
+        vsizer.Add(button_sizer, 0, wx.ALIGN_BOTTOM | wx.ALIGN_RIGHT)
         
         #register main button event callbacks
         wx.EVT_BUTTON(self, self.cancel_button.GetId(), self.on_close)
@@ -106,7 +105,7 @@ class TextPropertiesEditor(wx.Dialog):
         
         if not isinstance(text_obj, matplotlib.text.Text):
             raise TypeError("Expecting matplotlib.text.Text instance"
-                            ", got %s"%(type(text_obj)))
+                            ", got %s" % (type(text_obj)))
         
         #set the font
         text_obj.set_family(self.font_props_panel.get_font_name())
@@ -116,6 +115,15 @@ class TextPropertiesEditor(wx.Dialog):
               
         #set font size
         text_obj.set_size(self.font_props_panel.get_font_size())
+        
+        #set the weight
+        text_obj.set_weight(self.font_props_panel.get_font_weight())
+        
+        #set the style
+        text_obj.set_style(self.font_props_panel.get_font_style())
+        
+        #set the font stretch
+        text_obj.set_stretch(self.font_props_panel.get_font_stretch())
         
         #update the display
         text_obj.figure.canvas.draw()
@@ -131,17 +139,15 @@ class FontPropertiesPanel(wx.Panel):
     def __init__(self, parent, text_obj):
         wx.Panel.__init__(self, parent, wx.ID_ANY)
         
-        #self.SetScrollRate(5,5)
-        
         hsizer = wx.BoxSizer(wx.HORIZONTAL)
-        vsizer = wx.BoxSizer(wx.VERTICAL)
+        grid_sizer = wx.FlexGridSizer(5, 2, vgap=5)
         
         #create a list of available truetype fonts on this system
         self.avail_fonts = sorted(list(set([f.name for f in matplotlib.font_manager.fontManager.ttflist])))
         
         #create a font selection listbox
         self.font_selector = wx.ListBox(self, wx.ID_ANY, choices=self.avail_fonts)
-        hsizer.Add(self.font_selector,1,wx.ALIGN_TOP | wx.ALIGN_LEFT | wx.ALL, 
+        hsizer.Add(self.font_selector, 1, wx.ALIGN_TOP | wx.ALIGN_LEFT | wx.ALL,
                    border=10)
         
         #set the initial font selection to that of the text object
@@ -149,32 +155,92 @@ class FontPropertiesPanel(wx.Panel):
         self.font_selector.SetSelection(self.avail_fonts.index(cur_font))
         
         #create a colour picker button
-        colour_hsizer = wx.BoxSizer(wx.HORIZONTAL)
-        text = wx.StaticText(self, -1, "Colour:")
-        colour_hsizer.Add(text, 0, wx.ALIGN_CENTRE_VERTICAL|wx.ALIGN_LEFT)
+        text = wx.StaticText(self, -1, "Colour:  ")
+        grid_sizer.Add(text, 0, wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_RIGHT)
         
         #set the colour picker's initial value to that of the text object
         prev_col = matplotlib.colors.colorConverter.to_rgb(text_obj.get_color())
         prev_col = (255 * prev_col[0], 255 * prev_col[1], 255 * prev_col[2])
         self.colour_picker = wx.ColourPickerCtrl(self, -1, prev_col)
-        colour_hsizer.Add(self.colour_picker, 0 , 
+        grid_sizer.Add(self.colour_picker, 0 ,
                           wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_LEFT)
-        vsizer.Add(colour_hsizer,0,  wx.ALIGN_RIGHT)
         
-        #create a font size control
-        size_hsizer = wx.BoxSizer(wx.HORIZONTAL)
-        text = wx.StaticText(self, -1, "Size:")
-        size_hsizer.Add(text, 0, wx.ALIGN_CENTRE_VERTICAL|wx.ALIGN_LEFT)
+        
+        #create a font size control and set the initial value to that of the text
+        text = wx.StaticText(self, -1, "Size:  ")
+        grid_sizer.Add(text, 0, wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_RIGHT)
 
-        self.size_ctrl = wx.SpinCtrl(self, wx.ID_ANY, min=4, max=100, 
+        self.size_ctrl = wx.SpinCtrl(self, wx.ID_ANY, min=4, max=100,
                                      initial=text_obj.get_size())
-        size_hsizer.Add(self.size_ctrl, 0 , wx.ALIGN_CENTRE_VERTICAL|wx.ALIGN_LEFT)
-        vsizer.Add(size_hsizer,0, wx.ALIGN_RIGHT)
+        grid_sizer.Add(self.size_ctrl, 0 , wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_LEFT)
         
         
-        hsizer.Add(vsizer,1,wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT | wx.ALL,
+        #create a drop-down box for specifying font weight       
+        self.possible_weights = ['ultralight', 'light', 'normal', 'regular',
+                                 'book', 'medium', 'roman', 'semibold',
+                                 'demibold', 'demi', 'bold', 'heavy',
+                                 'extra bold', 'black']
+
+        text = wx.StaticText(self, -1, "Weight:  ")
+        grid_sizer.Add(text, 0, wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_RIGHT)
+
+        self.weight_ctrl = wx.Choice(self, wx.ID_ANY, choices=self.possible_weights)
+        
+        grid_sizer.Add(self.weight_ctrl, 0, wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_LEFT)
+
+        
+        #set the initial font weight selection to that of the text, this is a 
+        #bit tricky since get_weight can return an integer or a string
+        cur_weight = text_obj.get_weight()
+        if not type(cur_weight) is str:
+            idx = int(round(cur_weight / 1000.0 * len(self.possible_weights), 0))
+        else:
+            idx = self.possible_weights.index(cur_weight)
+        self.weight_ctrl.SetSelection(idx)
+        
+        
+        #create a drop down box for specifying font style
+        self.possible_styles = ['normal', 'italic', 'oblique']
+
+        text = wx.StaticText(self, -1, "Style:  ")
+        grid_sizer.Add(text, 0, wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_RIGHT)
+
+        self.style_ctrl = wx.Choice(self, wx.ID_ANY, choices=self.possible_styles)
+        
+        grid_sizer.Add(self.style_ctrl, 0 , wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_LEFT)
+        
+        
+        #set the initial font style selection to that of the text
+        cur_style = text_obj.get_style()
+        idx = self.possible_styles.index(cur_style)
+        self.style_ctrl.SetSelection(idx)    
+        
+        #create a drop down box for selecting font stretch
+        self.possible_stretches = ['ultra-condensed', 'extra-condensed',
+                                 'condensed', 'semi-condensed', 'normal',
+                                 'semi-expanded', 'expanded', 'extra-expanded',
+                                 'ultra-expanded']
+        
+        text = wx.StaticText(self, -1, "Stretch:  ")
+        grid_sizer.Add(text, 0, wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_RIGHT)
+
+        self.stretch_ctrl = wx.Choice(self, wx.ID_ANY, choices=self.possible_stretches)
+        
+        grid_sizer.Add(self.stretch_ctrl, 0 , wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_LEFT)
+
+        
+        #set the initial font stretch selection to that of the text, this is a 
+        #bit tricky since get_weight can return an integer or a string
+        cur_stretch = text_obj.get_stretch()
+        if not type(cur_stretch) is str:
+            idx = int(round(cur_stretch / 1000.0 * len(self.possible_stretches), 0))
+        else:
+            idx = self.possible_stretches.index(cur_stretch)
+        self.stretch_ctrl.SetSelection(idx)
+        
+        
+        hsizer.Add(grid_sizer, 1, wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_LEFT | wx.ALL,
                    border=10)
-        
         
         self.SetSizer(hsizer)
         hsizer.Fit(self)
@@ -201,4 +267,25 @@ class FontPropertiesPanel(wx.Panel):
         """
         return self.avail_fonts[self.font_selector.GetSelection()]
     
-       
+    
+    def get_font_weight(self):
+        """
+        Returns the weight of the font currently selected
+        """
+        return self.possible_weights[self.weight_ctrl.GetSelection()]
+    
+    
+    def get_font_style(self):
+        """
+        Returns the style ('normal', 'italic' etc.) of the font currently 
+        selected
+        """
+        return self.possible_styles[self.style_ctrl.GetSelection()]
+    
+    
+    def get_font_stretch(self):
+        """
+        Returns the stretch of the font currently selected
+        """
+        return self.possible_stretches[self.stretch_ctrl.GetSelection()]
+    
