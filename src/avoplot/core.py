@@ -34,7 +34,6 @@ their appearance. Adding and deleting elements works in a similar way.
 import avoplot
 from avoplot import controls
 import re
-import wx
 import  wx.lib.newevent
 
 #create new events for avoplot element objects

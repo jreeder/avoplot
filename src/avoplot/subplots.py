@@ -19,6 +19,7 @@ from avoplot.figure import AvoPlotFigure
 import matplotlib.colors
 import re
 import avoplot.gui
+import avoplot.gui.gridlines
 from avoplot.gui import widgets
 from avoplot import core
 from avoplot import controls
@@ -122,11 +123,13 @@ class AvoPlotXYSubplot(AvoPlotSubplotBase):
         """
         ax = self.get_mpl_axes()
         fig = self.get_parent_element()
-        mpl_fig = fig.get_mpl_figure()
         
-        mpl_fig.delaxes(ax)
+        if fig is not None:
+            mpl_fig = fig.get_mpl_figure()
         
-        fig.update()
+            mpl_fig.delaxes(ax)
+        
+            fig.update()
         
         super(AvoPlotXYSubplot, self).delete()
         
@@ -201,9 +204,24 @@ class XYSubplotControls(controls.AvoPlotControlPanelBase):
         """
         super(XYSubplotControls, self).setup(parent)
         
-        grid = wx.CheckBox(self, -1, "Gridlines")
+        grid_ctrl_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        grid = wx.CheckBox(self, -1, "Gridlines ")
+        self.edit_grid_link = wx.HyperlinkCtrl(self, wx.ID_ANY, "edit", "",style=wx.HL_ALIGN_CENTRE)
+        f = self.edit_grid_link.GetFont()
+        f.SetUnderlined(False)
+        self.edit_grid_link.SetFont(f)
+        self.edit_grid_link.SetVisitedColour(self.edit_grid_link.GetNormalColour())
+        
+        
+        self.edit_grid_link.Show(False)
+        wx.EVT_HYPERLINK(self, self.edit_grid_link.GetId(), self.on_edit_gridlines)
+        
+        grid_ctrl_sizer.Add(grid,0,wx.ALIGN_LEFT|wx.ALIGN_CENTRE_VERTICAL)
+        grid_ctrl_sizer.Add(wx.StaticText(self, wx.ID_ANY, "("),0,wx.ALIGN_LEFT|wx.ALIGN_CENTRE_VERTICAL)
+        grid_ctrl_sizer.Add(self.edit_grid_link,0,wx.ALIGN_LEFT|wx.ALIGN_CENTRE_VERTICAL|wx.RESERVE_SPACE_EVEN_IF_HIDDEN)
+        grid_ctrl_sizer.Add(wx.StaticText(self, wx.ID_ANY, ")"),0,wx.ALIGN_LEFT|wx.ALIGN_CENTRE_VERTICAL)
         #TODO - if the axes already has a grid then this will ignore that
-        self.Add(grid, 0, wx.ALIGN_LEFT|wx.ALL, border=10)
+        self.Add(grid_ctrl_sizer, 0, wx.ALIGN_LEFT|wx.ALL, border=10)
         wx.EVT_CHECKBOX(self, grid.GetId(), self.on_grid)
         
         ax = self.subplot.get_mpl_axes()
@@ -234,7 +252,13 @@ class XYSubplotControls(controls.AvoPlotControlPanelBase):
         ax = self.subplot.get_mpl_axes()
         ax.grid(b=evnt.IsChecked())
         ax.figure.canvas.draw()
+        self.edit_grid_link.Show(evnt.IsChecked())
+        
+        
     
+    
+    def on_edit_gridlines(self, evnt):
+        avoplot.gui.gridlines.GridPropertiesEditor(self, self.subplot)
     
     def on_title(self, evnt):
         """

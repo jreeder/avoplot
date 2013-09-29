@@ -123,7 +123,6 @@ class XYDataSeries(DataSeriesBase):
     """
     def __init__(self, name, xdata=None, ydata=None):
         super(XYDataSeries, self).__init__(name)
-        self._data_lock = threading.Lock()
         self.set_xy_data(xdata, ydata)
         self.add_control_panel(XYSeriesControls(self))
         
@@ -138,24 +137,30 @@ class XYDataSeries(DataSeriesBase):
         return AvoPlotXYSubplot
     
     
-    def exclusive_lock(self):
-        return self._data_lock
-    
-    
     def set_xy_data(self, xdata=None, ydata=None):
         """
         Sets the x and y values of the data series.
         """
-        assert len(xdata)==len(ydata)
-        
-        with self._data_lock:
-            self.__xdata = xdata
-            self.__ydata = ydata
+        if xdata is None and ydata is None:
+            xdata=[]
+            ydata=[]
             
-            if self.is_plotted():
-                #update the the data in the plotted line
-                line, = self.get_mpl_lines()
-                line.set_data(*self.preprocess(self.__xdata, self.__ydata))
+        elif xdata is None:
+            xdata = range(len(ydata))
+            
+        elif ydata is None:
+            ydata = range(len(xdata))
+            
+        else:
+            assert len(xdata)==len(ydata)
+        
+        self.__xdata = xdata
+        self.__ydata = ydata
+        
+        if self.is_plotted():
+            #update the the data in the plotted line
+            line, = self.get_mpl_lines()
+            line.set_data(*self.preprocess(self.__xdata, self.__ydata))
     
     
     def get_raw_data(self):
@@ -164,8 +169,7 @@ class XYDataSeries(DataSeriesBase):
         (without any pre-processing operations performed). In general you should
         use the get_data() method instead.
         """
-        with self._data_lock:
-            return (self.__xdata, self.__ydata)
+        return (self.__xdata, self.__ydata)
     
     
     def get_data(self):
@@ -173,8 +177,7 @@ class XYDataSeries(DataSeriesBase):
         Returns a tuple (xdata, ydata) of the data held by the series, with
         any pre-processing operations applied to it.
         """
-        with self._data_lock:
-            return self.preprocess(numpy.array(self.__xdata), numpy.array(self.__ydata))
+        return self.preprocess(numpy.array(self.__xdata), numpy.array(self.__ydata))
     
     
     def preprocess(self, xdata, ydata):

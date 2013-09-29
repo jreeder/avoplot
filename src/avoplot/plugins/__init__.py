@@ -277,6 +277,8 @@ class AvoPlotPluginSimple(AvoPlotPluginBase):
         
         #now plot the data into the subplot
         if not self.plot_into_subplot(subplot):
+            subplot.set_parent_element(None) #to prevent fig.update being called
+            subplot.delete() #need to explicitly call the subplot's delete method
             return
         
         #add the figure as a tab in the main window
