@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="32"
+   height="32"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.47 r22583"
+   sodipodi:docname="New document 1">
+  <defs
+     id="defs4">
+    <linearGradient
+       id="linearGradient3676">
+      <stop
+         style="stop-color:#800000;stop-opacity:1;"
+         offset="0"
+         id="stop3678" />
+      <stop
+         id="stop3684"
+         offset="0.5"
+         style="stop-color:#800000;stop-opacity:0.49803922;" />
+      <stop
+         style="stop-color:#800000;stop-opacity:0;"
+         offset="1"
+         id="stop3680" />
+    </linearGradient>
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       id="perspective10" />
+    <linearGradient
+       gradientUnits="userSpaceOnUse"
+       xlink:href="#linearGradient3245"
+       id="linearGradient3255"
+       y2="31.066593"
+       x2="15"
+       y1="1"
+       x1="15" />
+    <linearGradient
+       id="linearGradient3245">
+      <stop
+         offset="0"
+         style="stop-color:white;stop-opacity:1"
+         id="stop3247" />
+      <stop
+         offset="1"
+         style="stop-color:white;stop-opacity:0"
+         id="stop3249" />
+    </linearGradient>
+    <linearGradient
+       gradientTransform="matrix(1.371986,0,0,1.3637101,-16.760391,-15.390168)"
+       gradientUnits="userSpaceOnUse"
+       xlink:href="#linearGradient2264"
+       id="linearGradient2452"
+       y2="34.224861"
+       x2="24.103895"
+       y1="15.180944"
+       x1="24.103895" />
+    <linearGradient
+       id="linearGradient2264">
+      <stop
+         offset="0"
+         style="stop-color:#d7e866;stop-opacity:1"
+         id="stop2266" />
+      <stop
+         offset="1"
+         style="stop-color:#8cab2a;stop-opacity:1"
+         id="stop2268" />
+    </linearGradient>
+    <radialGradient
+       gradientTransform="matrix(1.5058824,0,0,0.37647,-78.305888,26.258824)"
+       gradientUnits="userSpaceOnUse"
+       xlink:href="#linearGradient8838"
+       id="radialGradient2469"
+       fy="4.625"
+       fx="62.625"
+       r="10.625"
+       cy="4.625"
+       cx="62.625" />
+    <linearGradient
+       id="linearGradient8838">
+      <stop
+         offset="0"
+         style="stop-color:black;stop-opacity:1"
+         id="stop8840" />
+      <stop
+         offset="1"
+         style="stop-color:black;stop-opacity:0"
+         id="stop8842" />
+    </linearGradient>
+    <inkscape:perspective
+       id="perspective2838"
+       inkscape:persp3d-origin="16 : 10.666667 : 1"
+       inkscape:vp_z="32 : 16 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 16 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective2881"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3676"
+       id="linearGradient3682"
+       x1="2.09375"
+       y1="22.997877"
+       x2="19.875"
+       y2="22.997877"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="7.9195959"
+     inkscape:cx="1.7645964"
+     inkscape:cy="10.977063"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     borderlayer="true"
+     inkscape:window-width="1143"
+     inkscape:window-height="719"
+     inkscape:window-x="493"
+     inkscape:window-y="14"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-1020.3622)">
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot2857"
+       style="font-size:28px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       transform="translate(0,1020.3622)"><flowRegion
+         id="flowRegion2859"><rect
+           id="rect2861"
+           width="29.546963"
+           height="28.915617"
+           x="1.2626907"
+           y="2.0742309"
+           style="font-size:28px" /></flowRegion><flowPara
+         id="flowPara2863">TT</flowPara></flowRoot>    <g
+       id="g3686"
+       transform="translate(-0.2881928,-0.89232686)">
+      <flowRoot
+         transform="translate(-0.75761441,1011.2708)"
+         style="font-size:14px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         id="flowRoot2865"
+         xml:space="preserve"><flowRegion
+           id="flowRegion2867"><rect
+             y="2.5793071"
+             x="1.1364216"
+             height="35.229073"
+             width="35.481609"
+             id="rect2869" /></flowRegion><flowPara
+           style="font-size:32px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Times New Roman;-inkscape-font-specification:'Times New Roman,'"
+           id="flowPara2871">T</flowPara></flowRoot>      <flowRoot
+         transform="translate(11.36525,1017.2425)"
+         style="font-size:14px;font-style:normal;font-weight:normal;fill:#800000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         id="flowRoot2865-4"
+         xml:space="preserve"><flowRegion
+           style="fill:url(#linearGradient3682);fill-opacity:1"
+           id="flowRegion2867-8"><rect
+             style="fill:#800000;fill-opacity:1"
+             y="2.5793071"
+             x="1.1364216"
+             height="35.229073"
+             width="35.481609"
+             id="rect2869-4" /></flowRegion><flowPara
+           style="font-size:32px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#800000;fill-opacity:1;font-family:Times New Roman;-inkscape-font-specification:'Times New Roman,'"
+           id="flowPara2871-3">T</flowPara></flowRoot>    </g>
+  </g>
+</svg>
