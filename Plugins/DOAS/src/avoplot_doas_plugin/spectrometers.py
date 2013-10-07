@@ -17,7 +17,7 @@
 import atexit
 import os.path
 
-import avoscan
+import avoplot
 
 
 _spectrometer_manager = None
@@ -53,7 +53,7 @@ class __SpectrometerManager:
         #setup an atexit function to write all the spectrometer data to file
         atexit.register(self._save_spectrometers)
         
-        self.spectrometer_dir = os.path.join(avoscan.get_avoscan_rw_dir(),"Spectrometers")
+        self.spectrometer_dir = os.path.join(avoplot.get_avoplot_rw_dir(),"Spectrometers")
         
         if not os.path.isdir(self.spectrometer_dir):
             os.makedirs(self.spectrometer_dir)
