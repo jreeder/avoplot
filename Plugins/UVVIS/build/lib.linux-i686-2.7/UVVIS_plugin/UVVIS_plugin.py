@@ -15,6 +15,8 @@ from avoplot.series import XYDataSeries
 
 from avoplot.gui import widgets
 
+from doas.spectrum_loader import SpectrumIO, UnableToLoad
+
 plugin_is_GPL_compatible = True
 
 class UVVISSpectrumSubplot(AvoPlotXYSubplot):
@@ -104,7 +106,6 @@ class UVVISPlugin(plugins.AvoPlotPluginSimple):
             #Skip the first 4 lines, which are header
         
         ncols = len(next(reader))
-            #This reads the 5th line, assigns its length to ncols & moves to the 6th line.
         
         for i in range(ncols):
             col_data.append(numpy.array([float(x[i]) for x in reader]))
@@ -112,9 +113,6 @@ class UVVISPlugin(plugins.AvoPlotPluginSimple):
             #(a list of columns, each column is a numpy array)   
         
         print col_data    
-            #TODO fix
-            #col_data is messed up. The first list item is column 0 (great).
-            #all the rest of the lists are array([], dtype=float64) <-- why???
         
         try:        
             return col_data, spectrum_file

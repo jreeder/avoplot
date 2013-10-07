@@ -15,6 +15,8 @@ from avoplot.series import XYDataSeries
 
 from avoplot.gui import widgets
 
+from doas.spectrum_loader import SpectrumIO, UnableToLoad
+
 plugin_is_GPL_compatible = True
 
 class UVVISSpectrumSubplot(AvoPlotXYSubplot):
