@@ -17,8 +17,6 @@
 
 from avoplot.figure import AvoPlotFigure
 import matplotlib.colors
-import re
-import avoplot.gui
 import avoplot.gui.gridlines
 from avoplot.gui import widgets
 from avoplot import core
@@ -207,19 +205,23 @@ class XYSubplotControls(controls.AvoPlotControlPanelBase):
         grid_ctrl_sizer = wx.BoxSizer(wx.HORIZONTAL)
         grid = wx.CheckBox(self, -1, "Gridlines ")
         self.edit_grid_link = wx.HyperlinkCtrl(self, wx.ID_ANY, "edit", "",style=wx.HL_ALIGN_CENTRE)
+        self.edit_grid_link_parentheses = [wx.StaticText(self, wx.ID_ANY, "("),
+                                           wx.StaticText(self, wx.ID_ANY, ")")]
+        
         f = self.edit_grid_link.GetFont()
         f.SetUnderlined(False)
         self.edit_grid_link.SetFont(f)
         self.edit_grid_link.SetVisitedColour(self.edit_grid_link.GetNormalColour())
         
-        
         self.edit_grid_link.Show(False)
+        self.edit_grid_link_parentheses[0].Show(False)
+        self.edit_grid_link_parentheses[1].Show(False)
         wx.EVT_HYPERLINK(self, self.edit_grid_link.GetId(), self.on_edit_gridlines)
         
         grid_ctrl_sizer.Add(grid,0,wx.ALIGN_LEFT|wx.ALIGN_CENTRE_VERTICAL)
-        grid_ctrl_sizer.Add(wx.StaticText(self, wx.ID_ANY, "("),0,wx.ALIGN_LEFT|wx.ALIGN_CENTRE_VERTICAL)
+        grid_ctrl_sizer.Add(self.edit_grid_link_parentheses[0],0,wx.ALIGN_LEFT|wx.ALIGN_CENTRE_VERTICAL|wx.RESERVE_SPACE_EVEN_IF_HIDDEN)
         grid_ctrl_sizer.Add(self.edit_grid_link,0,wx.ALIGN_LEFT|wx.ALIGN_CENTRE_VERTICAL|wx.RESERVE_SPACE_EVEN_IF_HIDDEN)
-        grid_ctrl_sizer.Add(wx.StaticText(self, wx.ID_ANY, ")"),0,wx.ALIGN_LEFT|wx.ALIGN_CENTRE_VERTICAL)
+        grid_ctrl_sizer.Add(self.edit_grid_link_parentheses[1],0,wx.ALIGN_LEFT|wx.ALIGN_CENTRE_VERTICAL|wx.RESERVE_SPACE_EVEN_IF_HIDDEN)
         #TODO - if the axes already has a grid then this will ignore that
         self.Add(grid_ctrl_sizer, 0, wx.ALIGN_LEFT|wx.ALL, border=10)
         wx.EVT_CHECKBOX(self, grid.GetId(), self.on_grid)
@@ -253,7 +255,8 @@ class XYSubplotControls(controls.AvoPlotControlPanelBase):
         ax.grid(b=evnt.IsChecked())
         ax.figure.canvas.draw()
         self.edit_grid_link.Show(evnt.IsChecked())
-        
+        self.edit_grid_link_parentheses[0].Show(evnt.IsChecked())
+        self.edit_grid_link_parentheses[1].Show(evnt.IsChecked())
         
     
     
