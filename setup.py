@@ -14,7 +14,17 @@
 #
 #You should have received a copy of the GNU General Public License
 #along with AvoPlot.  If not, see <http://www.gnu.org/licenses/>.
+"""
+This is the setup script for AvoPlot.
 
+It is a little more complex than a "standard" distutils setup script because
+it also creates the build_info.py module in AvoPlot. This contains information
+about how the program gets installed, which is then used by AvoPlot to determine
+things like where its icons files are etc. In order to get access to this 
+information at install time, we have overridden the standard distutils install
+class with one which creates the build_info.py file once installation options 
+have been finalised.
+"""
 import sys
 import shutil
 import os
@@ -115,6 +125,14 @@ def create_desktop_file():
     """
     apps_folder = os.path.join(install_paths['prefix'],'share','applications')
     
+    if not os.path.isdir(apps_folder):
+        try:
+            os.makedirs(apps_folder)
+        except OSError:
+            print ("Warning! Failed to create avoplot.desktop file. Unable to "
+                   "create folder \'%s\'."%apps_folder)
+            return
+    
     desktop_file_path = os.path.join(apps_folder,'avoplot.desktop')
     
     with open(desktop_file_path,'w') as ofp:
@@ -133,7 +151,8 @@ def create_desktop_file():
     return_code = os.system("chmod 644 " + os.path.join(apps_folder, 
                                                         'avoplot.desktop'))
     if return_code != 0:
-        print "Error! Failed to change permissions on \'" + os.path.join(apps_folder, 'avoplot.desktop') + "\'"
+        print ("Error! Failed to change permissions on \'" + 
+               os.path.join(apps_folder, 'avoplot.desktop') + "\'")
                 
 
 
@@ -168,10 +187,11 @@ try:
     #create a temporary build_info module - this will be populated during the 
     #build process. Note that we define DATA_DIR in the file so that we can 
     #import avoplot without errors.
-    build_info_name = os.path.join(setup_script_path, 'src', 'avoplot', 'build_info.py')
+    build_info_name = os.path.join(setup_script_path, 'src', 'avoplot', 
+                                   'build_info.py')
     with open(build_info_name, 'w') as ofp:
-        ofp.write("#Temporary file created by setup.py. It should be deleted again"
-                  " when setup.py exits.\n\n"
+        ofp.write("#Temporary file created by setup.py. It should be deleted "
+                  "again when setup.py exits.\n\n"
                   "DATA_DIR = None\n")
     
     #now import the avoplot module to give us access to all the information
@@ -180,7 +200,7 @@ try:
     import src.avoplot as avoplot_preinstall
     
     #do the build/installation
-    setup(cmdclass={'install':RecordedInstall}, #override the default installer with our RecordedInstall class
+    setup(cmdclass={'install':RecordedInstall}, #override the default installer 
           name=avoplot_preinstall.PROG_SHORT_NAME,
           version=avoplot_preinstall.VERSION,
           description=avoplot_preinstall.SHORT_DESCRIPTION,
@@ -188,16 +208,17 @@ try:
           author_email=avoplot_preinstall.AUTHOR_EMAIL,
           url=avoplot_preinstall.URL,
           package_dir={'':'src'},
-          packages=['avoplot', 'avoplot.gui', 'avoplot.plugins', 'avoplot.plugins.avoplot_fromfile_plugin'],
+          packages=['avoplot', 'avoplot.gui', 'avoplot.plugins', 
+                    'avoplot.plugins.avoplot_fromfile_plugin'],
           package_data={'avoplot':['COPYING']},
           data_files=data_files_to_install,
           scripts=scripts_to_install
           )
 
     
-    ####################################################################
-    #                    POST INSTALL
-    ####################################################################
+####################################################################
+#                    POST INSTALL
+####################################################################
     import avoplot #imported from its installed location
     
     if sys.argv.count('install') != 0:
