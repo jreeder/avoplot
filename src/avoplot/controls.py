@@ -48,6 +48,17 @@ class AvoPlotControlPanelBase(wx.ScrolledWindow):
         self.__is_initialised = True
     
     
+    def on_display(self):
+        """
+        This method will be called each time the control panel is displayed i.e.
+        every time that the element that the control panel operates on is 
+        selected. It can be overridden by subclasses in order to perform 
+        processing before it is displayed (for example updating lists of 
+        available data series etc.)
+        """
+        pass
+    
+    
     def is_initialised(self):
         """
         Returns True if the setup() method has already been run for this 

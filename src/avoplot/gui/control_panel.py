@@ -36,6 +36,7 @@ class ControlPanel(aui.AuiNotebook):
         self._current_element = None
         core.EVT_AVOPLOT_ELEM_SELECT(self, self.on_element_select)
         core.EVT_AVOPLOT_ELEM_DELETE(self, self.on_element_delete)
+        core.EVT_AVOPLOT_ELEM_ADD(self, self.on_element_add)
        
        
     def set_control_panels(self, control_panels):
@@ -59,6 +60,7 @@ class ControlPanel(aui.AuiNotebook):
             #AuiNotebook requires that any pages have the notebook as a parent -
             #so reparent all the panels to make it so!
             p.Reparent(self)
+            p.on_display() #perform any operations needed prior to display
             self.AddPage(p, p.get_name())
 
         self.Show(True)
@@ -73,6 +75,9 @@ class ControlPanel(aui.AuiNotebook):
         """
         Event handler for element delete events. Removes any control panels 
         associated with the deleted element from the notebook.
+        
+        If the element is not the currently selected element, then the event
+        gets passed through to all pages currently in the control panel
         """
         el = evnt.element
 
@@ -85,6 +90,20 @@ class ControlPanel(aui.AuiNotebook):
                 p.Show(False)
                 p.Reparent(p.old_parent)
             self._current_element = None
+        else:
+            for i in range(self.GetPageCount()):
+                p = self.GetPage(i)
+                wx.PostEvent(p, evnt)
+    
+    
+    def on_element_add(self, evnt):
+        """
+        Event handler for element add events. Passes the event through to
+        all pages currently in the control panel
+        """
+        for i in range(self.GetPageCount()):
+            p = self.GetPage(i)
+            wx.PostEvent(p, evnt)
     
     
     def on_element_select(self, evnt):
@@ -98,3 +117,9 @@ class ControlPanel(aui.AuiNotebook):
         if el != self._current_element: 
             self.set_control_panels(el.get_control_panels())
             self._current_element = el
+        
+        #pass the event through to all the pages in the control panel
+        for i in range(self.GetPageCount()):
+            p = self.GetPage(i)
+            wx.PostEvent(p, evnt)
+        
