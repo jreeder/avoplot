@@ -18,6 +18,7 @@ import wx
 import warnings
 from avoplot import core
 from avoplot import figure
+from avoplot import series
 
 class RightClickMenu(wx.Menu):
     def __init__(self, nav_panel):
@@ -28,6 +29,9 @@ class RightClickMenu(wx.Menu):
         
         delete_entry = self.Append(-1, 'Delete', 'Delete the element')
         wx.EVT_MENU(nav_panel,delete_entry.GetId(), nav_panel.on_rclick_menu_delete)
+        
+        self.export_entry = self.Append(-1, 'Export data...', 'Export series to a csv file')
+        wx.EVT_MENU(nav_panel,self.export_entry.GetId(), nav_panel.on_rclick_menu_export)
 
 class NavigationPanel(wx.ScrolledWindow):
     """
@@ -88,9 +92,21 @@ class NavigationPanel(wx.ScrolledWindow):
             if (new_name and not new_name.isspace() and 
                 new_name != current_name):
                 el.set_name(str(new_name))
+                
+    def on_rclick_menu_export(self, evnt):
+        el = self.tree.GetPyData(self.__el_id_mapping[self.__current_selection_id])
+        el.export()
     
     def on_tree_el_menu(self, evnt):
-        self.PopupMenu(self._rclick_menu)
+        el = self.tree.GetPyData(self.__el_id_mapping[self.__current_selection_id])
+        if not isinstance(el, series.XYDataSeries):
+            if self._rclick_menu.export_entry in self._rclick_menu.GetMenuItems():
+                self._rclick_menu.RemoveItem(self._rclick_menu.export_entry)
+            self.PopupMenu(self._rclick_menu)
+        else:
+            if self._rclick_menu.export_entry not in self._rclick_menu.GetMenuItems(): 
+                self._rclick_menu.InsertItem(self._rclick_menu.GetMenuItemCount(), self._rclick_menu.export_entry)
+            self.PopupMenu(self._rclick_menu)
 
     
     def on_tree_select_el(self, evnt):

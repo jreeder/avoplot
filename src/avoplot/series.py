@@ -23,6 +23,7 @@ from avoplot.subplots import AvoPlotSubplotBase, AvoPlotXYSubplot
 from avoplot import controls
 from avoplot import core
 from avoplot.gui import widgets
+from avoplot.persist import PersistentStorage
 
 
 class DataSeriesBase(core.AvoPlotElementBase):
@@ -194,7 +195,33 @@ class XYDataSeries(DataSeriesBase):
         plots the x,y data into the subplot as a line plot.
         """
         return subplot.get_mpl_axes().plot(*self.get_data())
-   
+    
+    def export(self):
+        """
+        Exports the selected data series. Called when user right clicks on the data series (see nav_panel.py).
+        """
+        persistant_storage = PersistentStorage()
+        
+        try:
+            last_path_used = persistant_storage.get_value("fromfile_last_dir_used")
+        except KeyError:
+            last_path_used = ""
+            
+        export_dialog = wx.FileDialog(None, message="Export data series as...", 
+                                       defaultDir=last_path_used, defaultFile = "AvoPlot Series.txt",
+                                       style=wx.SAVE)
+        
+        if export_dialog.ShowModal() == wx.ID_OK:
+            path = export_dialog.GetPath()
+            if not path.endswith(".txt"):
+                path = path + ".txt"
+            xdata, ydata = self.get_data()
+            
+            with open(path, 'w') as fp:
+                for i in range(len(xdata)):
+                    fp.write("%f\t%f\n" %(xdata[i], ydata[i]))
+        
+        export_dialog.Destroy()            
         
 
 class XYSeriesControls(controls.AvoPlotControlPanelBase):

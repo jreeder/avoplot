@@ -23,8 +23,11 @@ class UVVISSpectrumSubplot(AvoPlotXYSubplot):
         ax = self.get_mpl_axes()
         ax.set_xlabel('Wavelength ($\mu$m)')
         ax.set_ylabel('Absorbance')
+        self.set_name('Spectra')
         
         self.__inverted_x = False
+        
+        self.add_control_panel(SpectrumSelectionCtrl(self))
     
     
     def add_data_series(self, data):
@@ -42,9 +45,8 @@ class UVVISSpectrumData(series.XYDataSeries):
     def __init__(self, *args, **kwargs):
         super(UVVISSpectrumData, self).__init__(*args, **kwargs)
         
-        #add a control for this data series to allow the user to change the 
-        #frequency of the wave using a slider.
-        self.add_control_panel(BackgroundCalcCtrl(self))    
+        #add a control for this data series to allow the user to subtract the background spectrum
+        self.add_control_panel(BackgroundSubtractCtrl(self))    
     
     @staticmethod
     def get_supported_subplot_type():
@@ -58,15 +60,19 @@ class UVVISPlugin(plugins.AvoPlotPluginSimple):
         
         self.set_menu_entry(['UV-VIS', 'New Spectrum'], "Plot a UV-VIS spectrum")
         
+        self.col_data = None
+        self.col_name = None
+        
         
     def plot_into_subplot(self, subplot):
         
-        col_data, spectrum_file = self.load_uvvis_file()
+        col_data, col_name, spectrum_file = self.load_uvvis_file()
         if col_data is None:
             return False
         
-        for col in col_data[1:]:
-            data_series = series.XYDataSeries(spectrum_file, xdata=col_data[0], ydata=col)
+        
+        for col, val in enumerate(col_data[1:]):
+            data_series = UVVISSpectrumData(col_name[col], xdata=col_data[0], ydata=val)
             subplot.add_data_series(data_series)
         
         #TODO - setting the name here means that the figure gets renamed
@@ -75,6 +81,9 @@ class UVVISPlugin(plugins.AvoPlotPluginSimple):
         
         return True
     
+    def get_spectrum_file_data(self):
+        assert self.col_data is not None, 'You cannot get file data before opening a file!'
+        return self.col_data, self.col_name   
     
     
     def load_uvvis_file(self):
@@ -89,35 +98,56 @@ class UVVISPlugin(plugins.AvoPlotPluginSimple):
         spectrum_file = wx.FileSelector("Choose spectrum file to open", 
                                         default_path=last_path_used)
         if spectrum_file == "":
-            return None
+            return None, None
         
         persist.set_value("uvvis_spectra_dir", os.path.dirname(spectrum_file))
         
-        reader = csv.reader(open(spectrum_file, "rU"), dialect=csv.excel) 
+        with open(spectrum_file, 'rU') as csvfile:
+            dialect = csv.Sniffer().sniff(csvfile.read(1024))
+            csvfile.seek(0)
+            reader = csv.reader(csvfile, dialect)
+            
+        #reader = csv.reader(open(spectrum_file, "rU"), dialect=csv.excel) 
       
-        col_data = []
+            col_data = []
+            col_name = []
+            col_name_and_data = []
         
-        next(reader)
-        next(reader)
-        next(reader)
-        next(reader)
+            next(reader)
+            next(reader)
+            next(reader)
+            next(reader)
             #Skip the first 4 lines, which are header
         
-        ncols = len(next(reader))
+            ncols = len(next(reader))
             #This reads the 5th line, assigns its length to ncols & moves to the 6th line.
         
-        for i in range(ncols):
-            col_data.append(numpy.array([float(x[i]) for x in reader]))
-            #now col_data is a list of numpy arrays of column data 
-            #(a list of columns, each column is a numpy array)   
-        
-        print col_data    
-            #TODO fix
-            #col_data is messed up. The first list item is column 0 (great).
-            #all the rest of the lists are array([], dtype=float64) <-- why???
+            for i in range(ncols):
+                col_data.append(([float(x[i]) for x in reader]))
+                csvfile.seek(0)
+                next(reader)
+                next(reader)
+                next(reader)
+                next(reader)
+                next(reader)
+            #now col_data is a list of lists of column data  
+            
+            #TODO - NAME EACH SUBPLOT WITH ITS COLUMN HEADING
+            for i in range(ncols):
+                csvfile.seek(0)
+                next(reader)
+                next(reader)
+                col_name_and_data.append(([str(x[i]) for x in reader]))
+                col_name.append(col_name_and_data[i][0])
+                
+            col_name.pop(0)
+            
+            #Make col_data and col_name accessible to the rest of the class without needing to call the load_uvvis_file method
+            self.col_data = col_data
+            self.col_name = col_name
         
         try:        
-            return col_data, spectrum_file
+            return col_data, col_name, spectrum_file
 
         except Exception,e:
             print e.args
@@ -128,46 +158,109 @@ class UVVISPlugin(plugins.AvoPlotPluginSimple):
 
 
 #Start Extra Control Panel Functions -- created after adv_sine_wave example in AvoPlot documentation
-class BackgroundCalcCtrl(controls.AvoPlotControlPanelBase):
+class SpectrumSelectionCtrl(controls.AvoPlotControlPanelBase):
+     """
+     Control panel that is associated with the entire subplot (i.e. all of the plotted series) That
+     allows a user to select multiple spectra and a single background and background subtract all of those
+     selected spectra (series)
+     """
+     def __init__(self, subplot):
+         super(SpectrumSelectionCtrl, self).__init__("Spectra Select")
+         
+         self.subplot = subplot
+         
+     def on_display(self):
+        col_name, col_data = self.define_data()
+        self.listbox.Set(col_name)
+        self.background_dropdownbox.SetItems(col_name)     
+         
+     def define_data(self):
+         series = self.subplot.get_child_elements()
+         assert series is not None, 'No series have been plotted yet!'
+         list_of_series = []
+         for obj in self.subplot.get_child_elements():
+             if not isinstance(obj, UVVISSpectrumData): #don't add any objects to this list that aren't UVVISSpectrum data series types
+                 continue
+             list_of_series.append(obj)
+             
+         series_name = [i.get_name() for i in list_of_series]
+         series_data = [i.get_data() for i in list_of_series]
+         
+         return series_name, series_data
+     
+     def setup(self, parent):
+         super(SpectrumSelectionCtrl, self).setup(parent)
+         
+         series_name, series_data = self.define_data()
+         
+         self.plot_obj = parent
+         
+         #define all wx stuff (text, buttons, check boxes, etc)
+         background_subtract_button = wx.Button(self, wx.ID_ANY, "Subtract Background")
+         self.background_subtract_text = wx.StaticText(self, -1, "Choose spectra to modify:\n You can choose more than one.")
+         self.listbox = wx.ListBox(self, -1, pos=(25,25), size=(200, 200), choices=series_name, style=wx.LB_MULTIPLE)
+         self.background_dropdownbox = wx.Choice(self, -1, pos=(50, 170), size=(150, -1), choices=col_name)
+         
+         #add all wx stuff to the ctrl panel
+         self.Add(self.background_subtract_text)
+         self.Add(self.listbox)
+         self.Add(self.background_dropdownbox)
+         self.Add(background_subtract_button, 0, border=10)
+                
+
+class BackgroundSubtractCtrl(controls.AvoPlotControlPanelBase):
     """
     Control panel where the buttons to draw backgrounds will appear
     """
     def __init__(self, series):
         #call the parent class's __init__ method, passing it the name that we
         #want to appear on the control panels tab.
-        super(BackgroundCalcCtrl, self).__init__("Background Fit")
+        super(BackgroundSubtractCtrl, self).__init__("Background Subtraction")
         
         #store the data series object that this control panel is associated with, 
         #so that we can access it later
         self.series = series
+        
+    def on_display(self):
+        col_name, col_data = self.define_data()
+        self.dropdownbox.SetItems(col_name)
     
     def define_data(self):
-        wavenumber = self.wavelength
-        blank1 = self.blank1
-        blank2 = self.blank2
-        absorbance1 = self.absorbance1
-        return wavelength, blank1, blank2, absorbance1
+        subplot = self.series.get_parent_element()
+        assert subplot is not None, 'Series has not been called into subplot'
+        other_series = []
+        for obj in subplot.get_child_elements():
+            if not isinstance(obj, UVVISSpectrumData): #don't add any objects that aren't UVVISSpectrumData series types
+                continue
+            if obj == self.series: #don't add itself to the list of other series (don't want to subtract a series from itself)
+                continue
+            other_series.append(obj)
+        
+        col_name = [i.get_name() for i in other_series]
+        col_data = [p.get_data() for p in other_series]    
+        
+        return col_name, col_data
 
     
     def setup(self, parent):
-        super(BackgroundCalcCtrl, self).setup(parent)
+        super(BackgroundSubtractCtrl, self).setup(parent)
         
         #AvoPlotXYSubplot is a class, not an object/instance so you can't do this!
         #also get_mpl_axes is a method - so you would need () to make this do what you intended
         #self.axes = AvoPlotXYSubplot.get_mpl_axes
         self.axes = self.series.get_parent_element().get_mpl_axes()
+        col_name, col_data = self.define_data()
         
         self.plot_obj = parent
-        spec_type = classify_spectrum
         
-#===============================================================================
-#        h2o_button = wx.Button(self, wx.ID_ANY, "Fit H2O")
-#        self.peak_height_text = wx.StaticText(self, -1, "Peak Height:\n")
-#        self.Add(self.peak_height_text)
-#        self.Add(h2o_button, 0, wx.ALIGN_TOP|wx.ALL,border=10)
-# 
-#        wx.EVT_BUTTON(self, h2o_button.GetId(), self.fit_h2o)
-#===============================================================================
+        background_subtract_button = wx.Button(self, wx.ID_ANY, "Subtract Background")
+        self.background_subtract_text = wx.StaticText(self, -1, "Using Blank:\n")
+        self.Add(self.background_subtract_text)
+        self.Add(background_subtract_button, 0, wx.ALIGN_TOP|wx.ALL, border=10)
+        
+        self.dropdownbox = wx.Choice(self, -1, pos=(50, 170), size=(150, -1), choices=col_name)
+        
+        wx.EVT_BUTTON(self, background_subtract_button.GetId(), self.subtract_background)
         
         self.SetAutoLayout(True)
         
@@ -176,7 +269,7 @@ class BackgroundCalcCtrl(controls.AvoPlotControlPanelBase):
         self.peak_height_text.SetLabel("Peak Height:\n%f"%height)
         
     
-    def fit_h2o(self, evnt):
+    def subtract_background(self, evnt):
         wavelength, absorbance = self.series.get_data()
         try:
             wx.BeginBusyCursor()
