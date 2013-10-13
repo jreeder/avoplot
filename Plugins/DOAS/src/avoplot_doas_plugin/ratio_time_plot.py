@@ -22,6 +22,7 @@ import matplotlib
 import datetime
 import time
 import numpy
+import re
 
 from doas.io import SpectrumIO
 from doas import spec_dir
@@ -32,6 +33,8 @@ from avoplot.persist import PersistentStorage
 from avoplot import plugins
 from avoplot import subplots
 from avoplot import series
+from avoplot import controls
+import avoplot.gui
 from spectrometers import SpectrometerManager
 
 from std_ops.os_ import find_files
@@ -52,6 +55,10 @@ class SO2TimeSubplot(subplots.AvoPlotXYSubplot):
         self.update_interval = 1.0
         
         fig = self.get_parent_element()
+        
+        self.set_xaxis_to_time() #initialise the xaxis to be labelled with times
+        
+        self.add_control_panel(SO2TimeSubplotControlPanel(self))
         
         #TODO - this doesn't work because it gets called before the figure is finalised
         #disable the pan/zoom tools if they are selected so that the plot
@@ -91,10 +98,91 @@ class SO2TimeSubplot(subplots.AvoPlotXYSubplot):
                 self.update()
         finally:    
             self.__pending_callafter_finish.set()
+    
+    def set_xaxis_to_spec_number(self):
+        wx.CallAfter(self._set_xaxis_to_spec_number)
+        
+        
+    def _set_xaxis_to_spec_number(self):
+        for series in self.get_child_elements():
+            if not isinstance(series, SO2TimeSeries):
+                continue
+            series.set_xdata_to_seq_nums()
+            
+        ax = self.get_mpl_axes()
+        ax.xaxis.set_major_locator(matplotlib.ticker.AutoLocator())
+        ax.xaxis.set_major_formatter(matplotlib.ticker.ScalarFormatter())
+        ax.relim()
+        ax.autoscale_view()
+        self.update()
+        
+        
+    def set_xaxis_to_time(self):
+        wx.CallAfter(self._set_xaxis_to_time)
+    
+    def _set_xaxis_to_time(self):
+        print "_set_xaxis_to_time"
+        for series in self.get_child_elements():
+            if not isinstance(series, SO2TimeSeries):
+                continue
+            series.set_xdata_to_times()
+
+        ax = self.get_mpl_axes()
+        ax.xaxis_date()
+        loc = matplotlib.dates.AutoDateLocator()
+        ax.xaxis.set_major_locator(loc)
+        ax.xaxis.set_major_formatter(matplotlib.dates.AutoDateFormatter(loc))
+        
+        print "almost done _set_xaxis_to_time"
+        ax.relim()
+        ax.autoscale_view()
+        self.update()
+        print "done _set_xaxis_to_time"
+        
+    def set_xaxis_to_index(self):
+        wx.CallAfter(self._set_xaxis_to_index)
+        
+    def _set_xaxis_to_index(self):    
+        for series in self.get_child_elements():
+            if not isinstance(series, SO2TimeSeries):
+                continue
+            series.set_xdata_to_index()
+        ax = self.get_mpl_axes()
+        ax.xaxis.set_major_locator(matplotlib.ticker.AutoLocator())
+        ax.xaxis.set_major_formatter(matplotlib.ticker.ScalarFormatter())
+        ax.relim()
+        ax.autoscale_view()
+        self.update()
 
 
+class SO2TimeSubplotControlPanel(controls.AvoPlotControlPanelBase):
+    def __init__(self, subplot):
+        
+        self.subplot = subplot
+        super(SO2TimeSubplotControlPanel, self).__init__('DOAS')
+    
+    
+    def setup(self, parent):
+        
+        super(SO2TimeSubplotControlPanel, self).setup(parent)
+        
+        xaxis_fmt_choice = avoplot.gui.widgets.ChoiceSetting(self, 'x-axis ticks:', 'Capture time',['Capture time','Spectrum number','Index'], self.on_axis_scale_change )
+        
+        self.Add(xaxis_fmt_choice,0,wx.ALIGN_CENTER)
+    
+    
+    def on_axis_scale_change(self, evnt):
+        if evnt.GetString() == 'Capture time':
+            self.subplot.set_xaxis_to_time()
+        elif evnt.GetString() == 'Spectrum number':
+            self.subplot.set_xaxis_to_spec_number()
+        elif evnt.GetString() == 'Index':
+            self.subplot.set_xaxis_to_index()
+        else:
+            raise ValueError("Request for axis style not in list")
 
 
+seq_num_regex = re.compile(".*?([0-9]{1,})(?:\..*){0,1}$")
 #define data series to represent SO2 amount time series
 class SO2TimeSeries(series.XYDataSeries):
     def __init__(self, dir_name, inband, outband, recursive, realtime):
@@ -105,6 +193,7 @@ class SO2TimeSeries(series.XYDataSeries):
         self.realtime = realtime
         self._spec_iter = None
         self._stay_alive = True
+        self.xaxis_format = 'times'
         self.__pending_callafter_finshed = threading.Event()
         self.__pending_callafter_finshed.set()
         self._found_dark_event = threading.Event()
@@ -159,18 +248,29 @@ class SO2TimeSeries(series.XYDataSeries):
     def _load_spectra(self):
         ratios = []
         times = []
+        seq_nums = [] #sequence numbers in the spectra filenames
+        
         ratio_calc = spectrum_maths.WavelengthRatioCalc(self.outband, self.inband)
 
         self._spec_iter = spec_dir.DarkSubtractedSpectra(self.dir_name, 
                                                             recursive=self.recursive,
                                                             realtime=self.realtime)
         
-        for s in self._spec_iter:
+        for i,s in enumerate(self._spec_iter):
             if not self._found_dark_event.is_set():
                 self._found_dark_event.set()
 
             times.append(s.capture_time)    
             ratios.append(ratio_calc.get_ratio(s))
+            
+            #try to read a sequence number from filename (this might not be possible
+            #since the filename might not contain a sequence number - in that case
+            #we just create a list of numbers from 0)
+            sn = seq_num_regex.match(s.filename)
+            if sn is not None:
+                seq_nums.append(int(sn.groups()[0]))
+            else:  
+                seq_nums.append(i)
             
             if not self._stay_alive:
                 return
@@ -179,15 +279,47 @@ class SO2TimeSeries(series.XYDataSeries):
             #thread synchronisation problems
             if self.__pending_callafter_finshed.is_set():
                 self.__pending_callafter_finshed.clear()
-                wx.CallAfter(self.async_set_xy_data, times[:], ratios[:])
-                
+                self.times = times[:]
+                self.seq_numbers = seq_nums[:]
+                self.ratios = ratios[:]
+                wx.CallAfter(self.async_set_xy_data)
+
+                    
         #again, don't bother waiting for pending CallAfter calls, just let them fail
 
+    def set_xdata_to_times(self):
+        print "setting to times"
+        if self.xaxis_format == 'times':
+            return
+        self.xaxis_format = 'times'
+        self.set_xy_data(self.times, self.ratios)
+        print "done setting to times, t[0] = %s"%str(self.get_data()[0][0])
+        
+    def set_xdata_to_seq_nums(self):
+        if self.xaxis_format == 'seq_numbers':
+            return
+        self.xaxis_format = 'seq_numbers'
+        self.set_xy_data( self.seq_numbers, self.ratios)
     
-    def async_set_xy_data(self, times, ratios):
+    
+    def set_xdata_to_index(self):
+        if self.xaxis_format == 'index':
+            return
+        self.xaxis_format = 'index'
+        self.set_xy_data( range(len(self.ratios)), self.ratios)
+    
+    
+    def async_set_xy_data(self):
         try:
             if self._stay_alive:
-                self.set_xy_data(times, ratios)
+                if self.xaxis_format == 'times':
+                    self.set_xy_data( self.times, self.ratios)
+                elif self.xaxis_format == 'index':
+                    self.set_xy_data( None, self.ratios)
+                elif self.xaxis_format == 'seq_numbers':
+                    self.set_xy_data( self.seq_numbers, self.ratios)
+                else:
+                    raise ValueError("Unexpected value \'%s\' for xaxis_format"%str(self.xaxis_format))
         finally:
             self.__pending_callafter_finshed.set()
         
