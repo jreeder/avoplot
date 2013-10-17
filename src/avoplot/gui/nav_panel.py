@@ -33,6 +33,7 @@ class RightClickMenu(wx.Menu):
         self.export_entry = self.Append(-1, 'Export data...', 'Export series to a csv file')
         wx.EVT_MENU(nav_panel,self.export_entry.GetId(), nav_panel.on_rclick_menu_export)
 
+
 class NavigationPanel(wx.ScrolledWindow):
     """
     Navigation panel for selecting plot elements in a tree ctrl.
@@ -47,6 +48,7 @@ class NavigationPanel(wx.ScrolledWindow):
         self.tree = wx.TreeCtrl(self, wx.ID_ANY, style=(wx.TR_HIDE_ROOT|
                                                         wx.TR_HAS_BUTTONS|
                                                         wx.TR_LINES_AT_ROOT))
+        
         self.v_sizer.Add(self.tree,1,wx.EXPAND)
         self.__current_selection_id = None
         

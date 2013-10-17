@@ -202,67 +202,45 @@ class XYSubplotControls(controls.AvoPlotControlPanelBase):
         """
         super(XYSubplotControls, self).setup(parent)
         
-        grid_ctrl_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        grid = wx.CheckBox(self, -1, "Gridlines ")
-        self.edit_grid_link = wx.HyperlinkCtrl(self, wx.ID_ANY, "edit", "",style=wx.HL_ALIGN_CENTRE)
-        self.edit_grid_link_parentheses = [wx.StaticText(self, wx.ID_ANY, "("),
-                                           wx.StaticText(self, wx.ID_ANY, ")")]
-        
-        f = self.edit_grid_link.GetFont()
-        f.SetUnderlined(False)
-        self.edit_grid_link.SetFont(f)
-        self.edit_grid_link.SetVisitedColour(self.edit_grid_link.GetNormalColour())
-        
-        self.edit_grid_link.Show(False)
-        self.edit_grid_link_parentheses[0].Show(False)
-        self.edit_grid_link_parentheses[1].Show(False)
-        wx.EVT_HYPERLINK(self, self.edit_grid_link.GetId(), self.on_edit_gridlines)
-        
-        grid_ctrl_sizer.Add(grid,0,wx.ALIGN_LEFT|wx.ALIGN_CENTRE_VERTICAL)
-        grid_ctrl_sizer.Add(self.edit_grid_link_parentheses[0],0,wx.ALIGN_LEFT|wx.ALIGN_CENTRE_VERTICAL|wx.RESERVE_SPACE_EVEN_IF_HIDDEN)
-        grid_ctrl_sizer.Add(self.edit_grid_link,0,wx.ALIGN_LEFT|wx.ALIGN_CENTRE_VERTICAL|wx.RESERVE_SPACE_EVEN_IF_HIDDEN)
-        grid_ctrl_sizer.Add(self.edit_grid_link_parentheses[1],0,wx.ALIGN_LEFT|wx.ALIGN_CENTRE_VERTICAL|wx.RESERVE_SPACE_EVEN_IF_HIDDEN)
-        #TODO - if the axes already has a grid then this will ignore that
-        self.Add(grid_ctrl_sizer, 0, wx.ALIGN_LEFT|wx.ALL, border=10)
-        wx.EVT_CHECKBOX(self, grid.GetId(), self.on_grid)
-        
         ax = self.subplot.get_mpl_axes()
-        bkgd_col = ax.get_axis_bgcolor()
-        bkgd_col = matplotlib.colors.colorConverter.to_rgb(bkgd_col)
-        bkgd_col = (255 * bkgd_col[0], 255 * bkgd_col[1], 255 * bkgd_col[2])
-        colour = widgets.ColourSetting(self, 'Background', bkgd_col,
-                                       self.on_bkgd_colour)
-        self.Add(colour, 0, wx.ALIGN_LEFT|wx.EXPAND|wx.ALL, border=10) 
         
-        title = widgets.TextSetting(self, 'Subplot title:', ax.title, 
+        #title box
+        title = widgets.TextSetting(self, 'Title:', ax.title, 
                                      self.on_title)  
         self.Add(title, 0, wx.ALIGN_LEFT|wx.EXPAND|wx.ALL, border=10) 
         
-        xlabel = widgets.TextSetting(self, 'x-axis title:', ax.xaxis.label, 
+        #background colour selection
+        bkgd_col = ax.get_axis_bgcolor()
+        bkgd_col = matplotlib.colors.colorConverter.to_rgb(bkgd_col)
+        bkgd_col = (255 * bkgd_col[0], 255 * bkgd_col[1], 255 * bkgd_col[2])
+        colour = widgets.ColourSetting(self, 'Fill:', bkgd_col,
+                                       self.on_bkgd_colour)
+        self.Add(colour, 0, wx.ALIGN_RIGHT|wx.LEFT|wx.RIGHT, border=10) 
+        
+
+        #x-axis controls
+        x_axis_ctrls_szr = wx.StaticBoxSizer(wx.StaticBox(self, wx.ID_ANY, 'x-axis'), wx.VERTICAL)
+        xlabel = widgets.TextSetting(self, 'Label:', ax.xaxis.label, 
                                      self.on_xlabel)        
-        self.Add(xlabel, 0, wx.ALIGN_LEFT|wx.EXPAND|wx.ALL, border=10)
+        x_axis_ctrls_szr.Add(xlabel, 0, wx.ALIGN_LEFT|wx.EXPAND|wx.ALL, border=10)
         
-        ylabel = widgets.TextSetting(self, 'y-axis title:', ax.yaxis.label, 
+        x_axis_ctrls_szr.Add(GridLinesCheckBox(self, ax.xaxis, self.subplot), 0 , wx.ALIGN_LEFT| wx.LEFT, border=10)
+        
+        self.Add(x_axis_ctrls_szr, 0, wx.EXPAND|wx.ALL, border=5)
+        
+        
+        
+        #y-axis controls
+        y_axis_ctrls_szr = wx.StaticBoxSizer(wx.StaticBox(self, wx.ID_ANY, 'y-axis'), wx.VERTICAL)
+        ylabel = widgets.TextSetting(self, 'Label:', ax.yaxis.label, 
                                      self.on_ylabel)        
-        self.Add(ylabel, 0, wx.ALIGN_LEFT|wx.EXPAND|wx.ALL, border=10)
-    
-    
-    def on_grid(self, evnt):
-        """
-        Event handler for the gridlines checkbox.
-        """
-        ax = self.subplot.get_mpl_axes()
-        ax.grid(b=evnt.IsChecked())
-        ax.figure.canvas.draw()
-        self.edit_grid_link.Show(evnt.IsChecked())
-        self.edit_grid_link_parentheses[0].Show(evnt.IsChecked())
-        self.edit_grid_link_parentheses[1].Show(evnt.IsChecked())
+        y_axis_ctrls_szr.Add(ylabel, 0, wx.ALIGN_LEFT|wx.EXPAND|wx.ALL, border=10)
         
-    
-    
-    def on_edit_gridlines(self, evnt):
-        avoplot.gui.gridlines.GridPropertiesEditor(self, self.subplot)
-    
+        y_axis_ctrls_szr.Add(GridLinesCheckBox(self, ax.yaxis, self.subplot), 0 , wx.ALIGN_LEFT| wx.LEFT, border=10)
+        
+        self.Add(y_axis_ctrls_szr, 0, wx.EXPAND|wx.ALL, border=5)        
+        
+ 
     def on_title(self, evnt):
         """
         Event handler for the subplot title text box.
@@ -300,5 +278,51 @@ class XYSubplotControls(controls.AvoPlotControlPanelBase):
         self.subplot.update()
             
     
+class GridLinesCheckBox(wx.BoxSizer):
+    
+    def __init__(self, parent, mpl_axis, subplot):
         
+        self.mpl_axis = mpl_axis
+        self.subplot = subplot
+        self.parent = parent
         
+        wx.BoxSizer.__init__(self, wx.HORIZONTAL)
+        
+        grid = wx.CheckBox(parent, -1, "Gridlines ")
+        self.edit_grid_link = wx.HyperlinkCtrl(parent, wx.ID_ANY, "edit", "",style=wx.HL_ALIGN_CENTRE)
+        self.edit_grid_link_parentheses = [wx.StaticText(parent, wx.ID_ANY, "("),
+                                           wx.StaticText(parent, wx.ID_ANY, ")")]
+        
+        f = self.edit_grid_link.GetFont()
+        f.SetUnderlined(False)
+        self.edit_grid_link.SetFont(f)
+        self.edit_grid_link.SetVisitedColour(self.edit_grid_link.GetNormalColour())
+        
+        #gridlines editing
+        self.edit_grid_link.Show(False)
+        self.edit_grid_link_parentheses[0].Show(False)
+        self.edit_grid_link_parentheses[1].Show(False)
+        wx.EVT_HYPERLINK(parent, self.edit_grid_link.GetId(), self.on_edit_gridlines)
+        
+        self.Add(grid,0,wx.ALIGN_LEFT|wx.ALIGN_CENTRE_VERTICAL)
+        self.Add(self.edit_grid_link_parentheses[0],0,wx.ALIGN_LEFT|wx.ALIGN_CENTRE_VERTICAL|wx.RESERVE_SPACE_EVEN_IF_HIDDEN)
+        self.Add(self.edit_grid_link,0,wx.ALIGN_LEFT|wx.ALIGN_CENTRE_VERTICAL|wx.RESERVE_SPACE_EVEN_IF_HIDDEN)
+        self.Add(self.edit_grid_link_parentheses[1],0,wx.ALIGN_LEFT|wx.ALIGN_CENTRE_VERTICAL|wx.RESERVE_SPACE_EVEN_IF_HIDDEN)
+        #TODO - if the axes already has a grid then this will ignore that
+
+        wx.EVT_CHECKBOX(parent, grid.GetId(), self.on_grid)
+    
+    
+    def on_grid(self, evnt):
+        """
+        Event handler for the gridlines checkbox.
+        """
+        
+        self.mpl_axis.grid(b=evnt.IsChecked())
+        self.mpl_axis.figure.canvas.draw()
+        self.edit_grid_link.Show(evnt.IsChecked())
+        self.edit_grid_link_parentheses[0].Show(evnt.IsChecked())
+        self.edit_grid_link_parentheses[1].Show(evnt.IsChecked())    
+            
+    def on_edit_gridlines(self, evnt):
+        avoplot.gui.gridlines.GridPropertiesEditor(self.parent, self.subplot)        

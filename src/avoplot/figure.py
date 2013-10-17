@@ -53,17 +53,19 @@ class FigureControls(controls.AvoPlotControlPanelBase):
         #figure. My version of matplotlib doesn't seem to allow this.
         self.__suptitle_text = mpl_fig.suptitle('')
         
+        #add figure title controls
+        ts = widgets.TextSetting(self, "Title:", self.__suptitle_text, self.on_suptitle_change)
+        self.Add(ts, 0 , wx.ALIGN_LEFT|wx.EXPAND|wx.ALL, border=10)
+        
         #add background colour controls
         bkgd_col = mpl_fig.get_facecolor()
         bkgd_col = matplotlib.colors.colorConverter.to_rgb(bkgd_col)
         bkgd_col = (255 * bkgd_col[0], 255 * bkgd_col[1], 255 * bkgd_col[2])
-        cs = widgets.ColourSetting(self, "Background:", bkgd_col, 
+        cs = widgets.ColourSetting(self, "Fill:", bkgd_col, 
                            self.on_bkgd_colour_change)
-        self.Add(cs, 0 , wx.ALIGN_LEFT| wx.ALL, border=10)
+        self.Add(cs, 0 , wx.ALIGN_RIGHT| wx.LEFT | wx.RIGHT, border=10)
         
-        #add figure title controls
-        ts = widgets.TextSetting(self, "Title:", self.__suptitle_text, self.on_suptitle_change)
-        self.Add(ts, 0 , wx.ALIGN_LEFT|wx.EXPAND|wx.ALL, border=10)
+
         
     
     
