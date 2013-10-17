@@ -8,6 +8,6 @@ recursive-include icons *.ico
 include misc/*
 include AUTHORS
 include COPYING
-inlcude KNOWN_BUGS
+include KNOWN_BUGS
 include avoplot/COPYING
 include src/__init__.py
