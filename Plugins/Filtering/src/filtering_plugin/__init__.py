@@ -1,6 +1,6 @@
 from avoplot.plugins import register
-from ftir_spectrum import FTIRPlugin
+from filtering import Filtering
 
 
 #register the spectrum plotting plugin
-register(FTIRPlugin())
+register(Filtering())

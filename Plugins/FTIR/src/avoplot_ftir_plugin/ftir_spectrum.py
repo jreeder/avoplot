@@ -1,20 +1,3 @@
-#Copyright (C) Nial Peters 2013
-#
-#This file is part of AvoPlot.
-#
-#AvoPlot is free software: you can redistribute it and/or modify
-#it under the terms of the GNU General Public License as published by
-#the Free Software Foundation, either version 3 of the License, or
-#(at your option) any later version.
-#
-#AvoPlot is distributed in the hope that it will be useful,
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#GNU General Public License for more details.
-#
-#You should have received a copy of the GNU General Public License
-#along with AvoPlot.  If not, see <http://www.gnu.org/licenses/>.
-
 import wx
 import csv
 import os
@@ -24,174 +7,243 @@ from scipy.special import erf
 import scipy
 import scipy.optimize
 import numpy
-
-from avoplot import plugins, series #new-version update
-
-from avoplot.gui.plots import PlotPanelBase
-from avoplot.plugins import AvoPlotPluginBase
+from avoplot import plugins, series, controls, subplots
 from avoplot.persist import PersistentStorage
+from avoplot.plugins import AvoPlotPluginSimple
+from avoplot.subplots import AvoPlotXYSubplot
+from avoplot.series import XYDataSeries
 
-plugin_is_GPL_compatible = True #new-version update
+from avoplot.gui import widgets
 
-def load_ftir_file(filename):
-    reader = csv.reader(open(filename, "rb"), dialect="excel") 
+plugin_is_GPL_compatible = True
 
-    wavenumber = []
-    absorbance = []
-
-    for line in reader:
-        wavenumber.append(float(line[0]))
-        absorbance.append(float(line[1]))
-    
-    return wavenumber, absorbance
-
-
-#Start new-version Class updates 
-
-class FTIRPlugin(plugins.AvoPlotPluginBase):        
-    def __init__(self, parent, filename): 
-        super(FTIRPlugin, self).__init__("FTIR Plugin", series.DataSeriesBase)
+class FTIRSpectrumSubplot(AvoPlotXYSubplot):
+#This is the "subplot" where the spectrum will appear
+    def my_init(self):
+        ax = self.get_mpl_axes()
+        ax.set_xlabel('Wavenumber (cm$^{-1}$)')
+        ax.set_ylabel('Absorbance')
         
-        self.set_menu_entry(['New FTIR Spectrum'])
+        self.__inverted_x = False
     
+    
+    def add_data_series(self, data):
+        AvoPlotXYSubplot.add_data_series(self, data)
+        
+        if not self.__inverted_x:
+           self.get_mpl_axes().invert_xaxis()
+           self.__inverted_x = True
+    
+     
+        
+#define new data series type for FTIR data
+class FTIRSpectrumData(series.XYDataSeries):
+    def __init__(self, *args, **kwargs):
+        super(FTIRSpectrumData, self).__init__(*args, **kwargs)
+        
+        #add a control for this data series to allow the user to change the 
+        #frequency of the wave using a slider.
+        self.add_control_panel(BackgroundCalcCtrl(self))    
+    
+    @staticmethod
+    def get_supported_subplot_type():
+        return FTIRSpectrumSubplot
+
+
+
+class FTIRPlugin(plugins.AvoPlotPluginSimple):
+    def __init__(self):
+        super(FTIRPlugin, self).__init__("FTIR Plugin", FTIRSpectrumData)
+        
+        self.set_menu_entry(['FTIR', 'New Spectrum'], "Plot an FTIR spectrum")
+        
+        
     def plot_into_subplot(self, subplot):
-        PlotPanelBase.__init__(self, parent, os.path.basename(filename))
-        self.control_panel = FTIRFittingPanel(self, classify_spectrum(self.wavenumber, self.absorbance))
-        self.h_sizer.Insert(0,self.control_panel, flag=wx.ALIGN_LEFT)
         
-        self.wavenumber, self.absorbance = load_ftir_file(filename)   
+        wavenumber, absorbance, spectrum_file = self.load_ftir_file()
+        if wavenumber is None:
+            return False
         
-        x_data = self.wavenumber
-        y_data = self.absorbance 
-        
-        data_series = series.DataSeriesBase("FTIR Spectra", xdata=x_data, ydata=y_data)
+        data_series = FTIRSpectrumData(os.path.basename(spectrum_file), 
+                                       xdata=wavenumber, 
+                                       ydata=absorbance)
         
         subplot.add_data_series(data_series)
         
+        #TODO - setting the name here means that the figure gets renamed
+        #everytime that a series gets added
+        subplot.get_parent_element().set_name(os.path.basename(spectrum_file))
+        
         return True
     
-plugins.register(FTIRPlugin())
+    
+    
+    def load_ftir_file(self):
+        persist = PersistentStorage()
+    
+        try:
+            last_path_used = persist.get_value("ftir_spectra_dir")
+        except KeyError:
+            last_path_used = ""
 
-#End new-version Class updates
+        #get filename to open
+        spectrum_file = wx.FileSelector("Choose spectrum file to open", 
+                                        default_path=last_path_used)
+        if spectrum_file == "":
+            return None
+        
+        persist.set_value("ftir_spectra_dir", os.path.dirname(spectrum_file))
+        
+        reader = csv.reader(open(spectrum_file, "rb"), dialect="excel") 
+        
+        wavenumber = []
+        absorbance = []
+    
+        for line in reader:
+             wavenumber.append(float(line[0]))
+             absorbance.append(float(line[1]))        
+        
+        try:        
+            return wavenumber, absorbance, spectrum_file
+        #TODO see return above
+        except Exception,e:
+            print e.args
+            wx.MessageBox("Unable to load spectrum file \'%s\'. "
+                          "Unrecognised file format."%spectrum_file, 
+                          "AvoPlot", wx.ICON_ERROR)
+            return None
 
 
-class FTIRFittingPanel(wx.Panel):
-    def __init__(self, parent, spec_type):
+#Start Extra Control Panel Functions -- created after adv_sine_wave example in AvoPlot documentation
+class BackgroundCalcCtrl(controls.AvoPlotControlPanelBase):
+    """
+    Control panel where the buttons to draw backgrounds will appear
+    """
+    def __init__(self, series):
+        #call the parent class's __init__ method, passing it the name that we
+        #want to appear on the control panels tab.
+        super(BackgroundCalcCtrl, self).__init__("Background Fit")
+        
+        #store the data series object that this control panel is associated with, 
+        #so that we can access it later
+        self.series = series
+    
+    def define_data(self):
+        wavenumber = self.wavenumber
+        absorbance = self.absorbance
+        return wavenumber, absorbance
+
+    
+    def setup(self, parent):
+        super(BackgroundCalcCtrl, self).setup(parent)
+        
+        #AvoPlotXYSubplot is a class, not an object/instance so you can't do this!
+        #also get_mpl_axes is a method - so you would need () to make this do what you intended
+        #self.axes = AvoPlotXYSubplot.get_mpl_axes
+        self.axes = self.series.get_parent_element().get_mpl_axes()
+        
         self.plot_obj = parent
-        wx.Panel.__init__(self, parent, wx.ID_ANY,style=wx.BORDER_SIMPLE)
-        sizer = wx.BoxSizer(wx.VERTICAL)
+        spec_type = classify_spectrum
         
         h2o_button = wx.Button(self, wx.ID_ANY, "Fit H2O")
         self.peak_height_text = wx.StaticText(self, -1, "Peak Height:\n")
-        sizer.Add(h2o_button, 0, wx.ALIGN_TOP|wx.ALL,border=10)
-        sizer.Add(wx.StaticText(self, -1, "Spec Type:\n%s"%spec_type), 0, wx.ALIGN_TOP|wx.ALL,border=10)
-        sizer.Add(self.peak_height_text,0, wx.ALIGN_TOP|wx.ALL,border=10)
-        wx.EVT_BUTTON(self, h2o_button.GetId(), parent.fit_h2o)
+        self.Add(self.peak_height_text)
+        self.Add(h2o_button, 0, wx.ALIGN_TOP|wx.ALL,border=10)
+#        sizer = wx.StaticText(self, -1, "Spec Type:\n%s"%spec_type, 0, wx.ALIGN_TOP|wx.ALL)
+#        sizer_peak_height = wx.sizer(self.peak_height_text,0,wx.ALIGN_TOP|wx.ALL)
+#        self.Add(sizer)
+#        self.Add(sizer_peak_height)
+        wx.EVT_BUTTON(self, h2o_button.GetId(), self.fit_h2o)
         
-        self.SetSizer(sizer)
-        sizer.Fit(self)
+#        self.SetSizer(sizer)
+#        self.sizer.Fit(self)
         self.SetAutoLayout(True)
+        
     
     def set_peak_height(self, height):
         self.peak_height_text.SetLabel("Peak Height:\n%f"%height)
-            
-#def fit_h2o_peak(xdata, ydata, axes, amplitude_guess=None, mean_guess=None, sigma_guess=None, y_offset_guess=None, plot_fit=False):
-#    """
-#    Fits a gaussian to some data using a least squares fit method. Returns a named tuple
-#    of best fit parameters (amplitude, mean, sigma, y_offset).
-#    
-#    Initial guess values for the fit parameters can be specified as kwargs. Otherwise they
-#    are estimated from the data.
-#    
-#    If plot_fit=True then the fit curve is plotted over the top of the raw data and displayed.
-#    """
-#    
-#    master_xdata = numpy.array(xdata)
-#    master_ydata = numpy.array(ydata)
-#    
-#    if len(xdata) != len(ydata):
-#        raise ValueError, "Lengths of xdata and ydata must match"
-#    
-#    #crop the x and y data to the fitting range
-#    data_mask = numpy.where(numpy.logical_and(master_xdata > 2500, master_xdata <=4000))
-#    xdata = master_xdata[data_mask]
-#    ydata = master_ydata[data_mask]
-#    
-#    # guess some fit parameters - unless they were specified as kwargs
-#    if amplitude_guess is None:
-#        amplitude_guess = max(ydata)
-#    
-#    if mean_guess is None:
-#        weights = ydata - numpy.average(ydata)
-#        weights[numpy.where(weights <0)]=0 
-#        mean_guess = numpy.average(xdata,weights=weights)
-#                   
-#    skew_guess = 5.0 #TODO - do this properly
-#    
-#    #use the y value furthest from the maximum as a guess of y offset 
-#    intercept_guess = ydata[0]
-#    
-#    grad_guess = (ydata[-1]-ydata[0]) / (xdata[-1] - xdata[0])
-#
-#    #find width at half height as estimate of sigma        
-#    if sigma_guess is None:      
-#        variance = numpy.dot(numpy.abs(ydata), (xdata-mean_guess)**2)/numpy.abs(ydata).sum()  # Fast and numerically precise    
-#        sigma_guess = math.sqrt(variance)
-#    x3_guess = -1.0
-#    x2_guess = -1.0
-#    #put guess params into an array ready for fitting
-#    p0 = numpy.array([amplitude_guess, mean_guess, sigma_guess, skew_guess, grad_guess,intercept_guess])
-#
-#    #define the gaussian function and associated error function
-#    gaussian_func = lambda p, x: p[0]*scipy.exp(-(x-p[1])**2/(2.0*p[2]**2))
-#    skew_func = lambda x: 0.5 * (1.0 + erf(x/math.sqrt(2.0)))
-#    
-#    fitfunc = lambda p,x: gaussian_func(p,x) * skew_func(p[3] * ((x - p[1])/p[2])) +p[4]*x + p[5]
-#    errfunc = lambda p, x, y: fitfunc(p,x)-y
-#   
-#    # do the fitting
-#    p1, success = scipy.optimize.leastsq(errfunc, p0, args=(xdata,ydata))
-#    
-#    print "p0 = ",p0
-#    print "p1 = ",p1
-#
-#    if success not in (1,2,3,4):
-#        raise RuntimeError, "Could not fit Gaussian to data."
-#
-#    if plot_fit:
-#        axes.plot( xdata,[fitfunc(p1, i) for i in xdata], 'r-', label='fit')
-#        axes.plot(xdata, [i*p1[4] + p1[5] for i in xdata], 'g-', label='bkgd')
-#        axes.legend()
-
-def get_h2o_fitting_points(xdata, ydata, bkgd_func=None, target_wavenumber_range=200, tolerance=30):
+        
     
-    #initialise the cropping limits
+    def fit_h2o(self, evnt):
+        try:
+            wx.BeginBusyCursor()
+            bkgd = fit_h2o_peak(self.wavenumber, self.absorbance, self.axes, plot_fit=True)
+            #bkgd = fit_h2o_peak(self.wavenumber, self.absorbance, ax, plot_fit=True)
+            peak_height = calc_h2o_peak_height(self.wavenumber, self.absorbance, bkgd)
+            self.set_peak_height(peak_height)
+            
+            self.series.update()
+        except ValueError, e:
+            wx.EndBusyCursor()
+            wx.MessageBox( 'Failed to find H2O background.\nReason:%s'%e.args[0], 'AvoPlot FTIR',wx.ICON_ERROR)
+              
+        finally:
+            wx.EndBusyCursor()
+    
+    def create_plot(self):
+        self.axes.plot(self.wavenumber, self.absorbance)
+        self.axes.set_xlim((self.axes.get_xlim()[1],self.axes.get_xlim()[0]))
+        self.axes.set_xlabel("Wavenumber")
+        self.axes.set_ylabel("Absorbance")
+
+            
+def get_h2o_fitting_points(xdata, ydata, bkgd_func=None, 
+                           target_wavenumber_range=200, tolerance=30):
+    """
+    This function finds (target_wavenumber_range +- tolerance) number of points
+    from either side of the H2O peak. The points are selected from after the 
+    minima on either side of the peak.
+    
+    The H2O peak is searched for between 3000-4000 cm-1 wavenumber.
+    
+    The bkgd_func arg can be used to subtract a global background from the 
+    data before the points are searched for - this can be useful for very skewed
+    spectra. If the function can't find the fitting points without a 
+    background function, then it calls itself again passing get_global_bkgd as
+    the bkgd_func argument.
+    """
+    
+    #initialise the cropping limits (these are in wavenumber)
     l_crop = 2200
+    peak_l_crop = 3000
     r_crop = 4000
     
+    #make a copy of the original data, so that we have an uncropped version
     master_xdata = numpy.array(xdata)
     master_ydata = numpy.array(ydata)   
-     
+    
+    #crop the data to the correct size 
     data_mask = numpy.where(numpy.logical_and(master_xdata > l_crop, master_xdata <=r_crop))
     xdata = master_xdata[data_mask]
     ydata = master_ydata[data_mask]
-       
-    peak_idx = numpy.argmax(ydata)
     
+    #find where the H2O peak is
+    mask = numpy.where(xdata > peak_l_crop)
+    peak_idx = numpy.argmax(ydata[mask]) + mask[0][0]
+    
+    print "H2O peak found at ",xdata[peak_idx]
+    
+    #find the minima either side of the peak
     l_min = numpy.argmin(ydata[:peak_idx])
     r_min = numpy.argmin(ydata[peak_idx:])+peak_idx
-        
+    
+    print "l_min = ",xdata[l_min], "r_min = ", xdata[r_min]
+    
+    #now identify approximately the right number of points beyond
+    #each minimum such that we have     
     while (abs(xdata[l_min]-l_crop - target_wavenumber_range) > tolerance or
           abs(r_crop - xdata[r_min] - target_wavenumber_range) > tolerance):
         
         l_crop -= target_wavenumber_range - (xdata[l_min]-l_crop)
         r_crop -= (r_crop - xdata[r_min]) - target_wavenumber_range
         
-        data_mask = numpy.where(numpy.logical_and(master_xdata > l_crop, master_xdata <=r_crop))
+        data_mask = numpy.where(numpy.logical_and(master_xdata > l_crop, 
+                                                  master_xdata <=r_crop))
         xdata = master_xdata[data_mask]
         ydata = master_ydata[data_mask]
            
-        peak_idx = numpy.argmax(ydata)
+        mask = numpy.where(xdata > peak_l_crop)
+        peak_idx = numpy.argmax(ydata[mask]) + mask[0][0]
         
         if bkgd_func is None:
             if len(ydata[:peak_idx])>0:
@@ -202,12 +254,19 @@ def get_h2o_fitting_points(xdata, ydata, bkgd_func=None, target_wavenumber_range
         else:
             l_min = numpy.argmin(ydata[:peak_idx]-bkgd_func(xdata[:peak_idx]))
         r_min = numpy.argmin(ydata[peak_idx:])+peak_idx
+        
+        print "l_min = ",xdata[l_min], "r_min = ", xdata[r_min]
+        print "l_crop = ",l_crop, "r_crop = ", r_crop, "\n"
     
     if xdata[l_min] < 2000:
         if bkgd_func is not None:
-            raise ValueError("Failed to find fitting points")
-        return get_h2o_fitting_points(master_xdata, master_ydata, bkgd_func=get_global_bkgd(xdata, ydata))
-        
+            raise ValueError("Could not find low wavenumber minimum.")
+        print "calling again with bkgd_func"
+        return get_h2o_fitting_points(master_xdata, master_ydata, bkgd_func=get_global_bkgd(master_xdata, master_ydata))
+    
+    if xdata[r_min] > 5000:  
+         raise ValueError("Could not find high wavenumber minimum.")
+     
     fit_xdata = numpy.concatenate((xdata[:l_min],xdata[r_min:]))
     fit_ydata = numpy.concatenate((ydata[:l_min],ydata[r_min:]))
     return fit_xdata, fit_ydata
@@ -306,62 +365,35 @@ def calc_h2o_peak_height(xdata, ydata, bkgd_func):
     
     
 
-class FTIRSpecPlot(PlotPanelBase):
-    
-    def __init__(self, parent, filename):            
-        self.wavenumber, self.absorbance = load_ftir_file(filename)        
-        #print classify_spectrum(self.wavenumber, self.absorbance)
-        PlotPanelBase.__init__(self,parent, os.path.basename(filename))
-        self.control_panel = FTIRFittingPanel(self, classify_spectrum(self.wavenumber, self.absorbance))
-        self.h_sizer.Insert(0,self.control_panel, flag=wx.ALIGN_LEFT)
-        
-        self.create_plot()
-        
-    
-    def fit_h2o(self, evnt):
-        try:
-            wx.BeginBusyCursor()
-            bkgd = fit_h2o_peak(self.wavenumber, self.absorbance, self.axes, plot_fit=True)
-            peak_height = calc_h2o_peak_height(self.wavenumber, self.absorbance, bkgd)
-            self.control_panel.set_peak_height(peak_height)
-            
-            self.canvas.draw()
-            self.canvas.gui_repaint()
-        finally:
-            wx.EndBusyCursor()
-    
-    def create_plot(self):
-        self.axes.plot(self.wavenumber, self.absorbance)
-        self.axes.set_xlim((self.axes.get_xlim()[1],self.axes.get_xlim()[0]))
-        self.axes.set_xlabel("Wavenumber")
-        self.axes.set_ylabel("Absorbance")
+#class FTIRSpecPlot(PlotPanelBase):
+#    
+#    def __init__(self, parent, filename):            
+#        self.wavenumber, self.absorbance = load_ftir_file(filename)        
+#        print classify_spectrum(self.wavenumber, self.absorbance)
+#        PlotPanelBase.__init__(self,parent, os.path.basename(filename))
+#        self.control_panel = FTIRFittingPanel(self, classify_spectrum(self.wavenumber, self.absorbance))
+#        self.h_sizer.Insert(0,self.control_panel, flag=wx.ALIGN_LEFT)
+#        
+#        self.create_plot()
+#        
+#    
+#    def fit_h2o(self, evnt):
+#        try:
+#            wx.BeginBusyCursor()
+#            bkgd = fit_h2o_peak(self.wavenumber, self.absorbance, self.axes, plot_fit=True)
+#            peak_height = calc_h2o_peak_height(self.wavenumber, self.absorbance, bkgd)
+#            self.control_panel.set_peak_height(peak_height)
+#            
+#            self.canvas.draw()
+#            self.canvas.gui_repaint()
+#        finally:
+#            wx.EndBusyCursor()
+#    
+#    def create_plot(self):
+#        self.axes.plot(self.wavenumber, self.absorbance)
+#        self.axes.set_xlim((self.axes.get_xlim()[1],self.axes.get_xlim()[0]))
+#        self.axes.set_xlabel("Wavenumber")
+#        self.axes.set_ylabel("Absorbance")
 
 
-class FTIRSpectrumPlugin(AvoPlotPluginBase):
-    
-    def __init__(self):
-        AvoPlotPluginBase.__init__(self, "FTIR Spectrum")
-    
-    
-    def get_onNew_handler(self):
-        return ("FTIR", "FTIR Spectrum", "Analyse a single FTIR spectrum", self.open_ftir_spectrum)
-    
-    
-    def open_ftir_spectrum(self, evnt):
-        
-        persist = PersistentStorage()
-        
-        try:
-            last_path_used = persist.get_value("ftir.spectra_dir")
-        except KeyError:
-            last_path_used = ""
-        
-        #get filename to open
-        spectrum_file = wx.FileSelector("Choose FTIR spectrum file to open", default_path=last_path_used)
-        if spectrum_file == "":
-            return
-        
-        persist.set_value("ftir.spectra_dir", os.path.dirname(spectrum_file))
-        
-        self.add_plot_to_main_window(FTIRSpecPlot(self.get_parent(), spectrum_file))
-        
+plugins.register(FTIRPlugin())

@@ -30,7 +30,7 @@ class RightClickMenu(wx.Menu):
         delete_entry = self.Append(-1, 'Delete', 'Delete the element')
         wx.EVT_MENU(nav_panel,delete_entry.GetId(), nav_panel.on_rclick_menu_delete)
         
-        self.export_entry = self.Append(-1, 'Export data...', 'Export series to a csv file')
+        self.export_entry = self.Append(-1, 'Export data...', 'Export series to a text file')
         wx.EVT_MENU(nav_panel,self.export_entry.GetId(), nav_panel.on_rclick_menu_export)
 
 

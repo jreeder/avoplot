@@ -53,7 +53,7 @@ class FTIRSpectrumData(series.XYDataSeries):
 
 class FTIRPlugin(plugins.AvoPlotPluginSimple):
     def __init__(self):
-        super(FTIRPlugin, self).__init__("FTIR Plugin Kayla", FTIRSpectrumData)
+        super(FTIRPlugin, self).__init__("FTIR Plugin", FTIRSpectrumData)
         
         self.set_menu_entry(['FTIR', 'New Spectrum'], "Plot an FTIR spectrum")
         
