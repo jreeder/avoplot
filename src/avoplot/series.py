@@ -225,7 +225,6 @@ class XYDataSeries(DataSeriesBase):
             
             with open(path, 'w') as fp:
                 for i in range(len(xdata)):
-
                     if isinstance(xdata[0], datetime):
                         fp.write("%s\t%f\n" %(str(xdata[i]), ydata[i]))
                         #yfloat = []
@@ -234,8 +233,6 @@ class XYDataSeries(DataSeriesBase):
                         #fp.write("%f\t%f\n" %(xdata[i], yfloat[i]))
                     else:
                         fp.write("%f\t%f\n" %(xdata[i], ydata[i]))
-
-                    fp.write("%f\t%f\n" % (xdata[i], ydata[i]))
 
         
         export_dialog.Destroy()            
