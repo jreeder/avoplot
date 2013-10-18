@@ -22,6 +22,9 @@ import threading
 import numpy
 import collections
 import matplotlib.colors
+import os
+import time
+from datetime import datetime
 
 from avoplot.subplots import AvoPlotSubplotBase, AvoPlotXYSubplot
 from avoplot import controls
@@ -207,23 +210,33 @@ class XYDataSeries(DataSeriesBase):
         persistant_storage = PersistentStorage()
         
         try:
-            last_path_used = persistant_storage.get_value("fromfile_last_dir_used")
+            last_path_used = persistant_storage.get_value("series_export_last_dir_used")
         except KeyError:
             last_path_used = ""
             
         export_dialog = wx.FileDialog(None, message="Export data series as...",
                                        defaultDir=last_path_used, defaultFile="AvoPlot Series.txt",
-                                       style=wx.SAVE)
+                                       style=wx.SAVE|wx.FD_OVERWRITE_PROMPT, wildcard = "TXT files (*.txt)|*.txt")
         
         if export_dialog.ShowModal() == wx.ID_OK:
             path = export_dialog.GetPath()
-            if not path.endswith(".txt"):
-                path = path + ".txt"
+            persistant_storage.set_value("series_export_last_dir_used", os.path.dirname(path))
             xdata, ydata = self.get_data()
             
             with open(path, 'w') as fp:
                 for i in range(len(xdata)):
+
+                    if isinstance(xdata[0], datetime):
+                        fp.write("%s\t%f\n" %(str(xdata[i]), ydata[i]))
+                        #yfloat = []
+                        #for i in ydata:
+                        #    yfloat.append(time.mktime(ydata[i].timetuple()))
+                        #fp.write("%f\t%f\n" %(xdata[i], yfloat[i]))
+                    else:
+                        fp.write("%f\t%f\n" %(xdata[i], ydata[i]))
+
                     fp.write("%f\t%f\n" % (xdata[i], ydata[i]))
+
         
         export_dialog.Destroy()            
 
