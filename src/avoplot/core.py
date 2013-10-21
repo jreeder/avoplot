@@ -280,4 +280,13 @@ class AvoPlotElementBase(object):
         raise (NotImplementedError, "Subclasses of AvoPlotElementBase must "
                "override the update method")
     
+
+
+class AvoPlotSession(AvoPlotElementBase):
+    """
+    A session is the "root" element for an AvoPlot program instance. It doesn't
+    really do anything by itself, but provides a parent to any figures that get
+    created.
+    """
+    pass
     

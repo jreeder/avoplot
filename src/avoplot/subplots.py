@@ -20,6 +20,7 @@ import matplotlib.colors
 import avoplot.gui.gridlines
 from avoplot.gui import widgets
 from avoplot import core
+from avoplot import figure
 from avoplot import controls
 import wx
 
@@ -84,10 +85,23 @@ class AvoPlotSubplotBase(core.AvoPlotElementBase):
     def get_figure(self):
         """
         Returns the AvoPlotFigure instance that this subplot is contained 
-        within. Use get_figure().get_mpl_figure() to get the matplotlib figure
-        object that the subplot is associated with.
+        within , or None if the series does not yet belong to a figure. Use 
+        get_figure().get_mpl_figure() to get the matplotlib figureobject that 
+        the subplot is associated with.
         """
-        return self.get_parent_element()
+        #look up the list of parents recursively until we find a figure object
+        parent = self.get_parent_element()
+        while not isinstance(parent, figure.AvoPlotFigure):
+            if parent is None:
+                return None
+            parent = parent.get_parent_element()
+            
+            #sanity check - there should always be a figure object somewhere
+            #in the ancestry of a series object.
+            if isinstance(parent, core.AvoPlotSession):
+                raise RuntimeError("Reached the root element before an "
+                                   "AvoPlotFigure instance was found.")
+        return parent
     
     
     def on_mouse_button(self, evnt):

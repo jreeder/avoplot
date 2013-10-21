@@ -33,15 +33,6 @@ from avoplot.gui import nav_panel
 from avoplot import persist
 
 
-class AvoPlotSession(core.AvoPlotElementBase):
-    """
-    A session is the "root" element for an AvoPlot program instance. It doesn't
-    really do anything by itself, but provides a parent to any figures that get
-    created.
-    """
-    pass
-
-
 class MainFrame(wx.Frame):
     """
     Main frame of the GUI. This is set as the top level window when the 
@@ -60,7 +51,7 @@ class MainFrame(wx.Frame):
         self.persistant = persist.PersistentStorage()
         
         #create a new session to hold all the figures
-        self.session = AvoPlotSession('/')
+        self.session = core.AvoPlotSession('/')
         
         #set up the icon for the frame
         if sys.platform == "win32":

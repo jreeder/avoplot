@@ -29,6 +29,8 @@ from datetime import datetime
 from avoplot.subplots import AvoPlotSubplotBase, AvoPlotXYSubplot
 from avoplot import controls
 from avoplot import core
+from avoplot import subplots
+from avoplot import figure
 from avoplot.gui import widgets
 from avoplot.persist import PersistentStorage
 
@@ -44,13 +46,13 @@ class DataSeriesBase(core.AvoPlotElementBase):
         self._mpl_lines = []
         
         
-    def set_parent_element(self, parent):
-        """
-        Overrides AvoPlotElementBase method. Does exactly the same, but ensures 
-        that parent is an instance of AvoPlotSubplotBase or a subclass thereof.
-        """
-        assert isinstance(parent, AvoPlotSubplotBase) or parent is None
-        super(DataSeriesBase, self).set_parent_element(parent)
+#    def set_parent_element(self, parent):
+#        """
+#        Overrides AvoPlotElementBase method. Does exactly the same, but ensures 
+#        that parent is an instance of AvoPlotSubplotBase or a subclass thereof.
+#        """
+#        assert isinstance(parent, AvoPlotSubplotBase) or parent is None
+#        super(DataSeriesBase, self).set_parent_element(parent)
     
     
     def get_mpl_lines(self):
@@ -62,6 +64,49 @@ class DataSeriesBase(core.AvoPlotElementBase):
                                 'access the matplotlib lines')
         return self._mpl_lines
     
+    
+    def get_figure(self):
+        """
+        Returns the AvoPlot figure (avoplot.figure.AvoPlotFigure) object that
+        the series is contained within, or None if the series does not yet 
+        belong to a figure.
+        """
+        #look up the list of parents recursively until we find a figure object
+        parent = self.get_parent_element()
+        while not isinstance(parent, figure.AvoPlotFigure):
+            if parent is None:
+                return None
+            parent = parent.get_parent_element()
+            
+            #sanity check - there should always be a figure object somewhere
+            #in the ancestry of a series object.
+            if isinstance(parent, core.AvoPlotSession):
+                raise RuntimeError("Reached the root element before an "
+                                   "AvoPlotFigure instance was found.")
+        return parent
+    
+    
+    def get_subplot(self):
+        """
+        Returns the AvoPlot subplot (subclass of 
+        avoplot.subplots.AvoPlotSubplotBase) object that
+        the series is contained within, or None if the series does not yet 
+        belong to a subplot.
+        """
+        #look up the list of parents recursively until we find a figure object
+        parent = self.get_parent_element()
+        while not isinstance(parent, subplots.AvoPlotSubplotBase):
+            if parent is None:
+                return None
+            parent = parent.get_parent_element()
+            
+            #sanity check - there should always be a figure object somewhere
+            #in the ancestry of a series object.
+            if isinstance(parent, core.AvoPlotSession):
+                raise RuntimeError("Reached the root element before an "
+                                   "AvoPlotFigure instance was found.")
+        return parent
+        
     
     def delete(self):
         """
@@ -79,24 +124,31 @@ class DataSeriesBase(core.AvoPlotElementBase):
         and setup the controls for the series (the parent of the series is not
         known until it gets added to the subplot)
         """
-        assert isinstance(subplot, AvoPlotSubplotBase), ('arg passed as '
-                'subplot is not an AvoPlotSubplotBase instance')
+        #assert isinstance(subplot, AvoPlotSubplotBase), ('arg passed as '
+        #        'subplot is not an AvoPlotSubplotBase instance')
         
         assert not self.__plotted, ('plot() should only be called once')
         
         self.__plotted = True
         
         self._mpl_lines = self.plot(subplot)
-        self.setup_controls(subplot.get_parent_element())
+        self.setup_controls(subplot.get_figure())
+    
+    
+    def add_subseries(self, series):
+        """
+        """
+        series.set_parent_element(self)
+        series._plot(self.get_subplot())
     
     
     def update(self):
         """
         Redraws the series.
         """
-        parent = self.get_parent_element()
-        if parent: #parent could be None - in which case do nothing
-            parent.update()
+        subplot = self.get_subplot()
+        if subplot: #subplot could be None - in which case do nothing
+            subplot.update()
     
     
     def plot(self, subplot):
@@ -134,8 +186,7 @@ class XYDataSeries(DataSeriesBase):
         self.set_xy_data(xdata, ydata)
         self.add_control_panel(XYSeriesControls(self))
         
-        
-        
+          
     @staticmethod    
     def get_supported_subplot_type():
         """
@@ -147,7 +198,8 @@ class XYDataSeries(DataSeriesBase):
     
     def set_xy_data(self, xdata=None, ydata=None):
         """
-        Sets the x and y values of the data series.
+        Sets the x and y values of the data series. Note that you need to call
+        the update() method to draw the changes to the screen.
         """
         if xdata is None and ydata is None:
             xdata = []
@@ -202,6 +254,7 @@ class XYDataSeries(DataSeriesBase):
         plots the x,y data into the subplot as a line plot.
         """
         return subplot.get_mpl_axes().plot(*self.get_data())
+    
     
     def export(self):
         """
