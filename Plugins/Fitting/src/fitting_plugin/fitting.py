@@ -22,13 +22,13 @@ from avoplot.gui import widgets
 plugin_is_GPL_compatible = True
         
 #define new data series type for FTIR data
-class DataToFilter(series.XYDataSeries):
+class DataToFit(series.XYDataSeries):
     def __init__(self, *args, **kwargs):
-        super(DataToFilter, self).__init__(*args, **kwargs)
+        super(DataToFit, self).__init__(*args, **kwargs)
         
         #add a control for this data series to allow the user to change the 
         #frequency of the wave using a slider.
-        self.add_control_panel(FilterPickerCtrl(self))    
+        self.add_control_panel(FitPickerCtrl(self))    
     
     @staticmethod
     def get_supported_subplot_type():
@@ -50,11 +50,11 @@ class FitData(series.XYDataSeries):
         return AvoPlotXYSubplot
 
 
-class Filtering(plugins.AvoPlotPluginSimple):
+class Fitting(plugins.AvoPlotPluginSimple):
     def __init__(self):
-        super(Filtering, self).__init__("Filtering", DataToFilter)
+        super(Fitting, self).__init__("Fitting", DataToFit)
         
-        self.set_menu_entry(['Filtering', 'New data series'], "Plot a data series to filter")
+        self.set_menu_entry(['Fitting', 'New data series'], "Plot a data series to fit")
         
         
     def plot_into_subplot(self, subplot):
@@ -63,14 +63,14 @@ class Filtering(plugins.AvoPlotPluginSimple):
         if col_data is None:
             return False
         
-        data_series = DataToFilter('New Series', xdata = col_data[0], ydata = col_data[1])
+        data_series = DataToFit('New Series', xdata = col_data[0], ydata = col_data[1])
         subplot.add_data_series(data_series)
         
-        data_series = DataToFilter('New Series', xdata = col_data[2], ydata = col_data[3])
+        data_series = DataToFit('New Series', xdata = col_data[2], ydata = col_data[3])
         subplot.add_data_series(data_series)
         
         if len(col_data) == 6:
-            data_series = DataToFilter('New Series', xdata = col_data[4], ydata = col_data[5])
+            data_series = DataToFit('New Series', xdata = col_data[4], ydata = col_data[5])
             subplot.add_data_series(data_series)
         
         #TODO - setting the name here means that the figure gets renamed
@@ -85,7 +85,7 @@ class Filtering(plugins.AvoPlotPluginSimple):
         persist = PersistentStorage()
     
         try:
-            last_path_used = persist.get_value("filter_spectra_dir")
+            last_path_used = persist.get_value("fit_spectra_dir")
         except KeyError:
             last_path_used = ""
 
@@ -95,7 +95,7 @@ class Filtering(plugins.AvoPlotPluginSimple):
         if spectrum_file == "":
             return None, None
         
-        persist.set_value("filter_spectra_dir", os.path.dirname(spectrum_file))
+        persist.set_value("fit_spectra_dir", os.path.dirname(spectrum_file))
         
         with open(spectrum_file, 'rU') as csvfile:
             reader = csv.reader(csvfile, delimiter='\t')
@@ -136,14 +136,14 @@ class Filtering(plugins.AvoPlotPluginSimple):
             return None
 
 
-class FilterPickerCtrl(controls.AvoPlotControlPanelBase):
+class FitPickerCtrl(controls.AvoPlotControlPanelBase):
     """
     Control panel where the buttons to draw backgrounds will appear
     """
     def __init__(self, series):
         #call the parent class's __init__ method, passing it the name that we
         #want to appear on the control panels tab.
-        super(FilterPickerCtrl, self).__init__("Background Fit")
+        super(FitPickerCtrl, self).__init__("Background Fit")
         
         #store the data series object that this control panel is associated with, 
         #so that we can access it later
@@ -155,7 +155,7 @@ class FilterPickerCtrl(controls.AvoPlotControlPanelBase):
 
     
     def setup(self, parent):
-        super(FilterPickerCtrl, self).setup(parent)
+        super(FitPickerCtrl, self).setup(parent)
         
         self.axes = self.series.get_parent_element().get_mpl_axes()
         self.xdata, self.ydata = self.define_data()
@@ -178,7 +178,7 @@ class FilterPickerCtrl(controls.AvoPlotControlPanelBase):
             self.series.update()
         except ValueError, e:
             wx.EndBusyCursor()
-            wx.MessageBox( 'Failed to fit gaussian.\nReason:%s'%e.args[0], 'AvoPlot Filtering',wx.ICON_ERROR)
+            wx.MessageBox( 'Failed to fit gaussian.\nReason:%s'%e.args[0], 'AvoPlot Fitting',wx.ICON_ERROR)
               
         finally:
             wx.EndBusyCursor()

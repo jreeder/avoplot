@@ -1,6 +1,6 @@
 from avoplot.plugins import setup
 
-setup(name='AvoPlot FittingPlugin',
+setup(name='AvoPlot Fitting Plugin',
       version='0.0.1',
       description='AvoPlot plugin for Fitting Data', 
       author = 'Kayla Iacovino',

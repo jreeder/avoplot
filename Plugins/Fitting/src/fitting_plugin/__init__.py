@@ -1,6 +1,6 @@
 from avoplot.plugins import register
-from filtering import Filtering
+from fitting import Fitting
 
 
-#register the spectrum plotting plugin
-register(Filtering())
+#register the fitting plugin
+register(Fitting())
