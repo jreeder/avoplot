@@ -72,13 +72,25 @@ if StrictVersion('1.0.1') > StrictVersion(matplotlib.__version__):
     sys.exit()
 
 import numpy
-if StrictVersion('1.4.0') > StrictVersion(numpy.__version__):
+try:
+    npy_vers = numpy.version.version
+except:
+    print ("Failed to determine what version of numpy you have installed."
+           " Please ensure you have installed numpy >=1.4.0 and try again.")
+    sys.exit() 
+
+if StrictVersion('1.4.0') > StrictVersion(npy_vers):
     print ("Your version of numpy is too old. AvoPlot requires >=1.4.0 "
-           "but you have %s"%numpy.__version__)
+           "but you have %s"%npy_vers)
     sys.exit()
     
 import wx
-wx_vers = wx.__version__
+try:
+    wx_vers = wx.version().split()[0]
+except:
+    print ("Failed to determine what version of wxPython you have installed."
+           " Please ensure you have installed wxPython >=2.8.10 and try again.")
+    sys.exit()
 
 if wx_vers.count('.') > 2:
     wx_vers = '.'.join(wx_vers.split('.')[:3])

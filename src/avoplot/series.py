@@ -44,15 +44,6 @@ class DataSeriesBase(core.AvoPlotElementBase):
         super(DataSeriesBase, self).__init__(name)
         self.__plotted = False
         self._mpl_lines = []
-        
-        
-#    def set_parent_element(self, parent):
-#        """
-#        Overrides AvoPlotElementBase method. Does exactly the same, but ensures 
-#        that parent is an instance of AvoPlotSubplotBase or a subclass thereof.
-#        """
-#        assert isinstance(parent, AvoPlotSubplotBase) or parent is None
-#        super(DataSeriesBase, self).set_parent_element(parent)
     
     
     def get_mpl_lines(self):
@@ -137,7 +128,16 @@ class DataSeriesBase(core.AvoPlotElementBase):
     
     def add_subseries(self, series):
         """
+        Adds a series as a child of this series. Normally you would expect 
+        series to be parented by subplots, however, for things like fit-lines 
+        it makes more sense for them to be associated with the series that they
+        are fitting then the subplot that they are plotted in.
+        
+        series must be an instance of avoplot.series.DataSeriesBase or subclass
+        thereof.
         """
+        assert isinstance(series, DataSeriesBase), ("Expecting series object of "
+                                                    "type DataSeriesBase.")
         series.set_parent_element(self)
         series._plot(self.get_subplot())
     
