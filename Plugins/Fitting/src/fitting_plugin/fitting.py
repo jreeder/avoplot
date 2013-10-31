@@ -42,8 +42,8 @@ class FitData(series.XYDataSeries):
         
         #add a control for this data series to allow the user to change the 
         #frequency of the wave using a slider.
-        
-        series.get_parent_element().add_data_series(self)
+        series.add_subseries(self)
+        #series.get_parent_element().add_data_series(self)
     
     @staticmethod
     def get_supported_subplot_type():
