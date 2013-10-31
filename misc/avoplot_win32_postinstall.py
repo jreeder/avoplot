@@ -43,7 +43,7 @@ if sys.argv[1] == '-install':
         '', # workdir
         icon_path, # iconpath
     )
-    # move shortcut from current directory to DESKTOP_FOLDER
+    # move shortcut from current directory to Start menu
     shutil.move(os.path.join(os.getcwd(), avoplot_prog_name),
                 os.path.join(start_menu_folder, avoplot_prog_name))
     
