@@ -48,7 +48,7 @@ class NavigationPanel(wx.ScrolledWindow):
         self._rclick_menu = RightClickMenu(self)
         
         self.v_sizer = wx.BoxSizer(wx.VERTICAL)
-        self.tree = customtreectrl.CustomTreeCtrl(self, wx.ID_ANY, style=(customtreectrl.TR_HIDE_ROOT|
+        self.tree = customtreectrl.CustomTreeCtrl(self, wx.ID_ANY, agwStyle=(customtreectrl.TR_HIDE_ROOT|
                                                                           customtreectrl.TR_HAS_BUTTONS|
                                                                           customtreectrl.TR_LINES_AT_ROOT))
         
