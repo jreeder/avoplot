@@ -339,4 +339,4 @@ class GridLinesCheckBox(wx.BoxSizer):
         self.edit_grid_link_parentheses[1].Show(evnt.IsChecked())    
             
     def on_edit_gridlines(self, evnt):
-        avoplot.gui.gridlines.GridPropertiesEditor(self.parent, self.subplot)        
+        avoplot.gui.gridlines.GridPropertiesEditor(self.parent, self.subplot, self.mpl_axis)        
