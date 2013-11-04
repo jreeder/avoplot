@@ -25,9 +25,7 @@ plugin_is_GPL_compatible = True
 class DataToFit(series.XYDataSeries):
     def __init__(self, *args, **kwargs):
         super(DataToFit, self).__init__(*args, **kwargs)
-        
-        #add a control for this data series to allow the user to change the 
-        #frequency of the wave using a slider.
+
         self.add_control_panel(FitPickerCtrl(self))    
     
     @staticmethod
@@ -35,15 +33,14 @@ class DataToFit(series.XYDataSeries):
         return AvoPlotXYSubplot
     
 class FitData(series.XYDataSeries):
-    def __init__(self, name, series):
+    def __init__(self, series):
         xdata, ydata = series.get_data()
         fit_x_data, fit_y_data, gaussian_params = fit_gaussian(xdata, ydata)
-        super(FitData, self).__init__(name, xdata = fit_x_data, ydata = fit_y_data)
+        super(FitData, self).__init__(series.get_name() + ' Fit', xdata = fit_x_data, ydata = fit_y_data)
         
-        #add a control for this data series to allow the user to change the 
-        #frequency of the wave using a slider.
+        self.add_control_panel(FitDataCtrl(self))
+        
         series.add_subseries(self)
-        #series.get_parent_element().add_data_series(self)
     
     @staticmethod
     def get_supported_subplot_type():
@@ -59,18 +56,18 @@ class Fitting(plugins.AvoPlotPluginSimple):
         
     def plot_into_subplot(self, subplot):
         
-        col_data, spectrum_file = self.load_file()
+        col_data, spectrum_file, col_headers = self.load_file()
         if col_data is None:
             return False
         
-        data_series = DataToFit('New Series', xdata = col_data[0], ydata = col_data[1])
+        data_series = DataToFit(col_headers[1], xdata = col_data[0], ydata = col_data[1])
         subplot.add_data_series(data_series)
         
-        data_series = DataToFit('New Series', xdata = col_data[2], ydata = col_data[3])
+        data_series = DataToFit(col_headers[3], xdata = col_data[2], ydata = col_data[3])
         subplot.add_data_series(data_series)
         
         if len(col_data) == 6:
-            data_series = DataToFit('New Series', xdata = col_data[4], ydata = col_data[5])
+            data_series = DataToFit(col_headers[5], xdata = col_data[4], ydata = col_data[5])
             subplot.add_data_series(data_series)
         
         #TODO - setting the name here means that the figure gets renamed
@@ -110,8 +107,9 @@ class Fitting(plugins.AvoPlotPluginSimple):
                 count += 1
             #Skip the first 29 lines, which are header
             
-            ncols = len(next(reader))
-            #This reads the 28th line, assigns its length to ncols & moves to the next line.
+            col_headers = next(reader)
+            
+            ncols = len(col_headers)
         
             for i in range(ncols):
                 col_data.append(([float(x[i]) for x in reader]))
@@ -126,7 +124,7 @@ class Fitting(plugins.AvoPlotPluginSimple):
             self.col_data = col_data
         
         try:        
-            return col_data, spectrum_file
+            return col_data, spectrum_file, col_headers
 
         except Exception,e:
             print e.args
@@ -172,7 +170,7 @@ class FitPickerCtrl(controls.AvoPlotControlPanelBase):
     def fit_gaussian_evt(self, evnt):
         try:
             wx.BeginBusyCursor()
-            FitData('Fit Gaussian', self.series)
+            FitData(self.series)
             #self.peak_height_params = calc_peak_height_pos(self.xdata, fit_y_data)
             
             self.series.update()
@@ -182,6 +180,55 @@ class FitPickerCtrl(controls.AvoPlotControlPanelBase):
               
         finally:
             wx.EndBusyCursor()
+            
+class FitDataCtrl(controls.AvoPlotControlPanelBase):
+    """
+    Control panel where the buttons to draw backgrounds will appear
+    """
+    def __init__(self, series):
+        #call the parent class's __init__ method, passing it the name that we
+        #want to appear on the control panels tab.
+        super(FitDataCtrl, self).__init__("Fit Parameters")
+        
+        #store the data series object that this control panel is associated with, 
+        #so that we can access it later
+        self.series = series
+    
+    def define_data(self):
+        xdata, ydata = self.series.get_data()
+        fit_x_data, fit_y_data, gaussian_params = fit_gaussian(xdata, ydata)
+        return fit_x_data, fit_y_data, gaussian_params
+    
+    def setup(self, parent):
+        super(FitDataCtrl, self).setup(parent)
+        
+        fit_x_data, fit_y_data, gaussian_params = self.define_data()
+        
+        label_text = wx.StaticText(self, -1, "Gaussian Parameters:")
+        amplitude_text = wx.StaticText(self, -1, "Amplitude: " + str(gaussian_params.amplitude))
+        mean_text = wx.StaticText(self, -1, "Mean: " + str(gaussian_params.mean))
+        sigma_text = wx.StaticText(self, -1, "Sigma: " + str(gaussian_params.sigma))
+        y_offset_text = wx.StaticText(self, -1, "Y Offset: " + str(gaussian_params.y_offset))
+        
+        self.Add(label_text, 0, wx.ALIGN_TOP|wx.ALL,border=10)
+        self.Add(amplitude_text, 0, wx.ALIGN_TOP|wx.ALL,border=5)
+        self.Add(mean_text, 0, wx.ALIGN_TOP|wx.ALL,border=5)
+        self.Add(sigma_text, 0, wx.ALIGN_TOP|wx.ALL,border=5)
+        self.Add(y_offset_text, 0, wx.ALIGN_TOP|wx.ALL,border=5)
+        
+        save_button = wx.Button(self, wx.ID_ANY, "Save Mean Params")
+        self.Add(save_button, 0, wx.ALIGN_TOP|wx.ALL,border=10)
+
+        wx.EVT_BUTTON(self, save_button.GetId(), self.save_button_evt)
+        
+        self.SetAutoLayout(True)
+    
+    def save_button_evt(self, evnt):
+        fit_x_data, fit_y_data, gaussian_params = self.define_data()
+        with open('/home/ki247/Params/params.csv', 'a') as csvfile:
+            params_file = csv.writer(csvfile)
+            params_file.writerow([str(self.series.get_parent_element().get_parent_element().get_parent_element().get_name()) + ' ' + str(self.series.get_name())])
+            params_file.writerow([str(gaussian_params.mean)])
         
 GaussianParameters = namedtuple('GaussianParameters',['amplitude','mean','sigma','y_offset'])
 
@@ -240,14 +287,7 @@ def fit_gaussian(xdata, ydata, amplitude_guess=None, mean_guess=None, sigma_gues
  
     fit_y_data = [fitfunc(p1, i) for i in xdata]
      
-    return xdata, fit_y_data, GaussianParameters(*p1)
-
-def calc_peak_height_pos(xdata, ydata):    
-    peak_idx = numpy.argmax(ydata)
-    global_peak_idx = peak_idx + numpy.argmin(numpy.abs(xdata))
-    print "peak index = %d, global index = %d"%(peak_idx, global_peak_idx)
-    return xdata[global_peak_idx], ydata[global_peak_idx]
-        
+    return xdata, fit_y_data, GaussianParameters(*p1)       
 
 
 plugins.register(Fitting())
