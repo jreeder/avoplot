@@ -3,6 +3,9 @@ import matplotlib
 import sys
 import collections
 from wx.lib.agw import floatspin 
+
+from avoplot.gui import dialog
+
 #new data type to represent line styles and their relevant properties
 LineType = collections.namedtuple('LineType',['name','mpl_symbol','has_width'])  
 
@@ -17,17 +20,11 @@ available_lines = [
                    ]
 
 
-class GridPropertiesEditor(wx.Dialog):
+class GridPropertiesEditor(dialog.AvoPlotDialog):
 
     def __init__(self, parent, subplot, mpl_axis):
         
-        wx.Dialog.__init__(self, parent, wx.ID_ANY, "Gridline properties")
-        
-        #set up the icon for the frame
-        if sys.platform == "win32":
-            self.SetIcon(wx.ArtProvider.GetIcon("avoplot", size=(16, 16)))
-        else:
-            self.SetIcon(wx.ArtProvider.GetIcon("avoplot", size=(64, 64)))
+        dialog.AvoPlotDialog.__init__(self, parent, "Gridline properties")
         
         vsizer = wx.BoxSizer(wx.VERTICAL)
         button_sizer = wx.BoxSizer(wx.HORIZONTAL)

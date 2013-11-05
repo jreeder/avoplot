@@ -21,10 +21,11 @@ objects
 """
 
 import wx
-import sys
 import matplotlib.text
 
-class TextPropertiesEditor(wx.Dialog):
+from avoplot.gui import dialog
+
+class TextPropertiesEditor(dialog.AvoPlotDialog):
     """
     Dialog which allows the user to edit the text properties (colour, font etc.)
     of a matplotlib.text.Text object. The Text object to be edited should be 
@@ -36,15 +37,9 @@ class TextPropertiesEditor(wx.Dialog):
             raise TypeError("Expecting matplotlib.text.Text instance"
                             ", got %s" % (type(text_obj)))
         self.main_text_obj = text_obj
-        wx.Dialog.__init__(self, parent, wx.ID_ANY, "Text properties")
+        dialog.AvoPlotDialog.__init__(self, parent, "Text properties")
         vsizer = wx.BoxSizer(wx.VERTICAL)
         button_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        
-        #set up the icon for the frame
-        if sys.platform == "win32":
-            self.SetIcon(wx.ArtProvider.GetIcon("avoplot", size=(16, 16)))
-        else:
-            self.SetIcon(wx.ArtProvider.GetIcon("avoplot", size=(64, 64)))
         
         #add the font properties panel
         self.font_props_panel = FontPropertiesPanel(self, text_obj)
@@ -55,9 +50,11 @@ class TextPropertiesEditor(wx.Dialog):
         self.apply_button = wx.Button(self, wx.ID_ANY, "Apply")
         self.cancel_button = wx.Button(self, wx.ID_ANY, "Cancel")
         button_sizer.Add(self.cancel_button, 0, wx.ALIGN_TOP | wx.ALIGN_RIGHT)
+        button_sizer.AddSpacer(5)
         button_sizer.Add(self.apply_button, 0, wx.ALIGN_TOP | wx.ALIGN_RIGHT)
+        button_sizer.AddSpacer(5)
         button_sizer.Add(self.ok_button, 0, wx.ALIGN_TOP | wx.ALIGN_RIGHT)
-        vsizer.Add(button_sizer, 0, wx.ALIGN_BOTTOM | wx.ALIGN_RIGHT)
+        vsizer.Add(button_sizer, 0, wx.ALIGN_BOTTOM | wx.ALIGN_RIGHT | wx.ALL, border=10)
         
         #register main button event callbacks
         wx.EVT_BUTTON(self, self.cancel_button.GetId(), self.on_close)
