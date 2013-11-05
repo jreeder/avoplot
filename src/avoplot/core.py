@@ -32,7 +32,7 @@ their appearance. Adding and deleting elements works in a similar way.
 
 """
 import avoplot
-from avoplot import controls
+from avoplot import controls, ordered_set
 import re
 import  wx.lib.newevent
 
@@ -67,7 +67,9 @@ class AvoPlotElementBase(object):
         self.__avoplot_id = new_id()
         self.__control_panels = []
         self.__parent_element = None
-        self.__child_elements = set()
+        #child_elements set needs to be ordered otherwise series can be displayed
+        #in  a differemt order to that which they were created in
+        self.__child_elements = ordered_set.OrderedSet([])
         self.__alive = True
         self.set_name(name)
     
