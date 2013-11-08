@@ -25,6 +25,7 @@ import matplotlib.colors
 import os
 import time
 from datetime import datetime
+import copy
 
 
 #new data type to represent line styles and their relevant properties
@@ -100,7 +101,7 @@ class LineStyleEditorPanel(wx.Panel):
         #line style
         line_ctrls_szr.Add(wx.StaticText(self, wx.ID_ANY, "Style:"), 0,
                            wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_RIGHT)
-        self.linestyle_choice = wx.Choice(self, wx.ID_ANY, choices=[l.name for l in available_lines])
+        self.linestyle_choice = wx.Choice(self, wx.ID_ANY, choices=[])
         line_ctrls_szr.Add(self.linestyle_choice, 0,
                            wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_LEFT)
         wx.EVT_CHOICE(self, self.linestyle_choice.GetId(), self.on_linestyle)
@@ -144,6 +145,36 @@ class LineStyleEditorPanel(wx.Panel):
         self.SetSizer(line_ctrls_szr)
         line_ctrls_szr.Fit(self)
         self.SetAutoLayout(True)
+    
+    
+    def get_available_linetypes(self):
+        """
+        Returns a list of LineType objects, which are the line styles currently
+        available to the user through this LineStyleEditorPanel.
+        """
+        return copy.copy(self.__available_line_types)
+    
+    
+    def set_available_linestyles(self, linestyles):
+        """
+        Set the lines styles available to the user through this 
+        LineStyleEditorPanel. The linestyles argument must be a list of LineType
+        objects.
+        """
+        self.__available_lines = copy.copy(linestyles)
+        
+        #build some mappings between line properties and their indices in the list
+        #of available lines
+        self.__line_symbol_to_idx_map = {}
+        self.__line_name_to_idx_map = {}
+        for i,m in enumerate(self.__available_lines):
+            self.__line_symbol_to_idx_map[m.mpl_symbol] = i
+            self.__line_name_to_idx_map[m.name] = i
+        
+        #now put them into the Choice
+        self.linestyle_choice.Clear()
+        for l in self.__available_lines:
+            self.linestyle_choice.Append(l.name)
         
     def on_line_colour_change(self, evnt):
         """
