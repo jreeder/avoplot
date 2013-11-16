@@ -50,6 +50,7 @@ class SO2TimeSubplot(subplots.AvoPlotXYSubplot):
         self.plotting_thread = threading.Thread(target=self._update_plot)
         self.stay_alive = True
         self.__pending_callafter_finish = threading.Event() 
+        self.__update_required = threading.Event() 
         self.__pending_callafter_finish.set()
         self.plotting_thread.start()
         self.update_interval = 1.0
@@ -71,8 +72,13 @@ class SO2TimeSubplot(subplots.AvoPlotXYSubplot):
     
     def delete(self):
         self.stay_alive = False
+        self.__update_required.set()
         self.plotting_thread.join()
         super(SO2TimeSubplot, self).delete()
+    
+    
+    def request_update(self):
+        self.__update_required.set()
     
     
     def _update_plot(self):
@@ -81,6 +87,9 @@ class SO2TimeSubplot(subplots.AvoPlotXYSubplot):
                 self.__pending_callafter_finish.clear()
                 wx.CallAfter(self.__update)
             time.sleep(self.update_interval)
+            
+            self.__update_required.wait()
+            self.__update_required.clear()
         
         #don't bother waiting for pending CallAfter calls to finish - just let
         #them fail (if we get to here then the plot is being deleted anyway)
@@ -121,7 +130,6 @@ class SO2TimeSubplot(subplots.AvoPlotXYSubplot):
         wx.CallAfter(self._set_xaxis_to_time)
     
     def _set_xaxis_to_time(self):
-        print "_set_xaxis_to_time"
         for series in self.get_child_elements():
             if not isinstance(series, SO2TimeSeries):
                 continue
@@ -133,11 +141,9 @@ class SO2TimeSubplot(subplots.AvoPlotXYSubplot):
         ax.xaxis.set_major_locator(loc)
         ax.xaxis.set_major_formatter(matplotlib.dates.AutoDateFormatter(loc))
         
-        print "almost done _set_xaxis_to_time"
         ax.relim()
         ax.autoscale_view()
         self.update()
-        print "done _set_xaxis_to_time"
         
     def set_xaxis_to_index(self):
         wx.CallAfter(self._set_xaxis_to_index)
@@ -283,17 +289,18 @@ class SO2TimeSeries(series.XYDataSeries):
                 self.seq_numbers = seq_nums[:]
                 self.ratios = ratios[:]
                 wx.CallAfter(self.async_set_xy_data)
+                
+                #request that the subplot gets redrawn
+                self.get_subplot().request_update()
 
                     
         #again, don't bother waiting for pending CallAfter calls, just let them fail
 
     def set_xdata_to_times(self):
-        print "setting to times"
         if self.xaxis_format == 'times':
             return
         self.xaxis_format = 'times'
         self.set_xy_data(self.times, self.ratios)
-        print "done setting to times, t[0] = %s"%str(self.get_data()[0][0])
         
     def set_xdata_to_seq_nums(self):
         if self.xaxis_format == 'seq_numbers':
