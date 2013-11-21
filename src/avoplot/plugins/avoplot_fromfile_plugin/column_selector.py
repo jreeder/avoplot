@@ -154,9 +154,9 @@ class ColumnDataPanel(wx.ScrolledWindow):
         
         #set the size of the grid to be big enough that the grid's scrollbars are
         #not enabled
-        #TODO - this will break if you resize some of the cells
         self.grid.SetSize(self.grid.GetBestVirtualSize())
-        
+        #self.grid.DisableDragColSize()
+        #self.grid.DisableDragRowSize()
         
         #create choice boxes for data types
         self.data_type_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -164,14 +164,14 @@ class ColumnDataPanel(wx.ScrolledWindow):
         self.data_type_sizer.Add(text,0,wx.ALIGN_LEFT| wx.ALIGN_CENTER_VERTICAL)
         self.data_type_sizer.AddSpacer(self.grid.GetRowLabelSize()-text.GetSize()[0])
         self.data_type_choices = {}
-        choices_list = []
-        self.dtypes = ["float", "string"]
+        self.choices_list = []
+        self.dtypes = ["number", "text"]
         for col in file_contents.get_columns():
             choice = wx.Choice(self, wx.ID_ANY, choices=self.dtypes)
             
             choice.SetSelection(self.dtypes.index(col.get_data_type()))
             
-            choices_list.append(choice)
+            self.choices_list.append(choice)
             
             self.data_type_choices[choice.GetId()] = (choice, col)
             self.data_type_sizer.Add(choice,0,wx.ALIGN_CENTER_VERTICAL|wx.GROW)
@@ -181,7 +181,7 @@ class ColumnDataPanel(wx.ScrolledWindow):
             
                 
         #match the data type choice box sizes to the grid column sizes
-        for idx, choice in enumerate(choices_list):
+        for idx, choice in enumerate(self.choices_list):
             choice_size = choice.GetSize()[0]
             col_size = self.grid.GetColSize(idx)
             
@@ -233,7 +233,10 @@ class ColumnDataPanel(wx.ScrolledWindow):
             #selected then they are invalid)
             if (len(cols_selected) > 1 or blocks_TL_selected or cells_selected):
                 raise InvalidSelectionError("You cannot select data from more than one column for an axis data series.")
-
+            
+            if self.file_contents.get_columns()[cols_selected[0]].get_data_type() == 'text':
+                raise InvalidSelectionError("You cannot plot text as a data series.")
+            
             selection_str = '%s[:]'%self.file_contents.get_col_name(cols_selected[0])
             return selection_str
         
@@ -251,8 +254,8 @@ class ColumnDataPanel(wx.ScrolledWindow):
         
         col_idx = cols.pop()
         
-        if self.file_contents.get_columns()[col_idx].get_data_type() == 'string':
-            raise InvalidSelectionError("You cannot plot string data")
+        if self.file_contents.get_columns()[col_idx].get_data_type() == 'text':
+            raise InvalidSelectionError("You cannot plot text as a data series.")
         
         
         #create a list of (start_row, end_row) tuples for all the cells and blocks selected
@@ -304,10 +307,10 @@ class ColumnDataPanel(wx.ScrolledWindow):
         Handle column resize events - this requires all the data_type choices
         to be resized to match the columns
         """
-        for idx in range(len(self.data_type_choices)):
-            col_size = self.grid.GetColSize(idx)
-            self.data_type_choices[idx].SetMinSize((col_size,-1))
-        
+        for col_num, choice in enumerate(self.choices_list):
+            col_size = self.grid.GetColSize(col_num)
+            choice.SetMinSize((col_size,-1))
+            
         self.data_type_sizer.Layout()
      
    
@@ -378,22 +381,6 @@ class XYDataSeriesPanel(wx.Panel):
         elif ydata is None:
             axes.plot(xdata,numpy.arange(len(xdata)))
         else:
-             
-             #this stuff is redundant for now since the masked arrays will always have
-             #the same length
-#            #if the data has different lengths then only plot
-#            #the overlapping regions
-#            if len(xdata) != len(ydata):
-#                d = wx.MessageDialog(self, "Your x and y data series have different lengths."
-#                                 "Plot the overlapping region?", "AvoPlot")
-#                if d.ShowModal() == wx.ID_CANCEL:
-#                    return
-#                
-#                if len(xdata) > len(ydata):
-#                    axes.plot(xdata[:len(ydata)], ydata)
-#                else:
-#                    axes.plot(xdata, ydata[:len(xdata)])
-#            else:
                 axes.plot(xdata, ydata)
     
     
@@ -559,6 +546,16 @@ class XYDataSeriesPanel(wx.Panel):
         else:
             self.yseries_box.SetValue(selection_str)
         
+
+class DataSeriesSelectPanelContainer(wx.SashWindow):
+    def __init__(self, parent, main_frame, file_contents):
+        wx.SashWindow.__init__(self, parent, wx.ID_ANY)
+        vsizer = wx.BoxSizer(wx.VERTICAL)
+        vsizer.Add(DataSeriesSelectPanel(self, main_frame, file_contents),1,wx.EXPAND)
+        self.SetSashVisible(wx.SASH_TOP, True)
+        self.SetSizer(vsizer)
+        vsizer.Fit(self)
+        
         
 class DataSeriesSelectPanel(wx.ScrolledWindow):
     def __init__(self, parent, main_frame, file_contents):
@@ -568,11 +565,10 @@ class DataSeriesSelectPanel(wx.ScrolledWindow):
         box = wx.StaticBox(self, wx.ID_ANY, "Data Series")
         self.vsizer = wx.StaticBoxSizer(box, wx.VERTICAL)
         self.main_frame = main_frame
-        #TODO - these would be better implemented as an ordered dict
+
         self.data_series = []
         self.data_series_id_mapping = {} #{id:index in data_series}
         
-
         self.on_add_data_series(None)
         
         self.SetSizer(self.vsizer)
@@ -583,6 +579,7 @@ class DataSeriesSelectPanel(wx.ScrolledWindow):
     def enable_select_mode(self, val, series):
         for s in self.data_series:
             s.enable_select_mode(val, series)
+        
         
     def on_add_data_series(self, evnt):
         series = XYDataSeriesPanel(self, self.file_contents, self.main_frame) #remove button only if it is not the first series
@@ -633,16 +630,26 @@ class TxtFileDataSeriesSelectFrame(wx.Dialog):
         #create top level panel to hold all frame elements
         top_panel = wx.Panel(self, wx.ID_ANY)
         
+        
         #create top level sizer to contain all frame elements
         topsizer = wx.BoxSizer(wx.VERTICAL)
         vsizer = wx.BoxSizer(wx.VERTICAL)
+        topsizer.AddSpacer(5)
         topsizer.Add(vsizer, 1, wx.EXPAND)
         
         #create all the frame elements
-        self.file_contents_panel = FileContentsPanel(top_panel, file_contents)
-        self.data_series_panel = DataSeriesSelectPanel(top_panel, self, file_contents)
-        vsizer.Add(self.file_contents_panel, 5, wx.EXPAND | wx.ALL, border=5)
-        vsizer.Add(self.data_series_panel, 1, wx.EXPAND | wx.ALL, border=5)
+        self.splitter = wx.SplitterWindow(top_panel, -1)
+        
+        self.file_contents_panel = FileContentsPanel(self.splitter, file_contents)
+        self.data_series_panel = DataSeriesSelectPanel(self.splitter, self, file_contents)
+        
+        width,sash_pos = self.data_series_panel.GetSizeTuple()
+        self.splitter.SplitHorizontally(self.file_contents_panel, self.data_series_panel, -2*sash_pos)
+        
+        vsizer.Add(self.splitter,1 , wx.EXPAND|wx.ALL, border=5)
+        self.SetSize((width + 60, -1))
+        #vsizer.Add(self.file_contents_panel, 5, wx.EXPAND | wx.ALL, border=5)
+        #vsizer.Add(self.data_series_panel, 1, wx.EXPAND | wx.ALL, border=5)
             
         #create main buttons
         buttons_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -662,7 +669,9 @@ class TxtFileDataSeriesSelectFrame(wx.Dialog):
         self.Center(wx.BOTH)
         
         self.SendSizeEvent() #force redraw (only needed for windows)
+        self.splitter.SetSashGravity(0.5)
         self.Show()
+
 
     def on_plot(self, evnt):
         data_flag = False
@@ -682,6 +691,7 @@ class TxtFileDataSeriesSelectFrame(wx.Dialog):
         
     
     def on_cancel(self, evnt):
+        wx.SetCursor(wx.NullCursor)
         self.EndModal(wx.ID_CANCEL)
     
     
@@ -689,6 +699,11 @@ class TxtFileDataSeriesSelectFrame(wx.Dialog):
         self.file_contents_panel.enable_select_mode(val, data_series)
         self.data_series_panel.enable_select_mode(val, data_series)
         self.plot_button.Enable(enable=(not val))
+        
+        if val:
+            wx.SetCursor(wx.CROSS_CURSOR)
+        else:
+            wx.SetCursor(wx.NullCursor)
 
 
     def get_series(self):
@@ -700,115 +715,3 @@ class TxtFileDataSeriesSelectFrame(wx.Dialog):
         return series
     
 
-    
-class ColumnSelectorFrame(wx.Frame):
-    def __init__(self, parent, file_contents):
-        
-        wx.Frame.__init__(self, parent, wx.ID_ANY)
-        vsizer = wx.BoxSizer(wx.VERTICAL)
-        #top_panel = wx.Panel(self, wx.ID_ANY)
-        n_cols = len(file_contents.columns)
-        n_rows = file_contents.columns[0].get_number_of_rows()
-        
-        
-        data_select_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        
-        data_select_sizer.Add(wx.StaticText(self, -1, "x data:"), 0, wx.ALIGN_LEFT)
-        self.x_selection_box = wx.TextCtrl(self, -1)
-        data_select_sizer.Add(self.x_selection_box, 0, wx.ALIGN_LEFT)
-        x_selection_button = wx.ToggleButton(self, -1, "Select")
-        wx.EVT_TOGGLEBUTTON(self, x_selection_button.GetId(), self.on_x_select)
-        data_select_sizer.Add(x_selection_button, 0, wx.ALIGN_LEFT)
-        
-        data_select_sizer.Add(wx.StaticText(self, -1, "y data:"), 0, wx.ALIGN_LEFT)
-        self.y_selection_box = wx.TextCtrl(self, -1)
-        data_select_sizer.Add(self.y_selection_box, 0, wx.ALIGN_LEFT)
-        y_selection_button = wx.ToggleButton(self, -1, "Select")
-        wx.EVT_TOGGLEBUTTON(self, y_selection_button.GetId(), self.on_y_select)
-        data_select_sizer.Add(y_selection_button, 0, wx.ALIGN_LEFT)
-  
-        vsizer.Add(data_select_sizer, 0, wx.ALIGN_TOP)
-        
-        #create cells
-        self.grid = wx.grid.Grid(self, wx.ID_ANY)
-        
-        
-        
-        self.grid.CreateGrid(n_rows, n_cols)
-        
-        for c, col in enumerate(file_contents.columns):
-            if col.title and not col.title.isspace():
-                self.grid.SetColLabelValue(c, col.title)
-            
-            for r, data in enumerate(col.raw_data):
-                self.grid.SetCellValue(r, c, data)
-        
-        self.grid.AutoSize()      
-
-        
-        self.plot_button = wx.Button(self, wx.ID_ANY, "Plot")
-        
-        wx.EVT_BUTTON(self, self.plot_button.GetId(), self.on_plot)
-        
-        vsizer.Add(self.grid, 1, wx.EXPAND)
-        vsizer.Add(self.plot_button, 0, wx.ALIGN_CENTER_HORIZONTAL)
-        self.SetSizer(vsizer)
-        vsizer.Fit(self)
-        self.SetAutoLayout(True)
-        
-        self.Show()
-        
-    
-    def on_x_select(self, evnt):
-        if evnt.IsChecked():
-            self.grid.EnableDragGridSize(False)  
-            self.grid.EnableDragColSize(False)
-            self.grid.EnableDragRowSize(False)
-            self.grid.EnableEditing(False)
-            wx.grid.EVT_GRID_RANGE_SELECT(self, self.on_x_range_selected)
-            self.grid.GetGridWindow().SetCursor(wx.StockCursor(wx.CURSOR_CROSS))
-        
-        else:
-            self.grid.EnableDragGridSize(True)  
-            self.grid.EnableDragColSize(True)
-            self.grid.EnableDragRowSize(True)
-            self.grid.EnableEditing(True)
-            wx.grid.EVT_GRID_RANGE_SELECT(self, None)
-            self.grid.GetGridWindow().SetCursor(wx.StockCursor(wx.CURSOR_DEFAULT))
-    
-    
-    def on_y_select(self, evnt):
-        if evnt.IsChecked():
-            self.grid.EnableDragGridSize(False)  
-            self.grid.EnableDragColSize(False)
-            self.grid.EnableDragRowSize(False)
-            self.grid.EnableEditing(False)
-            wx.grid.EVT_GRID_RANGE_SELECT(self, self.on_y_range_selected)
-            self.grid.GetGridWindow().SetCursor(wx.StockCursor(wx.CURSOR_CROSS))
-        
-        else:
-            self.grid.EnableDragGridSize(True)  
-            self.grid.EnableDragColSize(True)
-            self.grid.EnableDragRowSize(True)
-            self.grid.EnableEditing(True)
-            wx.grid.EVT_GRID_RANGE_SELECT(self, None)
-            self.grid.GetGridWindow().SetCursor(wx.StockCursor(wx.CURSOR_DEFAULT))
-        
-                    
-    def on_x_range_selected(self, evnt):
-        if not evnt.Selecting():
-            return 
-        selection = (evnt.GetTopLeftCoords(), evnt.GetBottomRightCoords())
-        self.x_selection_box.SetValue(str(selection))
-        
-        
-    def on_y_range_selected(self, evnt):
-        if not evnt.Selecting():
-            return 
-        selection = (evnt.GetTopLeftCoords(), evnt.GetBottomRightCoords())
-        self.y_selection_box.SetValue(str(selection))        
-        
-        
-    def on_plot(self, evnt):
-        cols = self.grid.GetSelectedCols()
-        print cols

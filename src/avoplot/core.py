@@ -269,8 +269,6 @@ class AvoPlotElementBase(object):
             #fire an element selected event
             evt = AvoPlotElementSelectEvent(element=self)
             wx.PostEvent(wx.GetApp().GetTopWindow(), evt)
-        else:
-            print "Warning! Attempt to select deleted object\'%s\'"%self.get_name()
     
     
     def update(self):

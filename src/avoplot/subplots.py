@@ -37,6 +37,7 @@ class MetaCallMyInit(type):
         return obj
 
 
+
 class AvoPlotSubplotBase(core.AvoPlotElementBase):
     """
     The AvoPlotSubplotBase class is the base class for all subplots - which 
@@ -112,7 +113,6 @@ class AvoPlotSubplotBase(core.AvoPlotElementBase):
         pass
         
         
-        
 
 class AvoPlotXYSubplot(AvoPlotSubplotBase):
     """
@@ -146,7 +146,6 @@ class AvoPlotXYSubplot(AvoPlotSubplotBase):
         super(AvoPlotXYSubplot, self).delete()
         
         
-    
     def get_mpl_axes(self):
         """
         Returns the matplotlib axes object associated with this subplot.
@@ -198,6 +197,7 @@ class AvoPlotXYSubplot(AvoPlotSubplotBase):
             canvas.draw()
         
 
+
 class XYSubplotControls(controls.AvoPlotControlPanelBase):
     """
     Control panel for allowing the user to edit subplot parameters (title,
@@ -219,8 +219,7 @@ class XYSubplotControls(controls.AvoPlotControlPanelBase):
         ax = self.subplot.get_mpl_axes()
         
         #title box
-        title = widgets.TextSetting(self, 'Title:', ax.title, 
-                                     self.on_title)  
+        title = widgets.TextSetting(self, 'Title:', ax.title)  
         self.Add(title, 0, wx.ALIGN_LEFT|wx.EXPAND|wx.ALL, border=10) 
         
         #background colour selection
@@ -234,53 +233,29 @@ class XYSubplotControls(controls.AvoPlotControlPanelBase):
 
         #x-axis controls
         x_axis_ctrls_szr = wx.StaticBoxSizer(wx.StaticBox(self, wx.ID_ANY, 'x-axis'), wx.VERTICAL)
-        xlabel = widgets.TextSetting(self, 'Label:', ax.xaxis.label, 
-                                     self.on_xlabel)        
+        xlabel = widgets.TextSetting(self, 'Label:', ax.xaxis.label)        
         x_axis_ctrls_szr.Add(xlabel, 0, wx.ALIGN_LEFT|wx.EXPAND|wx.ALL, border=10)
         
         x_axis_ctrls_szr.Add(GridLinesCheckBox(self, ax.xaxis, self.subplot), 0 , wx.ALIGN_LEFT| wx.LEFT, border=10)
         
+        xtick_labels_chkbox = TickLabelsCheckBox(self, ax.xaxis)
+        xtick_labels_chkbox.set_checked(True)
+        x_axis_ctrls_szr.Add(xtick_labels_chkbox, 0 , wx.ALIGN_LEFT| wx.LEFT| wx.BOTTOM, border=10)
         self.Add(x_axis_ctrls_szr, 0, wx.EXPAND|wx.ALL, border=5)
-        
         
         
         #y-axis controls
         y_axis_ctrls_szr = wx.StaticBoxSizer(wx.StaticBox(self, wx.ID_ANY, 'y-axis'), wx.VERTICAL)
-        ylabel = widgets.TextSetting(self, 'Label:', ax.yaxis.label, 
-                                     self.on_ylabel)        
+        ylabel = widgets.TextSetting(self, 'Label:', ax.yaxis.label)        
         y_axis_ctrls_szr.Add(ylabel, 0, wx.ALIGN_LEFT|wx.EXPAND|wx.ALL, border=10)
         
         y_axis_ctrls_szr.Add(GridLinesCheckBox(self, ax.yaxis, self.subplot), 0 , wx.ALIGN_LEFT| wx.LEFT, border=10)
         
+        ytick_labels_chkbox = TickLabelsCheckBox(self, ax.yaxis)
+        ytick_labels_chkbox.set_checked(True)
+        y_axis_ctrls_szr.Add(ytick_labels_chkbox, 0 , wx.ALIGN_LEFT| wx.LEFT | wx.BOTTOM, border=10)
+        
         self.Add(y_axis_ctrls_szr, 0, wx.EXPAND|wx.ALL, border=5)        
-        
- 
-    def on_title(self, evnt):
-        """
-        Event handler for the subplot title text box.
-        """
-        ax = self.subplot.get_mpl_axes()
-        ax.set_title(evnt.GetString())
-
-        self.subplot.update()
-        
-        
-    def on_xlabel(self, evnt):
-        """
-        Event handler for the x-axis title text box.
-        """
-        ax = self.subplot.get_mpl_axes()
-        ax.set_xlabel(evnt.GetString())
-        self.subplot.update()
-    
-    
-    def on_ylabel(self, evnt):
-        """
-        Event handler for the y-axis title text box.
-        """
-        ax = self.subplot.get_mpl_axes()
-        ax.set_ylabel(evnt.GetString())
-        self.subplot.update()
     
     
     def on_bkgd_colour(self, evnt):
@@ -292,51 +267,47 @@ class XYSubplotControls(controls.AvoPlotControlPanelBase):
         self.subplot.update()
             
     
-class GridLinesCheckBox(wx.BoxSizer):
+    
+class GridLinesCheckBox(avoplot.gui.widgets.EditableCheckBox):
     
     def __init__(self, parent, mpl_axis, subplot):
         
+        avoplot.gui.widgets.EditableCheckBox.__init__(self, parent, "Gridlines")
         self.mpl_axis = mpl_axis
         self.subplot = subplot
-        self.parent = parent
-        
-        wx.BoxSizer.__init__(self, wx.HORIZONTAL)
-        
-        grid = wx.CheckBox(parent, -1, "Gridlines ")
-        self.edit_grid_link = wx.HyperlinkCtrl(parent, wx.ID_ANY, "edit", "",style=wx.HL_ALIGN_CENTRE)
-        self.edit_grid_link_parentheses = [wx.StaticText(parent, wx.ID_ANY, "("),
-                                           wx.StaticText(parent, wx.ID_ANY, ")")]
-        
-        f = self.edit_grid_link.GetFont()
-        f.SetUnderlined(False)
-        self.edit_grid_link.SetFont(f)
-        self.edit_grid_link.SetVisitedColour(self.edit_grid_link.GetNormalColour())
-        
-        #gridlines editing
-        self.edit_grid_link.Show(False)
-        self.edit_grid_link_parentheses[0].Show(False)
-        self.edit_grid_link_parentheses[1].Show(False)
-        wx.EVT_HYPERLINK(parent, self.edit_grid_link.GetId(), self.on_edit_gridlines)
-        
-        self.Add(grid,0,wx.ALIGN_LEFT|wx.ALIGN_CENTRE_VERTICAL)
-        self.Add(self.edit_grid_link_parentheses[0],0,wx.ALIGN_LEFT|wx.ALIGN_CENTRE_VERTICAL|wx.RESERVE_SPACE_EVEN_IF_HIDDEN)
-        self.Add(self.edit_grid_link,0,wx.ALIGN_LEFT|wx.ALIGN_CENTRE_VERTICAL|wx.RESERVE_SPACE_EVEN_IF_HIDDEN)
-        self.Add(self.edit_grid_link_parentheses[1],0,wx.ALIGN_LEFT|wx.ALIGN_CENTRE_VERTICAL|wx.RESERVE_SPACE_EVEN_IF_HIDDEN)
-        #TODO - if the axes already has a grid then this will ignore that
-
-        wx.EVT_CHECKBOX(parent, grid.GetId(), self.on_grid)
     
     
-    def on_grid(self, evnt):
+    def on_checkbox(self, evnt):
         """
         Event handler for the gridlines checkbox.
         """
-        
         self.mpl_axis.grid(b=evnt.IsChecked())
         self.mpl_axis.figure.canvas.draw()
-        self.edit_grid_link.Show(evnt.IsChecked())
-        self.edit_grid_link_parentheses[0].Show(evnt.IsChecked())
-        self.edit_grid_link_parentheses[1].Show(evnt.IsChecked())    
+  
             
-    def on_edit_gridlines(self, evnt):
-        avoplot.gui.gridlines.GridPropertiesEditor(self.parent, self.subplot, self.mpl_axis)        
+    def on_edit_link(self, evnt):
+        avoplot.gui.gridlines.GridPropertiesEditor(self.parent, self.subplot, 
+                                                   self.mpl_axis)  
+  
+  
+        
+class TickLabelsCheckBox(avoplot.gui.widgets.EditableCheckBox):
+    
+    def __init__(self, parent, mpl_axis):
+        
+        avoplot.gui.widgets.EditableCheckBox.__init__(self, parent, 
+                                                      "Tick labels")
+        self.mpl_axis = mpl_axis
+    
+    
+    def on_checkbox(self, evnt):
+        for label in self.mpl_axis.get_ticklabels():
+            label.set_visible(evnt.IsChecked())
+        self.mpl_axis.figure.canvas.draw()
+    
+    
+    def on_edit_link(self, evnt):
+        avoplot.gui.text.TextPropertiesEditor(self.parent, 
+                                              self.mpl_axis.get_ticklabels())
+        
+        

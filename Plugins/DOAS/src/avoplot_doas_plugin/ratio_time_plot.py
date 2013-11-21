@@ -34,6 +34,7 @@ from avoplot import plugins
 from avoplot import subplots
 from avoplot import series
 from avoplot import controls
+from avoplot import figure
 import avoplot.gui
 from spectrometers import SpectrometerManager
 
@@ -52,28 +53,30 @@ class SO2TimeSubplot(subplots.AvoPlotXYSubplot):
         self.__pending_callafter_finish = threading.Event() 
         self.__update_required = threading.Event() 
         self.__pending_callafter_finish.set()
-        self.plotting_thread.start()
-        self.update_interval = 1.0
         
-        fig = self.get_parent_element()
+        self.update_interval = 1.0
         
         self.set_xaxis_to_time() #initialise the xaxis to be labelled with times
         
         self.add_control_panel(SO2TimeSubplotControlPanel(self))
         
-        #TODO - this doesn't work because it gets called before the figure is finalised
-        #disable the pan/zoom tools if they are selected so that the plot
-        #autoscales to begin with
-#        if fig.is_zoomed:
-#            fig.zoom()
-#        if fig.is_panned():
-#            fig.pan()
 
+    def start_plotting(self):
+        #start subplot update thread
+        self.plotting_thread.start() 
+        
+        #start the plotting threads for each series within the subplot
+        for el in self.get_child_elements():
+            if isinstance(el, SO2TimeSeries):
+                el.start_plotting()
+        
     
     def delete(self):
         self.stay_alive = False
-        self.__update_required.set()
-        self.plotting_thread.join()
+        self.request_update() #unblock the update thread
+        
+        if self.plotting_thread.is_alive():
+            self.plotting_thread.join()
         super(SO2TimeSubplot, self).delete()
     
     
@@ -108,6 +111,7 @@ class SO2TimeSubplot(subplots.AvoPlotXYSubplot):
         finally:    
             self.__pending_callafter_finish.set()
     
+    
     def set_xaxis_to_spec_number(self):
         wx.CallAfter(self._set_xaxis_to_spec_number)
         
@@ -129,6 +133,7 @@ class SO2TimeSubplot(subplots.AvoPlotXYSubplot):
     def set_xaxis_to_time(self):
         wx.CallAfter(self._set_xaxis_to_time)
     
+    
     def _set_xaxis_to_time(self):
         for series in self.get_child_elements():
             if not isinstance(series, SO2TimeSeries):
@@ -145,8 +150,10 @@ class SO2TimeSubplot(subplots.AvoPlotXYSubplot):
         ax.autoscale_view()
         self.update()
         
+        
     def set_xaxis_to_index(self):
         wx.CallAfter(self._set_xaxis_to_index)
+        
         
     def _set_xaxis_to_index(self):    
         for series in self.get_child_elements():
@@ -209,6 +216,11 @@ class SO2TimeSeries(series.XYDataSeries):
         super(SO2TimeSeries,self).__init__(os.path.basename(dir_name),xdata=[],ydata=[])
         
         self.loader_thread = threading.Thread(target=self._load_spectra)
+        
+        
+        
+    def start_plotting(self):
+        
         self.loader_thread.start()
     
     
@@ -234,7 +246,9 @@ class SO2TimeSeries(series.XYDataSeries):
         if not self._found_dark_event.is_set():
                 self._found_dark_event.set()
 
-        self.loader_thread.join()
+        if self.loader_thread.is_alive():
+            self.loader_thread.join()
+            
         super(SO2TimeSeries,self).delete()
     
     
@@ -668,4 +682,29 @@ class RatioTimePlugin(plugins.AvoPlotPluginSimple):
         dialog = DarkSelectDialog(data_series, parent)
         dialog.ShowModal()
         
-           
+    
+    def create_new(self, evnt):
+        """
+        Override the base class method in order to call startup on the subplot.
+        """       
+                #create the new figure object
+        fig = figure.AvoPlotFigure(self.get_parent(), "New Figure")
+                
+        #figure out what type of subplot we need, based on what data
+        #types the plugin supports
+        data_type = self.get_supported_series_type()
+        subplot_type = data_type.get_supported_subplot_type()
+        
+        #create the subplot instance
+        subplot = subplot_type(fig, "New Subplot")
+        
+        #now plot the data into the subplot
+        if not self.plot_into_subplot(subplot):
+            subplot.set_parent_element(None) #to prevent fig.update being called
+            subplot.delete() #need to explicitly call the subplot's delete method
+            return
+        
+        #add the figure as a tab in the main window
+        self.show_figure(fig)
+        subplot.start_plotting()
+        

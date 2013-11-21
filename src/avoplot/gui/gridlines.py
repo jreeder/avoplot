@@ -34,7 +34,7 @@ class GridPropertiesEditor(dialog.AvoPlotDialog):
         vsizer = wx.BoxSizer(wx.VERTICAL)
         button_sizer = wx.BoxSizer(wx.HORIZONTAL)     
         
-        self.major_grid_panel = linestyle_editor.LineStyleEditorPanel(self, mpl_axis.get_gridlines(), subplot.update)
+        self.major_grid_panel = linestyle_editor.LineStyleEditorPanel(self, mpl_axis.get_gridlines(), subplot.update, linestyles=linestyle_editor.all_available_lines[1:])
         line_ctrls_static_szr.Add(self.major_grid_panel, 0, wx.ALIGN_TOP | wx.ALIGN_RIGHT)
         
         vsizer.Add(line_ctrls_static_szr,0,wx.EXPAND|wx.ALL, border=5)

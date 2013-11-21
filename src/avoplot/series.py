@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*- 
 #Copyright (C) Nial Peters 2013
 #
 #This file is part of AvoPlot.
@@ -16,22 +15,21 @@
 #You should have received a copy of the GNU General Public License
 #along with AvoPlot.  If not, see <http://www.gnu.org/licenses/>.
 import wx
-import warnings
-from wx.lib.agw import floatspin 
-import threading
-import numpy
-import collections
-import matplotlib.colors
 import os
-import time
+import numpy
 from datetime import datetime
+from matplotlib.widgets import SpanSelector
 
-from avoplot.subplots import AvoPlotSubplotBase, AvoPlotXYSubplot
+import math
+import scipy.optimize
+import collections
+
+from avoplot.subplots import AvoPlotXYSubplot
 from avoplot import controls
 from avoplot import core
 from avoplot import subplots
 from avoplot import figure
-from avoplot.gui import widgets
+from avoplot.gui import linestyle_editor
 from avoplot.persist import PersistentStorage
 
 
@@ -115,9 +113,6 @@ class DataSeriesBase(core.AvoPlotElementBase):
         and setup the controls for the series (the parent of the series is not
         known until it gets added to the subplot)
         """
-        #assert isinstance(subplot, AvoPlotSubplotBase), ('arg passed as '
-        #        'subplot is not an AvoPlotSubplotBase instance')
-        
         assert not self.__plotted, ('plot() should only be called once')
         
         self.__plotted = True
@@ -185,7 +180,8 @@ class XYDataSeries(DataSeriesBase):
         super(XYDataSeries, self).__init__(name)
         self.set_xy_data(xdata, ydata)
         self.add_control_panel(XYSeriesControls(self))
-        
+        #self.add_control_panel(XYSeriesFittingControls(self))
+          
           
     @staticmethod    
     def get_supported_subplot_type():
@@ -202,14 +198,14 @@ class XYDataSeries(DataSeriesBase):
         the update() method to draw the changes to the screen.
         """
         if xdata is None and ydata is None:
-            xdata = []
-            ydata = []
+            xdata = numpy.array([])
+            ydata = numpy.array([])
             
         elif xdata is None:
-            xdata = range(len(ydata))
+            xdata = numpy.arange(len(ydata))
             
         elif ydata is None:
-            ydata = range(len(xdata))
+            ydata = numpy.arange(len(xdata))
             
         else:
             assert len(xdata) == len(ydata)
@@ -237,7 +233,7 @@ class XYDataSeries(DataSeriesBase):
         Returns a tuple (xdata, ydata) of the data held by the series, with
         any pre-processing operations applied to it.
         """
-        return self.preprocess(numpy.array(self.__xdata), numpy.array(self.__ydata))
+        return self.preprocess(self.__xdata.copy(), self.__ydata.copy())
     
     
     def preprocess(self, xdata, ydata):
@@ -291,65 +287,6 @@ class XYDataSeries(DataSeriesBase):
         export_dialog.Destroy()            
 
 
-#new data type to represent line styles and their relevant properties
-LineType = collections.namedtuple('LineType',['name','mpl_symbol','has_width'])  
-
-#create a list of all the line types and their properties - the order of
-#this list determines the order that they appear in the drop down menu
-available_lines = [
-                   LineType('None','None', False),
-                   LineType('____','-', True),
-                   LineType('------','--',True),
-                   LineType('.-.-.-','-.', True),
-                   LineType('.......',':',True)
-                   ]
-
-#build some mappings between line properties and their indices in the list
-#of available lines
-line_symbol_to_idx_map = {}
-line_name_to_idx_map = {}
-for i,m in enumerate(available_lines):
-    line_symbol_to_idx_map[m.mpl_symbol] = i
-    line_name_to_idx_map[m.name] = i
-
-
-#new data type to represent markers and their relevant properties
-MarkerType = collections.namedtuple('MarkerType',['name','mpl_symbol','has_size', 
-                                                  'has_fill', 'has_edge'])        
-
-#create a list of all the marker types and their properties - the order of
-#this list determines the order that they appear in the drop down menu
-available_markers = [
-                     MarkerType('None','None', False, False, False),
-                     MarkerType(u'●', '.',True, True, True),
-                     MarkerType('+','+', True, False, True),
-                     MarkerType(u'◯','o', True, True, True),
-                     MarkerType('X','x', True, False, True),
-                     MarkerType(u'△','^', True, True, True),
-                     MarkerType(u'▽','v', True, True, True),
-                     MarkerType(u'◁','<', True, True, True),
-                     MarkerType(u'▷','>', True, True, True),
-                     MarkerType(u'◻','s', True, True, True),
-                     MarkerType(u'◇','D', True, True, True),
-                     MarkerType(u'⋄','d', True, True, True),
-                     MarkerType(u'⬠','p', True, True, True),
-                     MarkerType(u'⬡','h', True, True, True),
-                     MarkerType(u'☆','*', True, True, True),
-                     MarkerType('_','_', True, False, True),
-                     MarkerType('|','|', True, False, True),
-                     MarkerType('.',',', False, True, False)
-                     ]
-
-#build some mappings between marker properties and their indices in the list
-#of available markers
-marker_symbol_to_idx_map = {}
-marker_name_to_idx_map = {}
-for i,m in enumerate(available_markers):
-    marker_symbol_to_idx_map[m.mpl_symbol] = i
-    marker_name_to_idx_map[m.name] = i
-
-
-
 
 class XYSeriesControls(controls.AvoPlotControlPanelBase):
     """
@@ -376,253 +313,185 @@ class XYSeriesControls(controls.AvoPlotControlPanelBase):
         
         #add line controls
         line_ctrls_static_szr = wx.StaticBoxSizer(wx.StaticBox(self, wx.ID_ANY, 'Line'), wx.VERTICAL)
-        
-        line_ctrls_szr = wx.FlexGridSizer(3, 2, vgap=5, hgap=2)
-        
-        
-        #line style
-        line_ctrls_szr.Add(wx.StaticText(self, wx.ID_ANY, "Style:"), 0,
-                           wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_RIGHT)
-        self.linestyle_choice = wx.Choice(self, wx.ID_ANY, choices=[l.name for l in available_lines])
-        line_ctrls_szr.Add(self.linestyle_choice, 0,
-                           wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_LEFT)
-        wx.EVT_CHOICE(self, self.linestyle_choice.GetId(), self.on_linestyle)
-        
-        #line thickness
-        self.line_weight_ctrl_txt = wx.StaticText(self, wx.ID_ANY, "Thickness:")
-        self.line_weight_ctrl = floatspin.FloatSpin(self, wx.ID_ANY, min_val=0.1, max_val=50.0,
-                                     value=mpl_lines[0].get_linewidth(), increment=0.1, digits=2)
-        line_ctrls_szr.Add(self.line_weight_ctrl_txt, 0,
-                           wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_RIGHT)
-        line_ctrls_szr.Add(self.line_weight_ctrl, 0,
-                           wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_LEFT)
-        floatspin.EVT_FLOATSPIN(self, self.line_weight_ctrl.GetId(), self.on_linewidth)
-        
-        #line colour
-        line_col = matplotlib.colors.colorConverter.to_rgb(mpl_lines[0].get_color())
-        line_col = (255 * line_col[0], 255 * line_col[1], 255 * line_col[2])
-        self.line_colour_picker_txt = wx.StaticText(self, wx.ID_ANY, "Colour:")
-        self.line_colour_picker = wx.ColourPickerCtrl(self, -1, line_col)
-        line_ctrls_szr.Add(self.line_colour_picker_txt, 0,
-                           wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_RIGHT)
-        line_ctrls_szr.Add(self.line_colour_picker, 0 ,
-                          wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_LEFT)
-        wx.EVT_COLOURPICKER_CHANGED(self, self.line_colour_picker.GetId(), self.on_line_colour_change)
-        
-        
+        linestyle_ctrl_panel = linestyle_editor.LineStyleEditorPanel(self, mpl_lines, self.series.update)
+        line_ctrls_static_szr.Add(linestyle_ctrl_panel, 0, wx.ALIGN_TOP | wx.ALIGN_RIGHT)
+       
         #add the marker controls
         marker_ctrls_static_szr = wx.StaticBoxSizer(wx.StaticBox(self, wx.ID_ANY, 'Markers'), wx.VERTICAL)
+        marker_ctrls_panel =  linestyle_editor.MarkerStyleEditorPanel(self, mpl_lines, self.series.update)      
+        marker_ctrls_static_szr.Add(marker_ctrls_panel, 0, wx.ALIGN_TOP | wx.ALIGN_RIGHT)
         
-        marker_ctrls_szr = wx.FlexGridSizer(5, 2, vgap=5, hgap=2)
-        
-        #marker style
-        self.marker_style_choice = wx.Choice(self, wx.ID_ANY, 
-                                             choices=[m.name for m in available_markers])        
-        
-        marker_ctrls_szr.Add(wx.StaticText(self, wx.ID_ANY, "Style:"), 0,
-                             wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_RIGHT)
-        marker_ctrls_szr.Add(self.marker_style_choice, 0,
-                             wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_LEFT)
-        wx.EVT_CHOICE(self, self.marker_style_choice.GetId(), self.on_marker)
-        
-        #marker size
-        self.marker_size_ctrl_txt = wx.StaticText(self, wx.ID_ANY, "Size:")
-        self.marker_size_ctrl = floatspin.FloatSpin(self, wx.ID_ANY, min_val=0.1, max_val=50.0,
-                                     value=mpl_lines[0].get_markersize(), increment=0.1, digits=2)
-        marker_ctrls_szr.Add(self.marker_size_ctrl_txt, 0,
-                           wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_RIGHT)
-        marker_ctrls_szr.Add(self.marker_size_ctrl, 0,
-                           wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_LEFT)
-        floatspin.EVT_FLOATSPIN(self, self.marker_size_ctrl.GetId(), self.on_markersize)
-        
-        #marker colour
-        prev_col = matplotlib.colors.colorConverter.to_rgb(mpl_lines[0].get_markerfacecolor())
-        prev_col = (255 * prev_col[0], 255 * prev_col[1], 255 * prev_col[2])
-        self.marker_fillcolour_picker_txt = wx.StaticText(self, wx.ID_ANY, "Fill:")
-        self.marker_fillcolour_picker = wx.ColourPickerCtrl(self, -1, prev_col)
-        marker_ctrls_szr.Add(self.marker_fillcolour_picker_txt , 0,
-                           wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_RIGHT)
-        marker_ctrls_szr.Add(self.marker_fillcolour_picker, 0 ,
-                          wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_LEFT)
-        wx.EVT_COLOURPICKER_CHANGED(self, self.marker_fillcolour_picker.GetId(), self.on_marker_fillcolour)
+        #add the controls to the control panel's internal sizer
+        self.Add(line_ctrls_static_szr,0,wx.EXPAND|wx.ALL, border=5)
+        self.Add(marker_ctrls_static_szr,0,wx.EXPAND|wx.ALL, border=5)    
 
-        #marker edge colour
-        prev_col = matplotlib.colors.colorConverter.to_rgb(mpl_lines[0].get_markeredgecolor())
-        prev_col = (255 * prev_col[0], 255 * prev_col[1], 255 * prev_col[2])
-        self.marker_edgecolour_picker_txt = wx.StaticText(self, wx.ID_ANY, "Edge:")
-        self.marker_edgecolour_picker = wx.ColourPickerCtrl(self, -1, prev_col)
-        marker_ctrls_szr.Add(self.marker_edgecolour_picker_txt, 0,
-                           wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_RIGHT)
-        marker_ctrls_szr.Add(self.marker_edgecolour_picker, 0 ,
-                          wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_LEFT)
-        wx.EVT_COLOURPICKER_CHANGED(self, self.marker_edgecolour_picker.GetId(), self.on_marker_edgecolour)        
-        
-        #marker edge width
-        self.marker_edgewidth_ctrl_txt = wx.StaticText(self, wx.ID_ANY, "Edge width:")
-        self.marker_edgewidth_ctrl = floatspin.FloatSpin(self, wx.ID_ANY, min_val=0.1, max_val=50.0,
-                                     value=mpl_lines[0].get_markeredgewidth(), increment=0.1, digits=2)
-        marker_ctrls_szr.Add(self.marker_edgewidth_ctrl_txt, 0,
-                           wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_RIGHT)
-        marker_ctrls_szr.Add(self.marker_edgewidth_ctrl, 0,
-                           wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_LEFT)
-        floatspin.EVT_FLOATSPIN(self, self.marker_edgewidth_ctrl.GetId(), self.on_marker_edgewidth)
 
+
+
+################################################################
+#
+#  Everything below here is experimental and under development!
+#
+#
+################################################################
+
+class XYSeriesFittingControls(controls.AvoPlotControlPanelBase):
+    def __init__(self, series):
+        super(XYSeriesFittingControls, self).__init__("Fitting")
+        self.series = series
+    
+    def setup(self, parent):
+        """
+        Creates all the controls in the panel
+        """
+        super(XYSeriesFittingControls, self).setup(parent)
         
-        line_ctrls_static_szr.Add(line_ctrls_szr, 0, wx.ALIGN_RIGHT)
+        select_button = wx.Button(self, -1, "Select")
+        self.Add(select_button)
+        wx.EVT_BUTTON(self, select_button.GetId(), self.on_select)
         
-        marker_ctrls_static_szr.Add(marker_ctrls_szr, 0, wx.ALIGN_RIGHT)
-        self.Add(line_ctrls_static_szr, 0, wx.ALIGN_LEFT | wx.EXPAND | wx.ALL, border=5)
-        self.Add(marker_ctrls_static_szr, 0, wx.ALIGN_LEFT | wx.EXPAND | wx.ALL, border=5)
+        self.min_txt = wx.StaticText(self, -1, "Min: ")
+        self.max_txt = wx.StaticText(self, -1, "Max: ")
         
-        #set the line selection to that of the data
-        #it is possible that the line will have been set to something that
-        #avoplot does not yet support - if so, default to None and issue warning
-        if line_symbol_to_idx_map.has_key(mpl_lines[0].get_linestyle()):
-            #everything is fine
-            current_line_idx = line_symbol_to_idx_map[mpl_lines[0].get_linestyle()]
+        
+        
+        self.Add(self.min_txt)
+        self.Add(self.max_txt)
+        
+        fit_button = wx.Button(self, -1, "Fit")
+        self.Add(fit_button)
+        wx.EVT_BUTTON(self, fit_button.GetId(), self.on_fit)
+        
+        self.span = None
+    
+    def on_select(self, evnt):
+        ax = self.series.get_subplot().get_mpl_axes()
+        if self.span is None:
+            self.span = SpanSelector(ax, self.onselect, 'horizontal', useblit=True)
         else:
-            current_line_idx = 0
-            warnings.warn("Data series has an unsupported line style. "
-                          "Defaulting to a line style of \'None\' instead.")
+            self.span.visible = True
+            
+    def on_fit(self, evnt):
+        x,y = self.series.get_data()
+        min_idx = numpy.where(x >= self.min_selection)[0][0]
+        max_idx = numpy.where(x <= self.max_selection)[0][-1]
         
-        #update the GUI appropriately for the current line selection
-        self.linestyle_choice.SetSelection(current_line_idx)
-        self.update_line_controls(available_lines[current_line_idx])
+        fit_x_data, fit_y_data, gaussian_params = fit_gaussian(x[min_idx:max_idx], y[min_idx:max_idx])
         
+        FitData(self.series, fit_x_data, fit_y_data, gaussian_params)
         
-        #set the marker selection to that of the data
-        #it is possible that the marker will have been set to something that
-        #avoplot does not yet support - if so, default to None and issue warning
-        if marker_symbol_to_idx_map.has_key(mpl_lines[0].get_marker()):
-            #everything is fine
-            current_marker_idx = marker_symbol_to_idx_map[mpl_lines[0].get_marker()]
+    def onselect(self, vmin, vmax):
+        self.min_selection = vmin
+        self.max_selection = vmax
+        self.min_txt.SetLabel("Min: %s"%(self.min_selection))
+        self.max_txt.SetLabel("Max: %s"%(self.max_selection))
+        self.span.visible = False
+
+class FitData(XYDataSeries):
+    def __init__(self, s, xdata, ydata, gaussian_params):
+        super(FitData, self).__init__(s.get_name() + ' Fit', xdata, ydata)
+        self.gaussian_params = gaussian_params
+        self.add_control_panel(FitDataCtrl(self))
+        
+        s.add_subseries(self)
+    
+    @staticmethod
+    def get_supported_subplot_type():
+        return AvoPlotXYSubplot
+    
+class FitDataCtrl(controls.AvoPlotControlPanelBase):
+    """
+    Control panel where the buttons to draw backgrounds will appear
+    """
+    def __init__(self, series):
+        #call the parent class's __init__ method, passing it the name that we
+        #want to appear on the control panels tab.
+        super(FitDataCtrl, self).__init__("Fit Parameters")
+        
+        #store the data series object that this control panel is associated with, 
+        #so that we can access it later
+        self.series = series
+        
+        self.gaussian_params = series.gaussian_params
+    
+    
+    def setup(self, parent):
+        super(FitDataCtrl, self).setup(parent)
+        
+        gaussian_params = self.gaussian_params
+        
+        label_text = wx.StaticText(self, -1, "Gaussian Parameters:")
+        amplitude_text = wx.StaticText(self, -1, "Amplitude: " + str(gaussian_params.amplitude))
+        mean_text = wx.StaticText(self, -1, "Mean: " + str(gaussian_params.mean))
+        sigma_text = wx.StaticText(self, -1, "Sigma: " + str(gaussian_params.sigma))
+        fwhm_text = wx.StaticText(self, -1, "FWHM: " + str(2.0 * math.sqrt(2.0 * math.log(2.0)) *gaussian_params.sigma))
+        y_offset_text = wx.StaticText(self, -1, "Y Offset: " + str(gaussian_params.y_offset))
+        
+        self.Add(label_text, 0, wx.ALIGN_TOP|wx.ALL,border=10)
+        self.Add(amplitude_text, 0, wx.ALIGN_TOP|wx.ALL,border=5)
+        self.Add(mean_text, 0, wx.ALIGN_TOP|wx.ALL,border=5)
+        self.Add(sigma_text, 0, wx.ALIGN_TOP|wx.ALL,border=5)
+        self.Add(fwhm_text, 0, wx.ALIGN_TOP|wx.ALL,border=5)
+        self.Add(y_offset_text, 0, wx.ALIGN_TOP|wx.ALL,border=5)
+
+GaussianParameters = collections.namedtuple('GaussianParameters',['amplitude','mean','sigma','y_offset'])
+
+        
+def fit_gaussian(xdata, ydata, amplitude_guess=None, mean_guess=None, sigma_guess=None, y_offset_guess=None, plot_fit=True):
+    """
+    Fits a gaussian to some data using a least squares fit method. Returns a named tuple
+    of best fit parameters (amplitude, mean, sigma, y_offset).
+     
+    Initial guess values for the fit parameters can be specified as kwargs. Otherwise they
+    are estimated from the data.
+     
+    If plot_fit=True then the fit curve is plotted over the top of the raw data and displayed.
+    """
+
+    if len(xdata) != len(ydata):
+        raise ValueError, "Lengths of xdata and ydata must match"
+     
+    if len(xdata) < 4:
+        raise ValueError, "xdata and ydata need to contain at least 4 elements each"
+     
+    # guess some fit parameters - unless they were specified as kwargs
+    if amplitude_guess is None:
+        amplitude_guess = max(ydata)
+     
+    if mean_guess is None:
+        weights = ydata - numpy.average(ydata)
+        weights[numpy.where(weights <0)]=0 
+        mean_guess = numpy.average(xdata,weights=weights)
+                    
+    #use the y value furthest from the maximum as a guess of y offset 
+    if y_offset_guess is None:
+        data_midpoint = (xdata[-1] + xdata[0])/2.0
+        if mean_guess > data_midpoint:
+            yoffset_guess = ydata[0]        
         else:
-            current_marker_idx = 0
-            warnings.warn("Data series has an unsupported marker style. "
-                          "Defaulting to a marker style of \'None\' instead.")
-        
-        #update the GUI appropriately for the current marker selection
-        self.marker_style_choice.SetSelection(current_marker_idx)
-        self.update_marker_controls(available_markers[current_marker_idx])
-        
-
+            yoffset_guess = ydata[-1]
+ 
+    #find width at half height as estimate of sigma        
+    if sigma_guess is None:      
+        variance = numpy.dot(numpy.abs(ydata), (xdata-mean_guess)**2)/numpy.abs(ydata).sum()  # Fast and numerically precise    
+        sigma_guess = math.sqrt(variance)
+     
+     
+    #put guess params into an array ready for fitting
+    p0 = numpy.array([amplitude_guess, mean_guess, sigma_guess, yoffset_guess])
+ 
+    #define the gaussian function and associated error function
+    fitfunc = lambda p, x: p[0]*numpy.exp(-(x-p[1])**2/(2.0*p[2]**2)) + p[3]
+    errfunc = lambda p, x, y: fitfunc(p,x)-y
     
+    # do the fitting
+    p1, success = scipy.optimize.leastsq(errfunc, p0, args=(xdata,ydata))
+ 
+    if success not in (1,2,3,4):
+        raise RuntimeError, "Could not fit Gaussian to data."
     
-    def on_marker_fillcolour(self, evnt):
-        """
-        Event handler for marker fill colour change events
-        """
-        l, = self.series.get_mpl_lines()
-        l.set_markerfacecolor(evnt.GetColour().GetAsString(wx.C2S_HTML_SYNTAX))
-        self.series.update()
-    
-    
-    def on_marker_edgecolour(self, evnt):
-        """
-        Event handler for marker fill colour change events
-        """
-        l, = self.series.get_mpl_lines()
-        l.set_markeredgecolor(evnt.GetColour().GetAsString(wx.C2S_HTML_SYNTAX))
-        self.series.update()
+    xdata = numpy.linspace(xdata[0], xdata[-1], 2000)
+    fit_y_data = [fitfunc(p1, i) for i in xdata]
+     
+    return xdata, fit_y_data, GaussianParameters(*p1)   
         
-        
-    def on_marker_edgewidth(self, evnt):
-        """
-        Event handler for line thickness change events.
-        """
-        l, = self.series.get_mpl_lines()
-        l.set_markeredgewidth(self.marker_edgewidth_ctrl.GetValue())
-        self.series.update()
-            
-            
-    def on_marker(self, evnt):
-        """
-        Event handler for marker style change events.
-        """
-        marker_idx = marker_name_to_idx_map[evnt.GetString()]
-        new_marker = available_markers[marker_idx]
-        self.update_marker_controls(new_marker)
-        l, = self.series.get_mpl_lines()
-        l.set_marker(new_marker.mpl_symbol)
-        self.series.update()
-    
-    
-    def on_markersize(self, evnt):
-        """
-        Event handler for marker size change events
-        """
-        l, = self.series.get_mpl_lines()
-        l.set_markersize(self.marker_size_ctrl.GetValue())
-        self.series.update()
-    
-    
-    def on_line_colour_change(self, evnt):
-        """
-        Event handler for line colour change events.
-        """
-        l, = self.series.get_mpl_lines()
-        l.set_color(evnt.GetColour().GetAsString(wx.C2S_HTML_SYNTAX))
-        self.series.update()
-        
-    
-    def on_linestyle(self, evnt):
-        """
-        Event handler for line style change events.
-        """
-        line_idx = line_name_to_idx_map[evnt.GetString()]
-        new_line = available_lines[line_idx]
-        self.update_line_controls(new_line)
-        l, = self.series.get_mpl_lines()
-        l.set_linestyle(new_line.mpl_symbol)
-        self.series.update()
-        
-        
-    
-    def on_linewidth(self, evnt):
-        """
-        Event handler for line thickness change events.
-        """
-        l, = self.series.get_mpl_lines()
-        l.set_linewidth(self.line_weight_ctrl.GetValue())
-        self.series.update()
-                
-    
-    def update_line_controls(self, current_line):
-        """
-        If val==True then disables the line properties controls,
-        else enables them.
-        """
-        #show/hide the colour and width controls
-        self.line_colour_picker.Show(current_line.has_width)
-        self.line_colour_picker_txt.Show(current_line.has_width)
-        self.line_weight_ctrl.Show(current_line.has_width)
-        self.line_weight_ctrl_txt.Show(current_line.has_width)
-        
-        self.SendSizeEvent()
-
-    
-    
-    def update_marker_controls(self, current_marker):
-        """
-        Shows or hides marker property controls depending on which are relevant
-        for the currently selected marker type. current_marker should be a 
-        MarkerType named tuple.
-        """
-        #show/hide the size controls
-        self.marker_size_ctrl.Show(current_marker.has_size)
-        self.marker_size_ctrl_txt.Show(current_marker.has_size)
-        
-        #show/hide the fill controls
-        self.marker_fillcolour_picker.Show(current_marker.has_fill)
-        self.marker_fillcolour_picker_txt.Show(current_marker.has_fill)
-        
-        #show/hide the edge controls
-        self.marker_edgecolour_picker.Show(current_marker.has_edge)
-        self.marker_edgecolour_picker_txt.Show(current_marker.has_edge)
-        self.marker_edgewidth_ctrl.Show(current_marker.has_edge)
-        self.marker_edgewidth_ctrl_txt.Show(current_marker.has_edge)
-        
-        self.SendSizeEvent()
-        
-        
-            

@@ -81,6 +81,11 @@ class MainToolbar(wx.ToolBar):
                 el.zoom()
             
             self.__all_figures.add(el)
+            
+            #initialise the pan and zoom tools to "off" each time a new figure 
+            #is created
+            self.set_zoom_state(False)
+            self.set_pan_state(False)
     
     
     def on_element_delete(self, evnt):
@@ -133,7 +138,7 @@ class MainToolbar(wx.ToolBar):
         # Get the size of the tool
         tool_size = self.GetToolSize()
 
-        # This is the lowerr left corner of the clicked tool
+        # This is the lower left corner of the clicked tool
         lower_left_pos = (bar_pos[0]+self.GetToolSeparation()*(tool_index+1)+tool_size[0]*tool_index, bar_pos[1]+tool_size[1]+self.GetToolSeparation())#-tool_size[1])
 
         menu_pos = (lower_left_pos[0]-bar_pos[0],lower_left_pos[1]-bar_pos[1])
@@ -154,19 +159,37 @@ class MainToolbar(wx.ToolBar):
         Event handler for zoom tool toggle events. Enables or disables zooming
         in all figures accordingly.
         """
-        self.ToggleTool(self.pan_tool.GetId(),False) 
+        self.set_zoom_state(self.GetToolState(self.zoom_tool.GetId()))
+    
+    
+    def set_zoom_state(self, state):
+        self.ToggleTool(self.zoom_tool.GetId(),state)
+        
+        if state:
+            self.ToggleTool(self.pan_tool.GetId(),False)
+        
         for p in self.__all_figures:
-            p.zoom()
-
+            if p.is_zoomed() != state:
+                p.zoom()
+   
+   
+    def set_pan_state(self, state):
+        self.ToggleTool(self.pan_tool.GetId(),state)
+        
+        if state:
+            self.ToggleTool(self.zoom_tool.GetId(),False)
+        
+        for p in self.__all_figures:
+            if p.is_panned() != state:
+                p.pan()
+   
    
     def on_pan(self,evnt):
         """
         Event handler for pan tool toggle events. Enables or disables panning
         in all figures accordingly.
         """
-        self.ToggleTool(self.zoom_tool.GetId(),False) 
-        for p in self.__all_figures:
-            p.pan()
+        self.set_pan_state(self.GetToolState(self.pan_tool.GetId()))
 
     
     def on_save_plot(self, *args):

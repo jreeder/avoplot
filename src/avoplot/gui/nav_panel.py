@@ -18,11 +18,15 @@ import wx
 from wx.lib.agw import customtreectrl
 import warnings
 from avoplot import core
-from avoplot import figure
 from avoplot import series
 
 class RightClickMenu(wx.Menu):
+    """
+    Popup menu displayed when elements in the navigation panel are
+    right clicked.
+    """
     def __init__(self, nav_panel):
+        
         wx.Menu.__init__(self)
         
         rename_entry = self.Append(-1, 'Rename', 'Rename the element')
@@ -31,8 +35,9 @@ class RightClickMenu(wx.Menu):
         delete_entry = self.Append(-1, 'Delete', 'Delete the element')
         wx.EVT_MENU(nav_panel,delete_entry.GetId(), nav_panel.on_rclick_menu_delete)
         
-        self.export_entry = self.Append(-1, 'Export data...', 'Export series to a text file')
+        self.export_entry = self.Append(-1, 'Export data', 'Export series to a text file')
         wx.EVT_MENU(nav_panel,self.export_entry.GetId(), nav_panel.on_rclick_menu_export)
+
 
 
 class NavigationPanel(wx.ScrolledWindow):
@@ -49,16 +54,15 @@ class NavigationPanel(wx.ScrolledWindow):
         
         self.v_sizer = wx.BoxSizer(wx.VERTICAL)
         
-        #TODO -  handle this more gracefully
-        try:
-            self.tree = customtreectrl.CustomTreeCtrl(self, wx.ID_ANY, agwStyle=(customtreectrl.TR_HIDE_ROOT|
-                                                                                 customtreectrl.TR_HAS_BUTTONS|
-                                                                                 customtreectrl.TR_LINES_AT_ROOT))
-        except:
-            self.tree = customtreectrl.CustomTreeCtrl(self, wx.ID_ANY, style=(customtreectrl.TR_HIDE_ROOT|
-                                                                                 customtreectrl.TR_HAS_BUTTONS|
-                                                                                 customtreectrl.TR_LINES_AT_ROOT))
-        
+        #note that we pass the style as an arg rather than a kwarg because it 
+        #changed names between wx versions from style to agwstyle
+        self.tree = customtreectrl.CustomTreeCtrl(self, wx.ID_ANY, 
+                                                  wx.Point(-1, -1), #default pos
+                                                  wx.Size(-1,-1), #default size
+                                                  (customtreectrl.TR_HIDE_ROOT|
+                                                   customtreectrl.TR_HAS_BUTTONS|
+                                                   customtreectrl.TR_LINES_AT_ROOT))
+       
         #disable the scroll bars which come with the tree control (otherwise
         #you end up with two sets sometimes!)
         self.tree.EnableScrolling(False, False)
@@ -82,7 +86,6 @@ class NavigationPanel(wx.ScrolledWindow):
         wx.EVT_TREE_SEL_CHANGED(self, self.tree.GetId(), self.on_tree_select_el)
         wx.EVT_TREE_ITEM_MENU(self, self.tree.GetId(), self.on_tree_el_menu)
         
-        
         #do the layout 
         self.SetSizer(self.v_sizer)
         self.v_sizer.Fit(self)
@@ -90,12 +93,20 @@ class NavigationPanel(wx.ScrolledWindow):
  
  
     def on_rclick_menu_delete(self, evnt):
+        """
+        Event handler for the delete option in the right click menu.
+        """
         el_id = self.__el_id_mapping[self.__current_selection_id]
         el = self.tree.GetPyData(el_id).GetData()
         el.delete()   
     
     
     def on_rclick_menu_rename(self, evnt):
+        """
+        Event handler for the rename option in the right click menu.
+        
+        Opens a dialog box for the user to enter the new element name.
+        """
         el_id = self.__el_id_mapping[self.__current_selection_id]
         el = self.tree.GetPyData(el_id).GetData()
         
@@ -112,12 +123,21 @@ class NavigationPanel(wx.ScrolledWindow):
                 new_name != current_name):
                 el.set_name(str(new_name))
                 
+                
     def on_rclick_menu_export(self, evnt):
+        """
+        Event handler for the export option in the right click menu.
+        """
         el_id = self.__el_id_mapping[self.__current_selection_id]
         el = self.tree.GetPyData(el_id).GetData()
         el.export()
     
+    
     def on_tree_el_menu(self, evnt):
+        """
+        Event handler for right click events on elements in the navigation 
+        panel - opens a popup menu for the element clicked.
+        """
         el_id = self.__el_id_mapping[self.__current_selection_id]
         el = self.tree.GetPyData(el_id).GetData()
         if not isinstance(el, series.XYDataSeries):
@@ -213,8 +233,3 @@ class NavigationPanel(wx.ScrolledWindow):
         
         for c in element.get_child_elements():
             self._add_all_child_nodes(node, c)
-
-
-
-
-        

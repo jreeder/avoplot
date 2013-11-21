@@ -54,7 +54,7 @@ class FigureControls(controls.AvoPlotControlPanelBase):
         self.__suptitle_text = mpl_fig.suptitle('')
         
         #add figure title controls
-        ts = widgets.TextSetting(self, "Title:", self.__suptitle_text, self.on_suptitle_change)
+        ts = widgets.TextSetting(self, "Title:", self.__suptitle_text)#self.on_suptitle_change)
         self.Add(ts, 0 , wx.ALIGN_LEFT|wx.EXPAND|wx.ALL, border=10)
         
         #add background colour controls
@@ -135,6 +135,7 @@ class AvoPlotFigure(core.AvoPlotElementBase, wx.ScrolledWindow):
         core.AvoPlotElementBase._destroy(self)
         self.Destroy()
     
+    
     def update(self):
         """
         Redraws the entire figure.
@@ -144,17 +145,20 @@ class AvoPlotFigure(core.AvoPlotElementBase, wx.ScrolledWindow):
         
         self.canvas.draw()
     
+    
     def is_zoomed(self):
         """
         Returns True if the zoom tool is selected, False otherwise.
         """
         return self._is_zoomed
     
+    
     def is_panned(self):
         """
         Returns True if the pan tool is selected, False otherwise.
         """
         return self._is_panned
+        
         
     def finalise(self):
         """
@@ -175,7 +179,6 @@ class AvoPlotFigure(core.AvoPlotElementBase, wx.ScrolledWindow):
         self.tb.Show(False)
         self.v_sizer.Add(self.canvas, 1, 
                          wx.ALIGN_LEFT | wx.ALIGN_TOP | wx.EXPAND)
-        
     
     
     def get_mpl_figure(self):

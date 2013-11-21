@@ -18,14 +18,8 @@
 import wx
 import warnings
 from wx.lib.agw import floatspin 
-import threading
-import numpy
 import collections
 import matplotlib.colors
-import os
-import time
-from datetime import datetime
-import copy
 
 
 #new data type to represent line styles and their relevant properties
@@ -33,21 +27,13 @@ LineType = collections.namedtuple('LineType',['name','mpl_symbol','has_width'])
 
 #create a list of all the line types and their properties - the order of
 #this list determines the order that they appear in the drop down menu
-available_lines = [
-                   LineType('None','None', False),
-                   LineType('____','-', True),
-                   LineType('------','--',True),
-                   LineType('.-.-.-','-.', True),
-                   LineType('.......',':',True)
-                   ]
-
-#build some mappings between line properties and their indices in the list
-#of available lines
-line_symbol_to_idx_map = {}
-line_name_to_idx_map = {}
-for i,m in enumerate(available_lines):
-    line_symbol_to_idx_map[m.mpl_symbol] = i
-    line_name_to_idx_map[m.name] = i
+all_available_lines = [
+                       LineType('None','None', False), #None has to come first
+                       LineType('____','-', True),
+                       LineType('------','--',True),
+                       LineType('.-.-.-','-.', True),
+                       LineType('.......',':',True)
+                       ]
 
 
 #new data type to represent markers and their relevant properties
@@ -56,7 +42,7 @@ MarkerType = collections.namedtuple('MarkerType',['name','mpl_symbol','has_size'
 
 #create a list of all the marker types and their properties - the order of
 #this list determines the order that they appear in the drop down menu
-available_markers = [
+all_available_markers = [
                      MarkerType('None','None', False, False, False),
                      MarkerType(u'●', '.',True, True, True),
                      MarkerType('+','+', True, False, True),
@@ -73,35 +59,34 @@ available_markers = [
                      MarkerType(u'⬡','h', True, True, True),
                      MarkerType(u'☆','*', True, True, True),
                      MarkerType('_','_', True, False, True),
-                     MarkerType('|','|', True, False, True),
-                     MarkerType('.',',', False, True, False)
+                     MarkerType('|','|', True, False, True)
                      ]
-
-#build some mappings between marker properties and their indices in the list
-#of available markers
-marker_symbol_to_idx_map = {}
-marker_name_to_idx_map = {}
-for i,m in enumerate(available_markers):
-    marker_symbol_to_idx_map[m.mpl_symbol] = i
-    marker_name_to_idx_map[m.name] = i
-
-
 
 
 class LineStyleEditorPanel(wx.Panel):
     
-    def __init__(self, parent, mpl_lines, update_command):
+    def __init__(self, parent, mpl_lines, update_command, 
+                 linestyles=all_available_lines):
         
         wx.Panel.__init__(self, parent, wx.ID_ANY)
         self.mpl_lines = mpl_lines
+        self.parent = parent
         self.update_command = update_command
+        self.__available_lines = linestyles
+        
+        self.__line_symbol_to_idx_map = {}
+        self.__line_name_to_idx_map = {}
+        for i,m in enumerate(self.__available_lines):
+            self.__line_symbol_to_idx_map[m.mpl_symbol] = i
+            self.__line_name_to_idx_map[m.name] = i
         
         line_ctrls_szr = wx.FlexGridSizer(3, 2, vgap=5, hgap=2)
                
         #line style
         line_ctrls_szr.Add(wx.StaticText(self, wx.ID_ANY, "Style:"), 0,
                            wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_RIGHT)
-        self.linestyle_choice = wx.Choice(self, wx.ID_ANY, choices=[])
+        self.linestyle_choice = wx.Choice(self, wx.ID_ANY, 
+                                          choices=[l.name for l in self.__available_lines])
         line_ctrls_szr.Add(self.linestyle_choice, 0,
                            wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_LEFT)
         wx.EVT_CHOICE(self, self.linestyle_choice.GetId(), self.on_linestyle)
@@ -130,51 +115,22 @@ class LineStyleEditorPanel(wx.Panel):
         #set the line selection to that of the data
         #it is possible that the line will have been set to something that
         #avoplot does not yet support - if so, default to None and issue warning
-        if line_symbol_to_idx_map.has_key(mpl_lines[0].get_linestyle()):
+        if self.__line_symbol_to_idx_map.has_key(mpl_lines[0].get_linestyle()):
             #everything is fine
-            current_line_idx = line_symbol_to_idx_map[mpl_lines[0].get_linestyle()]
+            current_line_idx = self.__line_symbol_to_idx_map[mpl_lines[0].get_linestyle()]
         else:
             current_line_idx = 0
             warnings.warn("Data series has an unsupported line style. "
-                          "Defaulting to a line style of \'None\' instead.")
+                          "Defaulting to a line style of \'%s\' instead."%(self.__available_lines[0].name))
         
         #update the GUI appropriately for the current line selection
         self.linestyle_choice.SetSelection(current_line_idx)
-        self.update_line_controls(available_lines[current_line_idx])
+        self.update_line_controls(self.__available_lines[current_line_idx])
         
         self.SetSizer(line_ctrls_szr)
         line_ctrls_szr.Fit(self)
         self.SetAutoLayout(True)
-    
-    
-    def get_available_linetypes(self):
-        """
-        Returns a list of LineType objects, which are the line styles currently
-        available to the user through this LineStyleEditorPanel.
-        """
-        return copy.copy(self.__available_line_types)
-    
-    
-    def set_available_linestyles(self, linestyles):
-        """
-        Set the lines styles available to the user through this 
-        LineStyleEditorPanel. The linestyles argument must be a list of LineType
-        objects.
-        """
-        self.__available_lines = copy.copy(linestyles)
         
-        #build some mappings between line properties and their indices in the list
-        #of available lines
-        self.__line_symbol_to_idx_map = {}
-        self.__line_name_to_idx_map = {}
-        for i,m in enumerate(self.__available_lines):
-            self.__line_symbol_to_idx_map[m.mpl_symbol] = i
-            self.__line_name_to_idx_map[m.name] = i
-        
-        #now put them into the Choice
-        self.linestyle_choice.Clear()
-        for l in self.__available_lines:
-            self.linestyle_choice.Append(l.name)
         
     def on_line_colour_change(self, evnt):
         """
@@ -189,8 +145,8 @@ class LineStyleEditorPanel(wx.Panel):
         """
         Event handler for line style change events.
         """
-        line_idx = line_name_to_idx_map[evnt.GetString()]
-        new_line = available_lines[line_idx]
+        line_idx = self.__line_name_to_idx_map[evnt.GetString()]
+        new_line = self.__available_lines[line_idx]
         self.update_line_controls(new_line)
         for l in self.mpl_lines:
             l.set_linestyle(new_line.mpl_symbol)
@@ -198,7 +154,6 @@ class LineStyleEditorPanel(wx.Panel):
         self.update_command()
         
         
-    
     def on_linewidth(self, evnt):
         """
         Event handler for line thickness change events.
@@ -221,3 +176,170 @@ class LineStyleEditorPanel(wx.Panel):
         self.line_weight_ctrl_txt.Show(current_line.has_width)
         
         self.SendSizeEvent()
+        self.parent.SendSizeEvent()
+
+
+
+class MarkerStyleEditorPanel(wx.Panel):
+    
+    def __init__(self, parent, mpl_lines, update_command, markers=all_available_markers):
+        wx.Panel.__init__(self, parent, wx.ID_ANY)
+        
+        self.__available_markers = markers
+        self.parent = parent
+        self.mpl_lines = mpl_lines
+        self.update_command = update_command
+        
+        #build some mappings between marker properties and their indices in the list
+        #of available markers
+        self.__marker_symbol_to_idx_map = {}
+        self.__marker_name_to_idx_map = {}
+        for i,m in enumerate(self.__available_markers):
+            self.__marker_symbol_to_idx_map[m.mpl_symbol] = i
+            self.__marker_name_to_idx_map[m.name] = i
+
+        marker_ctrls_szr = wx.FlexGridSizer(5, 2, vgap=5, hgap=2)
+        
+        #marker style
+        self.marker_style_choice = wx.Choice(self, wx.ID_ANY, 
+                                             choices=[m.name for m in self.__available_markers])        
+        
+        marker_ctrls_szr.Add(wx.StaticText(self, wx.ID_ANY, "Style:"), 0,
+                             wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_RIGHT)
+        marker_ctrls_szr.Add(self.marker_style_choice, 0,
+                             wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_LEFT)
+        wx.EVT_CHOICE(self, self.marker_style_choice.GetId(), self.on_marker)
+        
+        #marker size
+        self.marker_size_ctrl_txt = wx.StaticText(self, wx.ID_ANY, "Size:")
+        self.marker_size_ctrl = floatspin.FloatSpin(self, wx.ID_ANY, min_val=0.1, max_val=50.0,
+                                     value=mpl_lines[0].get_markersize(), increment=0.1, digits=2)
+        marker_ctrls_szr.Add(self.marker_size_ctrl_txt, 0,
+                           wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_RIGHT)
+        marker_ctrls_szr.Add(self.marker_size_ctrl, 0,
+                           wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_LEFT)
+        floatspin.EVT_FLOATSPIN(self, self.marker_size_ctrl.GetId(), self.on_markersize)
+        
+        #marker colour
+        prev_col = matplotlib.colors.colorConverter.to_rgb(mpl_lines[0].get_markerfacecolor())
+        prev_col = (255 * prev_col[0], 255 * prev_col[1], 255 * prev_col[2])
+        self.marker_fillcolour_picker_txt = wx.StaticText(self, wx.ID_ANY, "Fill:")
+        self.marker_fillcolour_picker = wx.ColourPickerCtrl(self, -1, prev_col)
+        marker_ctrls_szr.Add(self.marker_fillcolour_picker_txt , 0,
+                           wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_RIGHT)
+        marker_ctrls_szr.Add(self.marker_fillcolour_picker, 0 ,
+                          wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_LEFT)
+        wx.EVT_COLOURPICKER_CHANGED(self, self.marker_fillcolour_picker.GetId(), self.on_marker_fillcolour)
+
+        #marker edge colour
+        prev_col = matplotlib.colors.colorConverter.to_rgb(mpl_lines[0].get_markeredgecolor())
+        prev_col = (255 * prev_col[0], 255 * prev_col[1], 255 * prev_col[2])
+        self.marker_edgecolour_picker_txt = wx.StaticText(self, wx.ID_ANY, "Edge:")
+        self.marker_edgecolour_picker = wx.ColourPickerCtrl(self, -1, prev_col)
+        marker_ctrls_szr.Add(self.marker_edgecolour_picker_txt, 0,
+                           wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_RIGHT)
+        marker_ctrls_szr.Add(self.marker_edgecolour_picker, 0 ,
+                          wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_LEFT)
+        wx.EVT_COLOURPICKER_CHANGED(self, self.marker_edgecolour_picker.GetId(), self.on_marker_edgecolour)        
+        
+        #marker edge width
+        self.marker_edgewidth_ctrl_txt = wx.StaticText(self, wx.ID_ANY, "Edge width:")
+        self.marker_edgewidth_ctrl = floatspin.FloatSpin(self, wx.ID_ANY, min_val=0.1, max_val=50.0,
+                                     value=mpl_lines[0].get_markeredgewidth(), increment=0.1, digits=2)
+        marker_ctrls_szr.Add(self.marker_edgewidth_ctrl_txt, 0,
+                           wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_RIGHT)
+        marker_ctrls_szr.Add(self.marker_edgewidth_ctrl, 0,
+                           wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_LEFT)
+        floatspin.EVT_FLOATSPIN(self, self.marker_edgewidth_ctrl.GetId(), self.on_marker_edgewidth)
+        
+        #set the marker selection to that of the data
+        #it is possible that the marker will have been set to something that
+        #avoplot does not yet support - if so, default to None and issue warning
+        if self.__marker_symbol_to_idx_map.has_key(mpl_lines[0].get_marker()):
+            #everything is fine
+            current_marker_idx = self.__marker_symbol_to_idx_map[mpl_lines[0].get_marker()]
+        else:
+            current_marker_idx = 0
+            warnings.warn("Data series has an unsupported marker style. "
+                          "Defaulting to a marker style of \'%s\' instead."%(self.__available_markers[0].name))
+        
+        #update the GUI appropriately for the current marker selection
+        self.marker_style_choice.SetSelection(current_marker_idx)
+        self.update_marker_controls(self.__available_markers[current_marker_idx])
+        
+        self.SetSizer(marker_ctrls_szr)
+        marker_ctrls_szr.Fit(self)
+        self.SetAutoLayout(True)
+    
+    
+    def on_marker_fillcolour(self, evnt):
+        """
+        Event handler for marker fill colour change events
+        """
+        for l in self.mpl_lines:
+            l.set_markerfacecolor(evnt.GetColour().GetAsString(wx.C2S_HTML_SYNTAX))
+        self.update_command()
+    
+    
+    def on_marker_edgecolour(self, evnt):
+        """
+        Event handler for marker fill colour change events
+        """
+        for l in self.mpl_lines:
+            l.set_markeredgecolor(evnt.GetColour().GetAsString(wx.C2S_HTML_SYNTAX))
+        self.update_command()
+        
+        
+    def on_marker_edgewidth(self, evnt):
+        """
+        Event handler for line thickness change events.
+        """
+        for l in self.mpl_lines:
+            l.set_markeredgewidth(self.marker_edgewidth_ctrl.GetValue())
+        self.update_command()
+            
+            
+    def on_marker(self, evnt):
+        """
+        Event handler for marker style change events.
+        """
+        marker_idx = self.__marker_name_to_idx_map[evnt.GetString()]
+        new_marker = self.__available_markers[marker_idx]
+        self.update_marker_controls(new_marker)
+        for l in self.mpl_lines:
+            l.set_marker(new_marker.mpl_symbol)
+        self.update_command()
+    
+    
+    def on_markersize(self, evnt):
+        """
+        Event handler for marker size change events
+        """
+        for l in self.mpl_lines:
+            l.set_markersize(self.marker_size_ctrl.GetValue())
+        self.update_command()
+    
+    
+    def update_marker_controls(self, current_marker):
+        """
+        Shows or hides marker property controls depending on which are relevant
+        for the currently selected marker type. current_marker should be a 
+        MarkerType named tuple.
+        """
+        #show/hide the size controls
+        self.marker_size_ctrl.Show(current_marker.has_size)
+        self.marker_size_ctrl_txt.Show(current_marker.has_size)
+        
+        #show/hide the fill controls
+        self.marker_fillcolour_picker.Show(current_marker.has_fill)
+        self.marker_fillcolour_picker_txt.Show(current_marker.has_fill)
+        
+        #show/hide the edge controls
+        self.marker_edgecolour_picker.Show(current_marker.has_edge)
+        self.marker_edgecolour_picker_txt.Show(current_marker.has_edge)
+        self.marker_edgewidth_ctrl.Show(current_marker.has_edge)
+        self.marker_edgewidth_ctrl_txt.Show(current_marker.has_edge)
+        
+        self.SendSizeEvent()
+        self.parent.SendSizeEvent()
+        

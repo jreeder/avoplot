@@ -145,10 +145,10 @@ class ColumnData:
                 not_float += 1
         
         if is_float > not_float:
-            self.d_type = 'float'
+            self.d_type = 'number'
             return self.d_type
         
-        self.d_type ='string'
+        self.d_type ='text'
         
 #        is_time = 0
 #        not_time = 0
@@ -199,8 +199,8 @@ def to_str(data):
     return numpy.ma.masked_array(data, mask=numpy.zeros_like(data))
    
    
-_converters = {'float':to_float,
-               'string':to_str}
+_converters = {'number':to_float,
+               'text':to_str}
 
     
     

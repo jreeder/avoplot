@@ -25,40 +25,142 @@ import matplotlib.text
 
 from avoplot.gui import dialog
 
+class AnimatedText:
+    def __init__(self, text_objects):
+        """
+        Class to animate matplotlib.text.Text objects to allow fast editing of
+        text properties.
+        """
+        #if a single Text object has been passed, wrap in a list
+        if isinstance(text_objects, matplotlib.text.Text):
+            text_objects = [text_objects]
+        
+        for i,text_obj in enumerate(text_objects):
+            if not isinstance(text_obj, matplotlib.text.Text):
+                raise TypeError("At index %d: expecting matplotlib.text.Text instance"
+                                ", got %s" % (i,type(text_obj)))
+        
+        #all the text objects must be in the same figure - it's hard to see why
+        #this wouldn't be the case, but just in case
+        figs = set([t.get_figure() for t in text_objects])
+        assert len(figs) == 1, "All Text objects must be in the same Figure."
+        
+        self.__text_objects = text_objects
+        self.__redraw_callback_id = None
+        self.__bkgd_cache = None
+        
+        self.__mpl_fig = self.__text_objects[0].get_figure()
+    
+    
+    def start_text_animation(self):
+        
+        #we have to protect against this method being called again
+        #before the CallAfter call has completed 
+        if self.__redraw_callback_id is None:
+            self.__redraw_callback_id = -1
+            wx.CallAfter(self.__start_text_animation)
+    
+    
+    def __start_text_animation(self):
+        self.__caching_in_progress = False
+        
+        #register a callback for draw events in the mpl canvas - if the canvas
+        #has been redrawn then we need to re-cache the background region
+        self.__redraw_callback_id = self.__mpl_fig.canvas.mpl_connect('draw_event', self.__cache_bkgd)
+        
+        #now cache the background region
+        self.__cache_bkgd()
+    
+    
+    def stop_text_animation(self):
+        
+        #disconnect the event handler for canvas draw events
+        self.__mpl_fig.canvas.mpl_disconnect(self.__redraw_callback_id)
+        self.__redraw_callback_id = None
+        
+        #let the cached background get garbage collected
+        self.__bkgd_cache = None
+    
+    
+    def __cache_bkgd(self, *args):
+        if self.__caching_in_progress:
+            self.__caching_in_progress = False
+            return
+        
+        self.__caching_in_progress = True
+        
+        prev_alphas = [t.get_alpha() for t in self.__text_objects]
+        
+        for t in self.__text_objects:
+            t.set_alpha(0)
+            
+        self.__mpl_fig.canvas.draw()
+        self.__bkgd_cache = self.__mpl_fig.canvas.copy_from_bbox(self.__mpl_fig.bbox)
+        
+        #now unhide the text
+        for i,t in enumerate(self.__text_objects):
+            t.set_alpha(prev_alphas[i])
+            self.__mpl_fig.draw_artist(t)
+            
+        self.__mpl_fig.canvas.blit(self.__mpl_fig.bbox)
+         
+    
+    def redraw_text(self):
+        assert self.__bkgd_cache is not None, "redraw_text called before __cache_bkgd got called"
+        
+        #restore the whole figure background from the cached backgroud
+        self.__mpl_fig.canvas.restore_region(self.__bkgd_cache)
+        
+        #now draw just the text objects (which have changed)
+        for t in self.__text_objects:
+            self.__mpl_fig.draw_artist(t)
+        
+        #blit the updated display to the screen  
+        self.__mpl_fig.canvas.blit(self.__mpl_fig.bbox)
+        
+        
+
 class TextPropertiesEditor(dialog.AvoPlotDialog):
     """
     Dialog which allows the user to edit the text properties (colour, font etc.)
-    of a matplotlib.text.Text object. The Text object to be edited should be 
-    passed to the dialog constructor.
+    of a set of matplotlib.text.Text object. The Text objects to be edited should be 
+    passed to the dialog constructor - which will accept either a single Text 
+    object or an iterable of Text objects
     """
-    def __init__(self, parent, text_obj):
-
-        if not isinstance(text_obj, matplotlib.text.Text):
-            raise TypeError("Expecting matplotlib.text.Text instance"
-                            ", got %s" % (type(text_obj)))
-        self.main_text_obj = text_obj
+    def __init__(self, parent, text_objects):
+        
+        #if a single Text object has been passed, wrap in a list
+        if isinstance(text_objects, matplotlib.text.Text):
+            text_objects = [text_objects]
+        
+        for i,text_obj in enumerate(text_objects):
+            if not isinstance(text_obj, matplotlib.text.Text):
+                raise TypeError("At index %d: expecting matplotlib.text.Text instance"
+                                ", got %s" % (i,type(text_obj)))
+                
+        self.__text_objects = text_objects
         dialog.AvoPlotDialog.__init__(self, parent, "Text properties")
         vsizer = wx.BoxSizer(wx.VERTICAL)
         button_sizer = wx.BoxSizer(wx.HORIZONTAL)
         
         #add the font properties panel
-        self.font_props_panel = FontPropertiesPanel(self, text_obj)
+        self.font_props_panel = FontPropertiesPanel(self, text_objects)
         vsizer.Add(self.font_props_panel, 0, wx.EXPAND)
         
         #create main buttons for editor frame
         self.ok_button = wx.Button(self, wx.ID_ANY, "Ok")
-        self.apply_button = wx.Button(self, wx.ID_ANY, "Apply")
-        self.cancel_button = wx.Button(self, wx.ID_ANY, "Cancel")
-        button_sizer.Add(self.cancel_button, 0, wx.ALIGN_TOP | wx.ALIGN_RIGHT)
-        button_sizer.AddSpacer(5)
-        button_sizer.Add(self.apply_button, 0, wx.ALIGN_TOP | wx.ALIGN_RIGHT)
-        button_sizer.AddSpacer(5)
+        #self.apply_button = wx.Button(self, wx.ID_ANY, "Apply")
+        #self.cancel_button = wx.Button(self, wx.ID_ANY, "Cancel")
+        #button_sizer.Add(self.cancel_button, 0, wx.ALIGN_TOP | wx.ALIGN_RIGHT)
+        #button_sizer.AddSpacer(5)
+        #button_sizer.Add(self.apply_button, 0, wx.ALIGN_TOP | wx.ALIGN_RIGHT)
+        #button_sizer.AddSpacer(5)
         button_sizer.Add(self.ok_button, 0, wx.ALIGN_TOP | wx.ALIGN_RIGHT)
         vsizer.Add(button_sizer, 0, wx.ALIGN_BOTTOM | wx.ALIGN_RIGHT | wx.ALL, border=10)
         
         #register main button event callbacks
-        wx.EVT_BUTTON(self, self.cancel_button.GetId(), self.on_close)
-        wx.EVT_BUTTON(self, self.apply_button.GetId(), self.on_apply)
+        #wx.EVT_BUTTON(self, self.cancel_button.GetId(), self.on_close)
+        #wx.EVT_BUTTON(self, self.apply_button.GetId(), self.on_apply)
         wx.EVT_BUTTON(self, self.ok_button.GetId(), self.on_ok)
         
         wx.EVT_CLOSE(self, self.on_close)
@@ -75,6 +177,7 @@ class TextPropertiesEditor(dialog.AvoPlotDialog):
         Event handler for frame close events
         """
         self.EndModal(wx.ID_CANCEL)
+        self.font_props_panel.Destroy()
         self.Destroy()
     
     
@@ -82,15 +185,17 @@ class TextPropertiesEditor(dialog.AvoPlotDialog):
         """
         Event handler for Apply button clicks
         """
-        self.apply_to(self.main_text_obj)
+        for txt_obj in self.__text_objects:
+            self.apply_to(txt_obj)
         
     
     def on_ok(self, evnt):
         """
         Event handler for Ok button clicks.
         """
-        self.apply_to(self.main_text_obj)
+        #self.apply_to(self.main_text_obj)
         self.EndModal(wx.ID_OK)
+        self.font_props_panel.Destroy()
         self.Destroy()
         
         
@@ -133,8 +238,10 @@ class FontPropertiesPanel(wx.Panel):
     TextPropertiesEditor dialog. The Text object to be edited should be passed
     to the constructor.
     """
-    def __init__(self, parent, text_obj):
+    def __init__(self, parent, text_objects):
         wx.Panel.__init__(self, parent, wx.ID_ANY)
+        self.__text_objects = text_objects
+        self.mpl_figure = text_objects[0].get_figure()
         
         hsizer = wx.BoxSizer(wx.HORIZONTAL)
         grid_sizer = wx.FlexGridSizer(5, 2, vgap=5)
@@ -148,29 +255,37 @@ class FontPropertiesPanel(wx.Panel):
                    border=10)
         
         #set the initial font selection to that of the text object
-        cur_font = text_obj.get_fontname()
-        self.font_selector.SetSelection(self.avail_fonts.index(cur_font))
+        cur_fonts = list(set([t.get_fontname() for t in text_objects]))
+        if len(cur_fonts) == 1:
+            self.font_selector.SetSelection(self.avail_fonts.index(cur_fonts[0]))
         
         #create a colour picker button
         text = wx.StaticText(self, -1, "Colour:  ")
         grid_sizer.Add(text, 0, wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_RIGHT)
         
+        wx.EVT_LISTBOX(self, self.font_selector.GetId(), self.on_font_selection)
+        
         #set the colour picker's initial value to that of the text object
-        prev_col = matplotlib.colors.colorConverter.to_rgb(text_obj.get_color())
-        prev_col = (255 * prev_col[0], 255 * prev_col[1], 255 * prev_col[2])
+        prev_cols = [matplotlib.colors.colorConverter.to_rgb(t.get_color()) for t in text_objects]
+        #TODO - what if the text objects have different colors
+        prev_col = (255 * prev_cols[0][0], 255 * prev_cols[0][1], 255 * prev_cols[0][2])
         self.colour_picker = wx.ColourPickerCtrl(self, -1, prev_col)
         grid_sizer.Add(self.colour_picker, 0 ,
                           wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_LEFT)
+        
+        wx.EVT_COLOURPICKER_CHANGED(self, self.colour_picker.GetId(), self.on_font_colour)
         
         
         #create a font size control and set the initial value to that of the text
         text = wx.StaticText(self, -1, "Size:  ")
         grid_sizer.Add(text, 0, wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_RIGHT)
-
+        prev_size = [t.get_size() for t in text_objects][0]
+        #TODO - what if the text objects have different sizes
         self.size_ctrl = wx.SpinCtrl(self, wx.ID_ANY, min=4, max=100,
-                                     initial=text_obj.get_size())
+                                     initial=prev_size)
         grid_sizer.Add(self.size_ctrl, 0 , wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_LEFT)
         
+        wx.EVT_SPINCTRL(self, self.size_ctrl.GetId(), self.on_font_size)
         
         #create a drop-down box for specifying font weight       
         self.possible_weights = ['ultralight', 'light', 'normal', 'regular',
@@ -185,10 +300,12 @@ class FontPropertiesPanel(wx.Panel):
         
         grid_sizer.Add(self.weight_ctrl, 0, wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_LEFT)
 
+        wx.EVT_CHOICE(self, self.weight_ctrl.GetId(), self.on_font_weight)
         
         #set the initial font weight selection to that of the text, this is a 
         #bit tricky since get_weight can return an integer or a string
-        cur_weight = text_obj.get_weight()
+        cur_weight = [t.get_weight() for t in text_objects][0]
+        #TODO - what if the text objects have different weights
         if not type(cur_weight) is str:
             idx = int(round(cur_weight / 1000.0 * len(self.possible_weights), 0))
         else:
@@ -206,9 +323,11 @@ class FontPropertiesPanel(wx.Panel):
         
         grid_sizer.Add(self.style_ctrl, 0 , wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_LEFT)
         
+        wx.EVT_CHOICE(self, self.style_ctrl.GetId(), self.on_font_style)
         
         #set the initial font style selection to that of the text
-        cur_style = text_obj.get_style()
+        cur_style = [t.get_style() for t in text_objects][0]
+        #TODO - what if the text objects have different styles
         idx = self.possible_styles.index(cur_style)
         self.style_ctrl.SetSelection(idx)    
         
@@ -224,11 +343,13 @@ class FontPropertiesPanel(wx.Panel):
         self.stretch_ctrl = wx.Choice(self, wx.ID_ANY, choices=self.possible_stretches)
         
         grid_sizer.Add(self.stretch_ctrl, 0 , wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_LEFT)
-
+        
+        wx.EVT_CHOICE(self, self.stretch_ctrl.GetId(), self.on_font_stretch)
         
         #set the initial font stretch selection to that of the text, this is a 
         #bit tricky since get_weight can return an integer or a string
-        cur_stretch = text_obj.get_stretch()
+        cur_stretch = [t.get_stretch() for t in text_objects][0]
+        #TODO - what if the text objects have different stretches
         if not type(cur_stretch) is str:
             idx = int(round(cur_stretch / 1000.0 * len(self.possible_stretches), 0))
         else:
@@ -242,6 +363,60 @@ class FontPropertiesPanel(wx.Panel):
         self.SetSizer(hsizer)
         hsizer.Fit(self)
         self.SetAutoLayout(True)
+    
+    
+    def Destroy(self):
+        wx.Panel.Destroy(self)
+    
+    def redraw_text(self):
+        self.mpl_figure.canvas.draw()
+        
+    def on_font_selection(self, evnt):
+        new_font = evnt.GetString()
+        for t in self.__text_objects:
+            t.set_family(new_font)
+        
+        self.redraw_text()
+    
+    
+    def on_font_colour(self, evnt):
+        new_colour = evnt.GetColour().GetAsString(wx.C2S_HTML_SYNTAX)
+        for t in self.__text_objects:
+            t.set_color(new_colour)
+        
+        self.redraw_text()
+    
+    
+    def on_font_size(self, evnt):
+        new_size = evnt.GetInt()
+        for t in self.__text_objects:
+            t.set_size(new_size)
+        
+        self.redraw_text()
+    
+    
+    def on_font_weight(self, evnt):
+        new_weight = self.possible_weights[evnt.GetSelection()]
+        for t in self.__text_objects:
+            t.set_weight(new_weight)
+        
+        self.redraw_text()
+
+
+    def on_font_style(self, evnt):
+        new_style = evnt.GetString()
+        for t in self.__text_objects:
+            t.set_style(new_style)
+        
+        self.redraw_text()  
+        
+        
+    def on_font_stretch(self, evnt):
+        new_stretch = evnt.GetString()
+        for t in self.__text_objects:
+            t.set_stretch(new_stretch)
+        
+        self.redraw_text()              
     
     
     def get_font_colour(self):
