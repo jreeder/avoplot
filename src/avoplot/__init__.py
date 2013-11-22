@@ -27,7 +27,7 @@ matplotlib.use('WXAgg')
 ####################################################################
 #                     Program Information
 ####################################################################
-VERSION = "13.07" #year.month of release
+VERSION = "13.11" #year.month of release
 
 AUTHOR = 'Nial Peters'
 

@@ -124,10 +124,12 @@ class RecordedInstall(install):
         we can copy them into the build_info.py file during post-install
         """
         install.finalize_options(self)
-        install_paths['prefix'] = self.install_base
-        install_paths['install_data'] = self.install_data
-        install_paths['lib_dir'] = self.install_lib
-        install_paths['script_dir'] = self.install_scripts
+        
+        #note that these MUST be absolute paths
+        install_paths['prefix'] = os.path.abspath(self.install_base)
+        install_paths['install_data'] = os.path.abspath(self.install_data)
+        install_paths['lib_dir'] = os.path.abspath(self.install_lib)
+        install_paths['script_dir'] = os.path.abspath(self.install_scripts)
 
 
 

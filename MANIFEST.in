@@ -9,5 +9,5 @@ include misc/*
 include AUTHORS
 include COPYING
 include KNOWN_BUGS
-include avoplot/COPYING
+include src/avoplot/COPYING
 include src/__init__.py
