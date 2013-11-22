@@ -24,7 +24,9 @@ from avoplot.gui import dialog, linestyle_editor
 class GridPropertiesEditor(dialog.AvoPlotDialog):
 
     def __init__(self, parent, subplot, mpl_axis):
-        
+        """
+        Dialog with controls to allow the user to edit gridline properties.
+        """
         dialog.AvoPlotDialog.__init__(self, parent, "Gridline properties")
         
         #add line controls
@@ -59,6 +61,9 @@ class GridPropertiesEditor(dialog.AvoPlotDialog):
     
     
     def on_close(self, evnt):
+        """
+        Event handler for close events. Destroys the dialog box.
+        """
         self.EndModal(wx.ID_OK)
         self.Destroy()
         

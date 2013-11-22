@@ -163,6 +163,10 @@ class MainToolbar(wx.ToolBar):
     
     
     def set_zoom_state(self, state):
+        """
+        Enables (state = True) or disables (state = False) the zoom tool for all
+        figures. The pan tool will be disabled if needed.
+        """
         self.ToggleTool(self.zoom_tool.GetId(),state)
         
         if state:
@@ -174,6 +178,10 @@ class MainToolbar(wx.ToolBar):
    
    
     def set_pan_state(self, state):
+        """
+        Enables (state = True) or disables (state = False) the pan tool for all
+        figures. The zoom tool will be disabled if needed.
+        """
         self.ToggleTool(self.pan_tool.GetId(),state)
         
         if state:

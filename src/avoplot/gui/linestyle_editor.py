@@ -67,7 +67,10 @@ class LineStyleEditorPanel(wx.Panel):
     
     def __init__(self, parent, mpl_lines, update_command, 
                  linestyles=all_available_lines):
-        
+        """
+        Panel with controls to allow the user to change the style of a series
+        line.
+        """    
         wx.Panel.__init__(self, parent, wx.ID_ANY)
         self.mpl_lines = mpl_lines
         self.parent = parent
@@ -183,6 +186,11 @@ class LineStyleEditorPanel(wx.Panel):
 class MarkerStyleEditorPanel(wx.Panel):
     
     def __init__(self, parent, mpl_lines, update_command, markers=all_available_markers):
+        """
+        Panel with controls to allow the user to change the markers used to plot
+        a data series.
+        """
+        
         wx.Panel.__init__(self, parent, wx.ID_ANY)
         
         self.__available_markers = markers

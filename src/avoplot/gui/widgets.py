@@ -50,7 +50,11 @@ class ColourSetting(SettingBase):
 class EditableCheckBox(wx.BoxSizer):
     
     def __init__(self, parent, label, edit_label='edit'):
-
+        """
+        A wx.Checkbox which displays a hyperlink next to it when checked. This
+        should be subclassed and the on_checkbox and on_edit_link methods should
+        be overridden to handle their respective events.
+        """
         self.parent = parent
         
         wx.BoxSizer.__init__(self, wx.HORIZONTAL)
@@ -99,17 +103,32 @@ class EditableCheckBox(wx.BoxSizer):
         self.edit_link_parentheses[1].Show(evnt.IsChecked())
         self.on_checkbox(evnt)   
     
+    
     def on_checkbox(self, evnt):
+        """
+        Event handler for checkbox events. This should be overridden in the 
+        subclass.
+        """
         pass
             
+            
     def on_edit_link(self, evnt):
+        """
+        Event handler for clicks on the hyperlink. This should be overridden in
+        the subclass.
+        """
         pass
         
 
 
 class TextSetting(SettingBase, text.AnimatedText):
     """
-    A text label next to a wx text entry control.
+    A text label next to a wx text entry control. The matplotlib Text object
+    associated with the control is automatically animated to provide fast 
+    redraws when the text is changed.
+    
+    A font properties button is displayed next to the text control (if the text
+    entry box is not empty) which opens a font properties dialog.
     """
     def __init__(self, parent, label, text_obj):
         SettingBase.__init__(self, parent, label)
@@ -141,17 +160,27 @@ class TextSetting(SettingBase, text.AnimatedText):
         
         
     def on_focus(self, evnt):
+        """
+        Event handler for when the control gets focus. Starts the text animation
+        (i.e. caches the background).
+        """
         self.start_text_animation()
         evnt.Skip()
     
     
     def on_unfocus(self, evnt):
+        """
+        Event handler for when the control loses focus. Stops the text animation
+        """
         self.stop_text_animation()
         evnt.Skip()
     
     
     def on_text_change(self, evnt):
-     
+        """
+        Event handler for text change events. Updates the text on the figure and
+        redraws it.
+        """
         self.text_obj.set_text(evnt.GetString())
         self.redraw_text()
 
@@ -162,6 +191,10 @@ class TextSetting(SettingBase, text.AnimatedText):
     
     
     def on_text_prop_button(self, evnt):
+        """
+        Event handler for clicks on the "font properties" button. Opens a font
+        properties dialog.
+        """
         text.TextPropertiesEditor(self.parent, self.text_obj)
 
 

@@ -15,6 +15,12 @@
 #You should have received a copy of the GNU General Public License
 #along with AvoPlot.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+This module is pretty messy - it is still very much under active development and
+will likely be changed a lot in the near future - don't depend on any of the 
+functionality currently defined!
+"""
+
 import wx
 import re
 import wx.lib.buttons
@@ -613,9 +619,7 @@ class DataSeriesSelectPanel(wx.ScrolledWindow):
         self.SendSizeEvent()
         
         
-        
-        
-        
+           
 class TxtFileDataSeriesSelectFrame(wx.Dialog):
     def __init__(self, parent, file_contents):
         #set the title to the file name
@@ -639,6 +643,7 @@ class TxtFileDataSeriesSelectFrame(wx.Dialog):
         
         #create all the frame elements
         self.splitter = wx.SplitterWindow(top_panel, -1)
+        self.splitter.SetMinimumPaneSize(50)
         
         self.file_contents_panel = FileContentsPanel(self.splitter, file_contents)
         self.data_series_panel = DataSeriesSelectPanel(self.splitter, self, file_contents)
@@ -648,8 +653,6 @@ class TxtFileDataSeriesSelectFrame(wx.Dialog):
         
         vsizer.Add(self.splitter,1 , wx.EXPAND|wx.ALL, border=5)
         self.SetSize((width + 60, -1))
-        #vsizer.Add(self.file_contents_panel, 5, wx.EXPAND | wx.ALL, border=5)
-        #vsizer.Add(self.data_series_panel, 1, wx.EXPAND | wx.ALL, border=5)
             
         #create main buttons
         buttons_sizer = wx.BoxSizer(wx.HORIZONTAL)

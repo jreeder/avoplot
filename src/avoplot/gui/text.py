@@ -29,7 +29,23 @@ class AnimatedText:
     def __init__(self, text_objects):
         """
         Class to animate matplotlib.text.Text objects to allow fast editing of
-        text properties.
+        text properties. The general useage of the class is as follows:
+        
+        #create the animator passing it the text objects to be animated
+        animator = AnimatedText([txt1, txt2])
+        
+        #start the animation - this caches the background and registers an event
+        #handler to re-cache the background if it gets changed
+        animator.start_text_animation()
+        
+        #make changes to the text here e.g.:
+        txt1.set_color('r')
+        
+        #each time you want the changes to be drawn - call redraw_text()
+        animator.redraw_text()
+        
+        #don't forget to end the animation when you are done with it!
+        animator.stop_animation()
         """
         #if a single Text object has been passed, wrap in a list
         if isinstance(text_objects, matplotlib.text.Text):
@@ -53,6 +69,11 @@ class AnimatedText:
     
     
     def start_text_animation(self):
+        """
+        Start the animation of the text. This must be called before you call 
+        redraw_text. This creates a cache of the figure background and registers
+        a callback to update the cache if the background gets changed. 
+        """
         
         #we have to protect against this method being called again
         #before the CallAfter call has completed 
@@ -73,6 +94,13 @@ class AnimatedText:
     
     
     def stop_text_animation(self):
+        """
+        Deletes the background cache and removes the update callback. Should be 
+        called whenever you are finished animating the text
+        """
+        assert self.__redraw_callback_id is not None, ("stop_text_animation() "
+                                                       "called before "
+                                                       "start_text_animation()")
         
         #disconnect the event handler for canvas draw events
         self.__mpl_fig.canvas.mpl_disconnect(self.__redraw_callback_id)
@@ -83,21 +111,32 @@ class AnimatedText:
     
     
     def __cache_bkgd(self, *args):
+        
+        #This method is a bit of a hack! Since canvas.draw still renders some
+        #matplotlib artists even if they are marked as animated, we instead 
+        #set the alpha value of the artists to zero, then draw everything and
+        #store the resulting canvas in a cache which can be used later to 
+        #restore regions of the background. The *real* alpha values of the 
+        #artists is then restored and the canvas is redrawn. This causes flicker
+        #of the animated artists - but at least it seems to work.
         if self.__caching_in_progress:
             self.__caching_in_progress = False
             return
         
         self.__caching_in_progress = True
         
+        #record the alpha values of the text objects so they can be restored
         prev_alphas = [t.get_alpha() for t in self.__text_objects]
         
+        #hide the text objects by setting their alpha values to zero - note that 
+        #using set_visible(False) instead leads to problems with layout.
         for t in self.__text_objects:
             t.set_alpha(0)
             
         self.__mpl_fig.canvas.draw()
         self.__bkgd_cache = self.__mpl_fig.canvas.copy_from_bbox(self.__mpl_fig.bbox)
         
-        #now unhide the text
+        #now unhide the text by restoring its alpha value
         for i,t in enumerate(self.__text_objects):
             t.set_alpha(prev_alphas[i])
             self.__mpl_fig.draw_artist(t)
@@ -106,7 +145,14 @@ class AnimatedText:
          
     
     def redraw_text(self):
-        assert self.__bkgd_cache is not None, "redraw_text called before __cache_bkgd got called"
+        """
+        Restores the whole background region from the cache and then draws the 
+        animated text objects over the top. You should call this every time you
+        change the text and want the changes to be drawn to the screen.
+        """
+        assert self.__bkgd_cache is not None, ("redraw_text() called before "
+                                               "__bkgd_cache was set. Have you "
+                                               "called start_text_animation()?")
         
         #restore the whole figure background from the cached backgroud
         self.__mpl_fig.canvas.restore_region(self.__bkgd_cache)
@@ -149,18 +195,10 @@ class TextPropertiesEditor(dialog.AvoPlotDialog):
         
         #create main buttons for editor frame
         self.ok_button = wx.Button(self, wx.ID_ANY, "Ok")
-        #self.apply_button = wx.Button(self, wx.ID_ANY, "Apply")
-        #self.cancel_button = wx.Button(self, wx.ID_ANY, "Cancel")
-        #button_sizer.Add(self.cancel_button, 0, wx.ALIGN_TOP | wx.ALIGN_RIGHT)
-        #button_sizer.AddSpacer(5)
-        #button_sizer.Add(self.apply_button, 0, wx.ALIGN_TOP | wx.ALIGN_RIGHT)
-        #button_sizer.AddSpacer(5)
         button_sizer.Add(self.ok_button, 0, wx.ALIGN_TOP | wx.ALIGN_RIGHT)
         vsizer.Add(button_sizer, 0, wx.ALIGN_BOTTOM | wx.ALIGN_RIGHT | wx.ALL, border=10)
         
         #register main button event callbacks
-        #wx.EVT_BUTTON(self, self.cancel_button.GetId(), self.on_close)
-        #wx.EVT_BUTTON(self, self.apply_button.GetId(), self.on_apply)
         wx.EVT_BUTTON(self, self.ok_button.GetId(), self.on_ok)
         
         wx.EVT_CLOSE(self, self.on_close)
@@ -237,6 +275,11 @@ class FontPropertiesPanel(wx.Panel):
     Panel to hold the text property editing controls within the 
     TextPropertiesEditor dialog. The Text object to be edited should be passed
     to the constructor.
+    
+    Note that this panel does not use blitting methods to get fast text 
+    animation because that causes layout problems for certain text objects - 
+    e.g. the layout of axis labels and tick-labels are related to each other, 
+    and this is not honoured properly if blitting methods are used. 
     """
     def __init__(self, parent, text_objects):
         wx.Panel.__init__(self, parent, wx.ID_ANY)
@@ -365,13 +408,18 @@ class FontPropertiesPanel(wx.Panel):
         self.SetAutoLayout(True)
     
     
-    def Destroy(self):
-        wx.Panel.Destroy(self)
-    
     def redraw_text(self):
+        """
+        Redraws the text - does not use blitting for fast animation because that
+        causes layout problems in some cases. 
+        """
         self.mpl_figure.canvas.draw()
         
+        
     def on_font_selection(self, evnt):
+        """
+        Event handler for font selection events.
+        """
         new_font = evnt.GetString()
         for t in self.__text_objects:
             t.set_family(new_font)
@@ -380,6 +428,9 @@ class FontPropertiesPanel(wx.Panel):
     
     
     def on_font_colour(self, evnt):
+        """
+        Event handler for font colour change events.
+        """
         new_colour = evnt.GetColour().GetAsString(wx.C2S_HTML_SYNTAX)
         for t in self.__text_objects:
             t.set_color(new_colour)
@@ -388,6 +439,9 @@ class FontPropertiesPanel(wx.Panel):
     
     
     def on_font_size(self, evnt):
+        """
+        Event handler for font size change events.
+        """
         new_size = evnt.GetInt()
         for t in self.__text_objects:
             t.set_size(new_size)
@@ -396,6 +450,9 @@ class FontPropertiesPanel(wx.Panel):
     
     
     def on_font_weight(self, evnt):
+        """
+        Event handler for font weight (e.g. bold) change events.
+        """
         new_weight = self.possible_weights[evnt.GetSelection()]
         for t in self.__text_objects:
             t.set_weight(new_weight)
@@ -404,6 +461,9 @@ class FontPropertiesPanel(wx.Panel):
 
 
     def on_font_style(self, evnt):
+        """
+        Event handler for font style (e.g. italic) change events.
+        """
         new_style = evnt.GetString()
         for t in self.__text_objects:
             t.set_style(new_style)
@@ -412,6 +472,9 @@ class FontPropertiesPanel(wx.Panel):
         
         
     def on_font_stretch(self, evnt):
+        """
+        Event handler for font stretch (e.g. compressed) change events.
+        """
         new_stretch = evnt.GetString()
         for t in self.__text_objects:
             t.set_stretch(new_stretch)
