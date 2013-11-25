@@ -21,6 +21,7 @@ control panels for elements.
 """
 
 import wx
+import wx.combo
 from avoplot.gui import text
 
 
@@ -60,7 +61,9 @@ class EditableCheckBox(wx.BoxSizer):
         wx.BoxSizer.__init__(self, wx.HORIZONTAL)
         
         self.checkbox = wx.CheckBox(parent, -1, label+" ")
-        self.edit_link = wx.HyperlinkCtrl(parent, wx.ID_ANY, edit_label, "",style=wx.HL_ALIGN_CENTRE)
+        self.edit_link = wx.HyperlinkCtrl(parent, wx.ID_ANY, edit_label, "",
+                                          style=wx.HL_ALIGN_CENTRE|wx.BORDER_NONE)
+
         self.edit_link_parentheses = [wx.StaticText(parent, wx.ID_ANY, "("),
                                            wx.StaticText(parent, wx.ID_ANY, ")")]
         
@@ -212,5 +215,47 @@ class ChoiceSetting(SettingBase):
         wx.EVT_CHOICE(parent, lb.GetId(), callback)
         
         
+
+class BitmapChoice(wx.combo.OwnerDrawnComboBox):
+    def __init__(self, parent, id=-1, value=wx.EmptyString, 
+        pos=wx.DefaultPosition, size=wx.DefaultSize, 
+        choices=[], style=0, validator=wx.DefaultValidator, name=wx.ComboBoxNameStr, bitmaps=[]):
+        """
+        BitmapChoice widget modified from the example posted by Torsten
+        in this thread: http://markmail.org/thread/rb3c7377nuvnjfph
+        """
         
+        wx.combo.OwnerDrawnComboBox.__init__(self, parent, id, value, 
+                pos, size, choices, style, validator, name )
+                
+        self.bitmaps = bitmaps[:]
+                
+    # Overridden from OwnerDrawnComboBox, called to draw each
+    # item in the list
+    def OnDrawItem(self, dc, rect, item, flags):
+        if item == wx.NOT_FOUND:
+            # painting the control, but there is no valid item selected yet
+            return
+
+        r = wx.Rect(*rect)  # make a copy
+        #r.Deflate(3, 5)
+
+        if flags & wx.combo.ODCB_PAINTING_CONTROL:
+            # for painting the control itself
+            dc.DrawBitmap( self.bitmaps[item], r.x+12, r.y+2, True)
+
+        else:
+            # for painting the items in the popup
+            dc.DrawBitmap( self.bitmaps[item], r.x+12, r.y+2, True )
+  
+    # Overridden from OwnerDrawnComboBox, should return the height
+    # needed to display an item in the popup, or -1 for default
+    def OnMeasureItem(self, item):
+        # Simply demonstrate the ability to have variable-height items
+        return 20
+
+    # Overridden from OwnerDrawnComboBox.  Callback for item width, or
+    # -1 for default/undetermined
+    def OnMeasureItemWidth(self, item):
+        return 50; # default - will be measured from text width        
         

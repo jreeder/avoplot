@@ -21,6 +21,8 @@ from wx.lib.agw import floatspin
 import collections
 import matplotlib.colors
 
+from avoplot.gui import widgets
+
 
 #new data type to represent line styles and their relevant properties
 LineType = collections.namedtuple('LineType',['name','mpl_symbol','has_width'])  
@@ -28,7 +30,7 @@ LineType = collections.namedtuple('LineType',['name','mpl_symbol','has_width'])
 #create a list of all the line types and their properties - the order of
 #this list determines the order that they appear in the drop down menu
 all_available_lines = [
-                       LineType('None','None', False), #None has to come first
+                       LineType('','None', False), #None has to come first
                        LineType('____','-', True),
                        LineType('------','--',True),
                        LineType('.-.-.-','-.', True),
@@ -37,29 +39,30 @@ all_available_lines = [
 
 
 #new data type to represent markers and their relevant properties
-MarkerType = collections.namedtuple('MarkerType',['name','mpl_symbol','has_size', 
+MarkerType = collections.namedtuple('MarkerType',['bitmap','mpl_symbol','has_size', 
                                                   'has_fill', 'has_edge'])        
 
 #create a list of all the marker types and their properties - the order of
 #this list determines the order that they appear in the drop down menu
+#TODO - include NullBitmap here properly
 all_available_markers = [
-                     MarkerType('None','None', False, False, False),
-                     MarkerType(u'●', '.',True, True, True),
-                     MarkerType('+','+', True, False, True),
-                     MarkerType(u'◯','o', True, True, True),
-                     MarkerType('X','x', True, False, True),
-                     MarkerType(u'△','^', True, True, True),
-                     MarkerType(u'▽','v', True, True, True),
-                     MarkerType(u'◁','<', True, True, True),
-                     MarkerType(u'▷','>', True, True, True),
-                     MarkerType(u'◻','s', True, True, True),
-                     MarkerType(u'◇','D', True, True, True),
-                     MarkerType(u'⋄','d', True, True, True),
-                     MarkerType(u'⬠','p', True, True, True),
-                     MarkerType(u'⬡','h', True, True, True),
-                     MarkerType(u'☆','*', True, True, True),
-                     MarkerType('_','_', True, False, True),
-                     MarkerType('|','|', True, False, True)
+                     MarkerType('avoplot_nullbitmap','None', False, False, False),
+                     MarkerType('avoplot_marker_point', '.',True, True, True),
+                     MarkerType('avoplot_marker_plus','+', True, False, True),
+                     MarkerType('avoplot_marker_circle','o', True, True, True),
+                     MarkerType('avoplot_marker_cross','x', True, False, True),
+                     MarkerType('avoplot_marker_uptriangle','^', True, True, True),
+                     MarkerType('avoplot_marker_downtriangle','v', True, True, True),
+                     MarkerType('avoplot_marker_lefttriangle','<', True, True, True),
+                     MarkerType('avoplot_marker_righttriangle','>', True, True, True),
+                     MarkerType('avoplot_marker_square','s', True, True, True),
+                     MarkerType('avoplot_marker_diamond','D', True, True, True),
+                     MarkerType('avoplot_marker_thindiamond','d', True, True, True),
+                     MarkerType('avoplot_marker_pentagon','p', True, True, True),
+                     MarkerType('avoplot_marker_hexagon','h', True, True, True),
+                     MarkerType('avoplot_marker_star','*', True, True, True),
+                     MarkerType('avoplot_marker_hline','_', True, False, True),
+                     MarkerType('avoplot_marker_vline','|', True, False, True)
                      ]
 
 
@@ -133,6 +136,8 @@ class LineStyleEditorPanel(wx.Panel):
         self.SetSizer(line_ctrls_szr)
         line_ctrls_szr.Fit(self)
         self.SetAutoLayout(True)
+        self.parent.SendSizeEvent()
+        self.parent.Refresh()
         
         
     def on_line_colour_change(self, evnt):
@@ -180,7 +185,8 @@ class LineStyleEditorPanel(wx.Panel):
         
         self.SendSizeEvent()
         self.parent.SendSizeEvent()
-
+        self.Refresh()
+        self.parent.Refresh()
 
 
 class MarkerStyleEditorPanel(wx.Panel):
@@ -201,22 +207,25 @@ class MarkerStyleEditorPanel(wx.Panel):
         #build some mappings between marker properties and their indices in the list
         #of available markers
         self.__marker_symbol_to_idx_map = {}
-        self.__marker_name_to_idx_map = {}
+        #self.__marker_name_to_idx_map = {}
         for i,m in enumerate(self.__available_markers):
             self.__marker_symbol_to_idx_map[m.mpl_symbol] = i
-            self.__marker_name_to_idx_map[m.name] = i
+            #self.__marker_name_to_idx_map[m.name] = i
 
         marker_ctrls_szr = wx.FlexGridSizer(5, 2, vgap=5, hgap=2)
         
         #marker style
-        self.marker_style_choice = wx.Choice(self, wx.ID_ANY, 
-                                             choices=[m.name for m in self.__available_markers])        
+        #TODO - better way to include NullBitmap here (this is a quick hack for now)
+        bitmaps = [wx.ArtProvider.GetBitmap(m.bitmap, size=wx.Size(16,16)) for m in self.__available_markers]
+        
+        self.marker_style_choice = widgets.BitmapChoice(self, choices=[""]*len(bitmaps), size=(80,-1),
+                                                        style=wx.CB_READONLY, bitmaps=bitmaps)
         
         marker_ctrls_szr.Add(wx.StaticText(self, wx.ID_ANY, "Style:"), 0,
                              wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_RIGHT)
         marker_ctrls_szr.Add(self.marker_style_choice, 0,
                              wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_LEFT)
-        wx.EVT_CHOICE(self, self.marker_style_choice.GetId(), self.on_marker)
+        wx.EVT_COMBOBOX(self, self.marker_style_choice.GetId(), self.on_marker)
         
         #marker size
         self.marker_size_ctrl_txt = wx.StaticText(self, wx.ID_ANY, "Size:")
@@ -311,7 +320,7 @@ class MarkerStyleEditorPanel(wx.Panel):
         """
         Event handler for marker style change events.
         """
-        marker_idx = self.__marker_name_to_idx_map[evnt.GetString()]
+        marker_idx = evnt.GetSelection()
         new_marker = self.__available_markers[marker_idx]
         self.update_marker_controls(new_marker)
         for l in self.mpl_lines:
@@ -350,4 +359,6 @@ class MarkerStyleEditorPanel(wx.Panel):
         
         self.SendSizeEvent()
         self.parent.SendSizeEvent()
+        self.Refresh()
+        self.parent.Refresh()
         

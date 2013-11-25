@@ -22,6 +22,7 @@ This module contains the main script for running AvoPlot.
 """
 
 import wx
+import sys
 import optparse
 import warnings
 
@@ -109,3 +110,5 @@ if __name__ == '__main__':
     #create and run the wx app    
     app = AvoPlotApp(options, args)
     app.MainLoop()
+
+    

@@ -281,16 +281,23 @@ class ColumnDataPanel(wx.ScrolledWindow):
         return selection_str
         
             
+    def _on_mouse_motion(self, evnt):
+        self.grid.GetTargetWindow().SetCursor(wx.CROSS_CURSOR)
+        evnt.Skip()
                 
     def enable_select_mode(self, val, data_series):
         self.set_editable(not val)
         if val:
-            #self.grid.GetGridWindow().SetCursor(wx.StockCursor(wx.CURSOR_CROSS))
+            self.grid.GetTargetWindow().Bind(wx.EVT_MOTION, self._on_mouse_motion)
+        else:
+            self.grid.GetTargetWindow().SetCursor(wx.NullCursor)
+            self.grid.GetTargetWindow().Unbind(wx.EVT_MOTION)
+        
+        if val:
             self.grid.ClearSelection()
             for choice, col in self.data_type_choices.values():
                 choice.Disable()
         else:
-            #self.grid.GetGridWindow().SetCursor(wx.StockCursor(wx.CURSOR_DEFAULT))
             for choice, col in self.data_type_choices.values():
                 choice.Enable()
             try:
@@ -695,18 +702,21 @@ class TxtFileDataSeriesSelectFrame(wx.Dialog):
     
     def on_cancel(self, evnt):
         wx.SetCursor(wx.NullCursor)
+        #self.file_contents_panel.SetCursor(wx.NullCursor)
         self.EndModal(wx.ID_CANCEL)
-    
+
     
     def enable_select_mode(self, val, data_series):
         self.file_contents_panel.enable_select_mode(val, data_series)
         self.data_series_panel.enable_select_mode(val, data_series)
         self.plot_button.Enable(enable=(not val))
         
-        if val:
-            wx.SetCursor(wx.CROSS_CURSOR)
-        else:
-            wx.SetCursor(wx.NullCursor)
+        #if val:
+        #    wx.SetCursor(wx.CROSS_CURSOR)
+            #self.file_contents_panel.SetCursor(wx.CROSS_CURSOR)
+        #else:
+        #    wx.SetCursor(wx.NullCursor)
+            #self.file_contents_panel.SetCursor(wx.NullCursor)
 
 
     def get_series(self):

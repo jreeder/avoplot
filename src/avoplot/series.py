@@ -313,19 +313,25 @@ class XYSeriesControls(controls.AvoPlotControlPanelBase):
         
         #add line controls
         line_ctrls_static_szr = wx.StaticBoxSizer(wx.StaticBox(self, wx.ID_ANY, 'Line'), wx.VERTICAL)
-        linestyle_ctrl_panel = linestyle_editor.LineStyleEditorPanel(self, mpl_lines, self.series.update)
-        line_ctrls_static_szr.Add(linestyle_ctrl_panel, 0, wx.ALIGN_TOP | wx.ALIGN_RIGHT)
+        self.linestyle_ctrl_panel = linestyle_editor.LineStyleEditorPanel(self, mpl_lines, self.series.update)
+        line_ctrls_static_szr.Add(self.linestyle_ctrl_panel, 0, wx.ALIGN_TOP | wx.ALIGN_RIGHT)
        
         #add the marker controls
         marker_ctrls_static_szr = wx.StaticBoxSizer(wx.StaticBox(self, wx.ID_ANY, 'Markers'), wx.VERTICAL)
-        marker_ctrls_panel =  linestyle_editor.MarkerStyleEditorPanel(self, mpl_lines, self.series.update)      
-        marker_ctrls_static_szr.Add(marker_ctrls_panel, 0, wx.ALIGN_TOP | wx.ALIGN_RIGHT)
+        self.marker_ctrls_panel =  linestyle_editor.MarkerStyleEditorPanel(self, mpl_lines, self.series.update)      
+        marker_ctrls_static_szr.Add(self.marker_ctrls_panel, 0, wx.ALIGN_TOP | wx.ALIGN_RIGHT)
         
         #add the controls to the control panel's internal sizer
         self.Add(line_ctrls_static_szr,0,wx.EXPAND|wx.ALL, border=5)
         self.Add(marker_ctrls_static_szr,0,wx.EXPAND|wx.ALL, border=5)    
+        
+        
+        line_ctrls_static_szr.Layout()
 
-
+    def on_display(self):
+        
+        self.marker_ctrls_panel.SendSizeEvent()
+        self.linestyle_ctrl_panel.SendSizeEvent()
 
 
 ################################################################

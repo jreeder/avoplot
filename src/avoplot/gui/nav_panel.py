@@ -57,14 +57,16 @@ class NavigationPanel(wx.ScrolledWindow):
         
         self.v_sizer = wx.BoxSizer(wx.VERTICAL)
         
-        #note that we pass the style as an arg rather than a kwarg because it 
+        #note that we need a try except block for agwStyle because it 
         #changed names between wx versions from style to agwstyle
-        self.tree = customtreectrl.CustomTreeCtrl(self, wx.ID_ANY, 
-                                                  wx.Point(-1, -1), #default pos
-                                                  wx.Size(-1,-1), #default size
-                                                  (customtreectrl.TR_HIDE_ROOT|
-                                                   customtreectrl.TR_HAS_BUTTONS|
-                                                   customtreectrl.TR_LINES_AT_ROOT))
+        try:
+            self.tree = customtreectrl.CustomTreeCtrl(self, wx.ID_ANY, 
+                                                      agwStyle=(customtreectrl.TR_HIDE_ROOT |
+                                                                customtreectrl.TR_HAS_BUTTONS))
+        except:
+            self.tree = customtreectrl.CustomTreeCtrl(self, wx.ID_ANY, 
+                                                      style=(customtreectrl.TR_HIDE_ROOT |
+                                                                customtreectrl.TR_HAS_BUTTONS))
        
         #disable the scroll bars which come with the tree control (otherwise
         #you end up with two sets sometimes!)

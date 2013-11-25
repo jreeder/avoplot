@@ -60,15 +60,21 @@ class ControlPanel(aui.AuiNotebook):
             #AuiNotebook requires that any pages have the notebook as a parent -
             #so reparent all the panels to make it so!
             p.Reparent(self)
-            p.on_display() #perform any operations needed prior to display
+            
             self.AddPage(p, p.get_name())
 
-        self.Show(True)
+        
         self.Thaw()
         
         #send a size event to force redraw of window contents - this is only
         #really needed in windows
         self.SendSizeEvent()
+        
+        #perform any operations needed prior to display
+        for p in reversed(control_panels):
+            p.on_display() 
+            
+        self.Show(True)
     
     
     def on_element_delete(self, evnt):
