@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>avoplot_fromfile_plugin Package &mdash; AvoPlot 1 documentation</title>
+    <title>avoplot_fromfile_plugin Package &mdash; AvoPlot 13.11 documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1',
+        VERSION:     '13.11',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="shortcut icon" href="_static/avoplot16.ico"/>
-    <link rel="top" title="AvoPlot 1 documentation" href="index.html" />
+    <link rel="top" title="AvoPlot 13.11 documentation" href="index.html" />
     <link rel="up" title="plugins Package" href="avoplot.plugins.html" />
     <link rel="prev" title="plugins Package" href="avoplot.plugins.html" /> 
   </head>
@@ -41,7 +41,7 @@
         <li class="right" >
           <a href="avoplot.plugins.html" title="plugins Package"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">AvoPlot 1 documentation</a> &raquo;</li>
+        <li><a href="index.html">AvoPlot 13.11 documentation</a> &raquo;</li>
           <li><a href="API.html" >API</a> &raquo;</li>
           <li><a href="avoplot.html" >avoplot Package</a> &raquo;</li>
           <li><a href="avoplot.plugins.html" accesskey="U">plugins Package</a> &raquo;</li> 
@@ -96,6 +96,9 @@
 <span class="target" id="module-avoplot.plugins.avoplot_fromfile_plugin"></span></div>
 <div class="section" id="module-avoplot.plugins.avoplot_fromfile_plugin.column_selector">
 <span id="column-selector-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">column_selector</span></tt> Module<a class="headerlink" href="#module-avoplot.plugins.avoplot_fromfile_plugin.column_selector" title="Permalink to this headline">¶</a></h2>
+<p>This module is pretty messy - it is still very much under active development and
+will likely be changed a lot in the near future - don&#8217;t depend on any of the 
+functionality currently defined!</p>
 <dl class="class">
 <dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnDataPanel">
 <em class="property">class </em><tt class="descclassname">avoplot.plugins.avoplot_fromfile_plugin.column_selector.</tt><tt class="descname">ColumnDataPanel</tt><big>(</big><em>parent</em>, <em>file_contents</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnDataPanel" title="Permalink to this definition">¶</a></dt>
@@ -134,37 +137,6 @@ to be resized to match the columns</p>
 </dd></dl>
 
 <dl class="class">
-<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnSelectorFrame">
-<em class="property">class </em><tt class="descclassname">avoplot.plugins.avoplot_fromfile_plugin.column_selector.</tt><tt class="descname">ColumnSelectorFrame</tt><big>(</big><em>parent</em>, <em>file_contents</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnSelectorFrame" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx._windows.Frame</span></tt></p>
-<dl class="method">
-<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnSelectorFrame.on_plot">
-<tt class="descname">on_plot</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnSelectorFrame.on_plot" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnSelectorFrame.on_x_range_selected">
-<tt class="descname">on_x_range_selected</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnSelectorFrame.on_x_range_selected" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnSelectorFrame.on_x_select">
-<tt class="descname">on_x_select</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnSelectorFrame.on_x_select" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnSelectorFrame.on_y_range_selected">
-<tt class="descname">on_y_range_selected</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnSelectorFrame.on_y_range_selected" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnSelectorFrame.on_y_select">
-<tt class="descname">on_y_select</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.ColumnSelectorFrame.on_y_select" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
 <dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.DataSeriesSelectPanel">
 <em class="property">class </em><tt class="descclassname">avoplot.plugins.avoplot_fromfile_plugin.column_selector.</tt><tt class="descname">DataSeriesSelectPanel</tt><big>(</big><em>parent</em>, <em>main_frame</em>, <em>file_contents</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.DataSeriesSelectPanel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx._windows.ScrolledWindow</span></tt></p>
@@ -183,6 +155,12 @@ to be resized to match the columns</p>
 <tt class="descname">on_remove_data_series</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.DataSeriesSelectPanel.on_remove_data_series" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+</dd></dl>
+
+<dl class="class">
+<dt id="avoplot.plugins.avoplot_fromfile_plugin.column_selector.DataSeriesSelectPanelContainer">
+<em class="property">class </em><tt class="descclassname">avoplot.plugins.avoplot_fromfile_plugin.column_selector.</tt><tt class="descname">DataSeriesSelectPanelContainer</tt><big>(</big><em>parent</em>, <em>main_frame</em>, <em>file_contents</em><big>)</big><a class="headerlink" href="#avoplot.plugins.avoplot_fromfile_plugin.column_selector.DataSeriesSelectPanelContainer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx._windows.SashWindow</span></tt></p>
 </dd></dl>
 
 <dl class="class">
@@ -542,7 +520,7 @@ in sort() functions.
         <li class="right" >
           <a href="avoplot.plugins.html" title="plugins Package"
              >previous</a> |</li>
-        <li><a href="index.html">AvoPlot 1 documentation</a> &raquo;</li>
+        <li><a href="index.html">AvoPlot 13.11 documentation</a> &raquo;</li>
           <li><a href="API.html" >API</a> &raquo;</li>
           <li><a href="avoplot.html" >avoplot Package</a> &raquo;</li>
           <li><a href="avoplot.plugins.html" >plugins Package</a> &raquo;</li> 

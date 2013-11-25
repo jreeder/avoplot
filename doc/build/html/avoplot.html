@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>avoplot Package &mdash; AvoPlot 1 documentation</title>
+    <title>avoplot Package &mdash; AvoPlot 13.11 documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1',
+        VERSION:     '13.11',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="shortcut icon" href="_static/avoplot16.ico"/>
-    <link rel="top" title="AvoPlot 1 documentation" href="index.html" />
+    <link rel="top" title="AvoPlot 13.11 documentation" href="index.html" />
     <link rel="up" title="API" href="API.html" />
     <link rel="next" title="gui Package" href="avoplot.gui.html" />
     <link rel="prev" title="API" href="API.html" /> 
@@ -45,7 +45,7 @@
         <li class="right" >
           <a href="API.html" title="API"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">AvoPlot 1 documentation</a> &raquo;</li>
+        <li><a href="index.html">AvoPlot 13.11 documentation</a> &raquo;</li>
           <li><a href="API.html" accesskey="U">API</a> &raquo;</li> 
       </ul>
     </div>
@@ -58,6 +58,7 @@
 <li><a class="reference internal" href="#module-avoplot.controls"><tt class="docutils literal"><span class="pre">controls</span></tt> Module</a></li>
 <li><a class="reference internal" href="#module-avoplot.core"><tt class="docutils literal"><span class="pre">core</span></tt> Module</a></li>
 <li><a class="reference internal" href="#module-avoplot.figure"><tt class="docutils literal"><span class="pre">figure</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-avoplot.ordered_set"><tt class="docutils literal"><span class="pre">ordered_set</span></tt> Module</a></li>
 <li><a class="reference internal" href="#module-avoplot.persist"><tt class="docutils literal"><span class="pre">persist</span></tt> Module</a></li>
 <li><a class="reference internal" href="#module-avoplot.series"><tt class="docutils literal"><span class="pre">series</span></tt> Module</a></li>
 <li><a class="reference internal" href="#module-avoplot.subplots"><tt class="docutils literal"><span class="pre">subplots</span></tt> Module</a></li>
@@ -169,6 +170,16 @@ in the tab heading.</p>
 <tt class="descname">is_initialised</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.controls.AvoPlotControlPanelBase.is_initialised" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns True if the setup() method has already been run for this 
 control panel, False otherwise.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.controls.AvoPlotControlPanelBase.on_display">
+<tt class="descname">on_display</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.controls.AvoPlotControlPanelBase.on_display" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method will be called each time the control panel is displayed i.e.
+every time that the element that the control panel operates on is 
+selected. It can be overridden by subclasses in order to perform 
+processing before it is displayed (for example updating lists of 
+available data series etc.)</p>
 </dd></dl>
 
 <dl class="method">
@@ -294,6 +305,15 @@ be overridden in subclasses.</p>
 
 </dd></dl>
 
+<dl class="class">
+<dt id="avoplot.core.AvoPlotSession">
+<em class="property">class </em><tt class="descclassname">avoplot.core.</tt><tt class="descname">AvoPlotSession</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#avoplot.core.AvoPlotSession" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#avoplot.core.AvoPlotElementBase" title="avoplot.core.AvoPlotElementBase"><tt class="xref py py-class docutils literal"><span class="pre">avoplot.core.AvoPlotElementBase</span></tt></a></p>
+<p>A session is the &#8220;root&#8221; element for an AvoPlot program instance. It doesn&#8217;t
+really do anything by itself, but provides a parent to any figures that get
+created.</p>
+</dd></dl>
+
 <dl class="function">
 <dt id="avoplot.core.new_id">
 <tt class="descclassname">avoplot.core.</tt><tt class="descname">new_id</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.core.new_id" title="Permalink to this definition">¶</a></dt>
@@ -417,6 +437,30 @@ background colour, title etc. of the figure.</p>
 </dd></dl>
 
 </div>
+<div class="section" id="module-avoplot.ordered_set">
+<span id="ordered-set-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">ordered_set</span></tt> Module<a class="headerlink" href="#module-avoplot.ordered_set" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="avoplot.ordered_set.OrderedSet">
+<em class="property">class </em><tt class="descclassname">avoplot.ordered_set.</tt><tt class="descname">OrderedSet</tt><big>(</big><em>iterable=None</em><big>)</big><a class="headerlink" href="#avoplot.ordered_set.OrderedSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">_abcoll.MutableSet</span></tt></p>
+<dl class="method">
+<dt id="avoplot.ordered_set.OrderedSet.add">
+<tt class="descname">add</tt><big>(</big><em>key</em><big>)</big><a class="headerlink" href="#avoplot.ordered_set.OrderedSet.add" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.ordered_set.OrderedSet.discard">
+<tt class="descname">discard</tt><big>(</big><em>key</em><big>)</big><a class="headerlink" href="#avoplot.ordered_set.OrderedSet.discard" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.ordered_set.OrderedSet.pop">
+<tt class="descname">pop</tt><big>(</big><em>last=True</em><big>)</big><a class="headerlink" href="#avoplot.ordered_set.OrderedSet.pop" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
 <div class="section" id="module-avoplot.persist">
 <span id="persist-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">persist</span></tt> Module<a class="headerlink" href="#module-avoplot.persist" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
@@ -435,6 +479,17 @@ used for storing settings across program restarts.</p>
 <dd><p>Bases: <a class="reference internal" href="#avoplot.core.AvoPlotElementBase" title="avoplot.core.AvoPlotElementBase"><tt class="xref py py-class docutils literal"><span class="pre">avoplot.core.AvoPlotElementBase</span></tt></a></p>
 <p>Base class for all data series.</p>
 <dl class="method">
+<dt id="avoplot.series.DataSeriesBase.add_subseries">
+<tt class="descname">add_subseries</tt><big>(</big><em>series</em><big>)</big><a class="headerlink" href="#avoplot.series.DataSeriesBase.add_subseries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a series as a child of this series. Normally you would expect 
+series to be parented by subplots, however, for things like fit-lines 
+it makes more sense for them to be associated with the series that they
+are fitting then the subplot that they are plotted in.</p>
+<p>series must be an instance of avoplot.series.DataSeriesBase or subclass
+thereof.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="avoplot.series.DataSeriesBase.delete">
 <tt class="descname">delete</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.series.DataSeriesBase.delete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Overrides the base class method in order to remove the line(s) from the 
@@ -442,10 +497,27 @@ axes and draw the changes.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="avoplot.series.DataSeriesBase.get_figure">
+<tt class="descname">get_figure</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.series.DataSeriesBase.get_figure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the AvoPlot figure (avoplot.figure.AvoPlotFigure) object that
+the series is contained within, or None if the series does not yet 
+belong to a figure.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="avoplot.series.DataSeriesBase.get_mpl_lines">
 <tt class="descname">get_mpl_lines</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.series.DataSeriesBase.get_mpl_lines" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a list of matplotlib line objects associated with the data 
 series.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.series.DataSeriesBase.get_subplot">
+<tt class="descname">get_subplot</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.series.DataSeriesBase.get_subplot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the AvoPlot subplot (subclass of 
+avoplot.subplots.AvoPlotSubplotBase) object that
+the series is contained within, or None if the series does not yet 
+belong to a subplot.</p>
 </dd></dl>
 
 <dl class="method">
@@ -470,16 +542,75 @@ should be overridden by subclasses.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="avoplot.series.DataSeriesBase.set_parent_element">
-<tt class="descname">set_parent_element</tt><big>(</big><em>parent</em><big>)</big><a class="headerlink" href="#avoplot.series.DataSeriesBase.set_parent_element" title="Permalink to this definition">¶</a></dt>
-<dd><p>Overrides AvoPlotElementBase method. Does exactly the same, but ensures 
-that parent is an instance of AvoPlotSubplotBase or a subclass thereof.</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="avoplot.series.DataSeriesBase.update">
 <tt class="descname">update</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.series.DataSeriesBase.update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Redraws the series.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="avoplot.series.FitData">
+<em class="property">class </em><tt class="descclassname">avoplot.series.</tt><tt class="descname">FitData</tt><big>(</big><em>s</em>, <em>xdata</em>, <em>ydata</em>, <em>gaussian_params</em><big>)</big><a class="headerlink" href="#avoplot.series.FitData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#avoplot.series.XYDataSeries" title="avoplot.series.XYDataSeries"><tt class="xref py py-class docutils literal"><span class="pre">avoplot.series.XYDataSeries</span></tt></a></p>
+<dl class="staticmethod">
+<dt id="avoplot.series.FitData.get_supported_subplot_type">
+<em class="property">static </em><tt class="descname">get_supported_subplot_type</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.series.FitData.get_supported_subplot_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="avoplot.series.FitDataCtrl">
+<em class="property">class </em><tt class="descclassname">avoplot.series.</tt><tt class="descname">FitDataCtrl</tt><big>(</big><em>series</em><big>)</big><a class="headerlink" href="#avoplot.series.FitDataCtrl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#avoplot.controls.AvoPlotControlPanelBase" title="avoplot.controls.AvoPlotControlPanelBase"><tt class="xref py py-class docutils literal"><span class="pre">avoplot.controls.AvoPlotControlPanelBase</span></tt></a></p>
+<p>Control panel where the buttons to draw backgrounds will appear</p>
+<dl class="method">
+<dt id="avoplot.series.FitDataCtrl.setup">
+<tt class="descname">setup</tt><big>(</big><em>parent</em><big>)</big><a class="headerlink" href="#avoplot.series.FitDataCtrl.setup" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="avoplot.series.GaussianParameters">
+<em class="property">class </em><tt class="descclassname">avoplot.series.</tt><tt class="descname">GaussianParameters</tt><a class="headerlink" href="#avoplot.series.GaussianParameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">tuple</span></tt></p>
+<p>GaussianParameters(amplitude, mean, sigma, y_offset)</p>
+<dl class="attribute">
+<dt id="avoplot.series.GaussianParameters.amplitude">
+<tt class="descname">amplitude</tt><a class="headerlink" href="#avoplot.series.GaussianParameters.amplitude" title="Permalink to this definition">¶</a></dt>
+<dd><p>itemgetter(item, ...) &#8211;&gt; itemgetter object</p>
+<p>Return a callable object that fetches the given item(s) from its operand.
+After, f=itemgetter(2), the call f(r) returns r[2].
+After, g=itemgetter(2,5,3), the call g(r) returns (r[2], r[5], r[3])</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="avoplot.series.GaussianParameters.mean">
+<tt class="descname">mean</tt><a class="headerlink" href="#avoplot.series.GaussianParameters.mean" title="Permalink to this definition">¶</a></dt>
+<dd><p>itemgetter(item, ...) &#8211;&gt; itemgetter object</p>
+<p>Return a callable object that fetches the given item(s) from its operand.
+After, f=itemgetter(2), the call f(r) returns r[2].
+After, g=itemgetter(2,5,3), the call g(r) returns (r[2], r[5], r[3])</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="avoplot.series.GaussianParameters.sigma">
+<tt class="descname">sigma</tt><a class="headerlink" href="#avoplot.series.GaussianParameters.sigma" title="Permalink to this definition">¶</a></dt>
+<dd><p>itemgetter(item, ...) &#8211;&gt; itemgetter object</p>
+<p>Return a callable object that fetches the given item(s) from its operand.
+After, f=itemgetter(2), the call f(r) returns r[2].
+After, g=itemgetter(2,5,3), the call g(r) returns (r[2], r[5], r[3])</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="avoplot.series.GaussianParameters.y_offset">
+<tt class="descname">y_offset</tt><a class="headerlink" href="#avoplot.series.GaussianParameters.y_offset" title="Permalink to this definition">¶</a></dt>
+<dd><p>itemgetter(item, ...) &#8211;&gt; itemgetter object</p>
+<p>Return a callable object that fetches the given item(s) from its operand.
+After, f=itemgetter(2), the call f(r) returns r[2].
+After, g=itemgetter(2,5,3), the call g(r) returns (r[2], r[5], r[3])</p>
 </dd></dl>
 
 </dd></dl>
@@ -490,9 +621,10 @@ that parent is an instance of AvoPlotSubplotBase or a subclass thereof.</p>
 <dd><p>Bases: <a class="reference internal" href="#avoplot.series.DataSeriesBase" title="avoplot.series.DataSeriesBase"><tt class="xref py py-class docutils literal"><span class="pre">avoplot.series.DataSeriesBase</span></tt></a></p>
 <p>Class to represent 2D XY data series.</p>
 <dl class="method">
-<dt id="avoplot.series.XYDataSeries.exclusive_lock">
-<tt class="descname">exclusive_lock</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.series.XYDataSeries.exclusive_lock" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="avoplot.series.XYDataSeries.export">
+<tt class="descname">export</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.series.XYDataSeries.export" title="Permalink to this definition">¶</a></dt>
+<dd><p>Exports the selected data series. Called when user right clicks on the data series (see nav_panel.py).</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="avoplot.series.XYDataSeries.get_data">
@@ -532,7 +664,8 @@ returns them.</p>
 <dl class="method">
 <dt id="avoplot.series.XYDataSeries.set_xy_data">
 <tt class="descname">set_xy_data</tt><big>(</big><em>xdata=None</em>, <em>ydata=None</em><big>)</big><a class="headerlink" href="#avoplot.series.XYDataSeries.set_xy_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the x and y values of the data series.</p>
+<dd><p>Sets the x and y values of the data series. Note that you need to call
+the update() method to draw the changes to the screen.</p>
 </dd></dl>
 
 </dd></dl>
@@ -544,28 +677,9 @@ returns them.</p>
 <p>Control panel to allow user editing of data series (line styles,
 colours etc.)</p>
 <dl class="method">
-<dt id="avoplot.series.XYSeriesControls.on_line_colour_change">
-<tt class="descname">on_line_colour_change</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.series.XYSeriesControls.on_line_colour_change" title="Permalink to this definition">¶</a></dt>
-<dd><p>Event handler for line colour change events.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="avoplot.series.XYSeriesControls.on_linestyle">
-<tt class="descname">on_linestyle</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.series.XYSeriesControls.on_linestyle" title="Permalink to this definition">¶</a></dt>
-<dd><p>Event handler for line style change events.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="avoplot.series.XYSeriesControls.on_marker">
-<tt class="descname">on_marker</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.series.XYSeriesControls.on_marker" title="Permalink to this definition">¶</a></dt>
-<dd><p>Event handler for marker style change events.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="avoplot.series.XYSeriesControls.on_marker_colour">
-<tt class="descname">on_marker_colour</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.series.XYSeriesControls.on_marker_colour" title="Permalink to this definition">¶</a></dt>
-<dd><p>Event handler for marker colour change events</p>
-</dd></dl>
+<dt id="avoplot.series.XYSeriesControls.on_display">
+<tt class="descname">on_display</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.series.XYSeriesControls.on_display" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="method">
 <dt id="avoplot.series.XYSeriesControls.setup">
@@ -573,6 +687,43 @@ colours etc.)</p>
 <dd><p>Creates all the controls in the panel</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="class">
+<dt id="avoplot.series.XYSeriesFittingControls">
+<em class="property">class </em><tt class="descclassname">avoplot.series.</tt><tt class="descname">XYSeriesFittingControls</tt><big>(</big><em>series</em><big>)</big><a class="headerlink" href="#avoplot.series.XYSeriesFittingControls" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#avoplot.controls.AvoPlotControlPanelBase" title="avoplot.controls.AvoPlotControlPanelBase"><tt class="xref py py-class docutils literal"><span class="pre">avoplot.controls.AvoPlotControlPanelBase</span></tt></a></p>
+<dl class="method">
+<dt id="avoplot.series.XYSeriesFittingControls.on_fit">
+<tt class="descname">on_fit</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.series.XYSeriesFittingControls.on_fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.series.XYSeriesFittingControls.on_select">
+<tt class="descname">on_select</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.series.XYSeriesFittingControls.on_select" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.series.XYSeriesFittingControls.onselect">
+<tt class="descname">onselect</tt><big>(</big><em>vmin</em>, <em>vmax</em><big>)</big><a class="headerlink" href="#avoplot.series.XYSeriesFittingControls.onselect" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.series.XYSeriesFittingControls.setup">
+<tt class="descname">setup</tt><big>(</big><em>parent</em><big>)</big><a class="headerlink" href="#avoplot.series.XYSeriesFittingControls.setup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates all the controls in the panel</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="avoplot.series.fit_gaussian">
+<tt class="descclassname">avoplot.series.</tt><tt class="descname">fit_gaussian</tt><big>(</big><em>xdata</em>, <em>ydata</em>, <em>amplitude_guess=None</em>, <em>mean_guess=None</em>, <em>sigma_guess=None</em>, <em>y_offset_guess=None</em>, <em>plot_fit=True</em><big>)</big><a class="headerlink" href="#avoplot.series.fit_gaussian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fits a gaussian to some data using a least squares fit method. Returns a named tuple
+of best fit parameters (amplitude, mean, sigma, y_offset).</p>
+<p>Initial guess values for the fit parameters can be specified as kwargs. Otherwise they
+are estimated from the data.</p>
+<p>If plot_fit=True then the fit curve is plotted over the top of the raw data and displayed.</p>
 </dd></dl>
 
 </div>
@@ -595,8 +746,9 @@ avoplot.series.DataSeriesBase or a subclass.</p>
 <dt id="avoplot.subplots.AvoPlotSubplotBase.get_figure">
 <tt class="descname">get_figure</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.subplots.AvoPlotSubplotBase.get_figure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the AvoPlotFigure instance that this subplot is contained 
-within. Use get_figure().get_mpl_figure() to get the matplotlib figure
-object that the subplot is associated with.</p>
+within , or None if the series does not yet belong to a figure. Use 
+get_figure().get_mpl_figure() to get the matplotlib figureobject that 
+the subplot is associated with.</p>
 </dd></dl>
 
 <dl class="method">
@@ -670,11 +822,44 @@ a PopupMenu for adding new data series to the subplot.</p>
 </dd></dl>
 
 <dl class="class">
+<dt id="avoplot.subplots.GridLinesCheckBox">
+<em class="property">class </em><tt class="descclassname">avoplot.subplots.</tt><tt class="descname">GridLinesCheckBox</tt><big>(</big><em>parent</em>, <em>mpl_axis</em>, <em>subplot</em><big>)</big><a class="headerlink" href="#avoplot.subplots.GridLinesCheckBox" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="avoplot.gui.html#avoplot.gui.widgets.EditableCheckBox" title="avoplot.gui.widgets.EditableCheckBox"><tt class="xref py py-class docutils literal"><span class="pre">avoplot.gui.widgets.EditableCheckBox</span></tt></a></p>
+<dl class="method">
+<dt id="avoplot.subplots.GridLinesCheckBox.on_checkbox">
+<tt class="descname">on_checkbox</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.subplots.GridLinesCheckBox.on_checkbox" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for the gridlines checkbox.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.subplots.GridLinesCheckBox.on_edit_link">
+<tt class="descname">on_edit_link</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.subplots.GridLinesCheckBox.on_edit_link" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="avoplot.subplots.MetaCallMyInit">
 <em class="property">class </em><tt class="descclassname">avoplot.subplots.</tt><tt class="descname">MetaCallMyInit</tt><a class="headerlink" href="#avoplot.subplots.MetaCallMyInit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">type</span></tt></p>
 <p>Metaclass which ensures that a class&#8217;s my_init() and setup_controls() 
 methods get called once, after it&#8217;s __init__ method has returned.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="avoplot.subplots.TickLabelsCheckBox">
+<em class="property">class </em><tt class="descclassname">avoplot.subplots.</tt><tt class="descname">TickLabelsCheckBox</tt><big>(</big><em>parent</em>, <em>mpl_axis</em><big>)</big><a class="headerlink" href="#avoplot.subplots.TickLabelsCheckBox" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="avoplot.gui.html#avoplot.gui.widgets.EditableCheckBox" title="avoplot.gui.widgets.EditableCheckBox"><tt class="xref py py-class docutils literal"><span class="pre">avoplot.gui.widgets.EditableCheckBox</span></tt></a></p>
+<dl class="method">
+<dt id="avoplot.subplots.TickLabelsCheckBox.on_checkbox">
+<tt class="descname">on_checkbox</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.subplots.TickLabelsCheckBox.on_checkbox" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.subplots.TickLabelsCheckBox.on_edit_link">
+<tt class="descname">on_edit_link</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.subplots.TickLabelsCheckBox.on_edit_link" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="class">
@@ -688,30 +873,6 @@ instance.</p>
 <dt id="avoplot.subplots.XYSubplotControls.on_bkgd_colour">
 <tt class="descname">on_bkgd_colour</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.subplots.XYSubplotControls.on_bkgd_colour" title="Permalink to this definition">¶</a></dt>
 <dd><p>Event handler for the background colour selector.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="avoplot.subplots.XYSubplotControls.on_grid">
-<tt class="descname">on_grid</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.subplots.XYSubplotControls.on_grid" title="Permalink to this definition">¶</a></dt>
-<dd><p>Event handler for the gridlines checkbox.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="avoplot.subplots.XYSubplotControls.on_title">
-<tt class="descname">on_title</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.subplots.XYSubplotControls.on_title" title="Permalink to this definition">¶</a></dt>
-<dd><p>Event handler for the subplot title text box.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="avoplot.subplots.XYSubplotControls.on_xlabel">
-<tt class="descname">on_xlabel</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.subplots.XYSubplotControls.on_xlabel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Event handler for the x-axis title text box.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="avoplot.subplots.XYSubplotControls.on_ylabel">
-<tt class="descname">on_ylabel</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.subplots.XYSubplotControls.on_ylabel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Event handler for the y-axis title text box.</p>
 </dd></dl>
 
 <dl class="method">
@@ -732,6 +893,9 @@ instance.</p>
 <li class="toctree-l2"><a class="reference internal" href="avoplot.gui.html#module-avoplot.gui.analysis_tools"><tt class="docutils literal"><span class="pre">analysis_tools</span></tt> Module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="avoplot.gui.html#module-avoplot.gui.artwork"><tt class="docutils literal"><span class="pre">artwork</span></tt> Module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="avoplot.gui.html#module-avoplot.gui.control_panel"><tt class="docutils literal"><span class="pre">control_panel</span></tt> Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="avoplot.gui.html#module-avoplot.gui.dialog"><tt class="docutils literal"><span class="pre">dialog</span></tt> Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="avoplot.gui.html#module-avoplot.gui.gridlines"><tt class="docutils literal"><span class="pre">gridlines</span></tt> Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="avoplot.gui.html#module-avoplot.gui.linestyle_editor"><tt class="docutils literal"><span class="pre">linestyle_editor</span></tt> Module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="avoplot.gui.html#module-avoplot.gui.main"><tt class="docutils literal"><span class="pre">main</span></tt> Module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="avoplot.gui.html#module-avoplot.gui.menu"><tt class="docutils literal"><span class="pre">menu</span></tt> Module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="avoplot.gui.html#module-avoplot.gui.nav_panel"><tt class="docutils literal"><span class="pre">nav_panel</span></tt> Module</a></li>
@@ -781,7 +945,7 @@ instance.</p>
         <li class="right" >
           <a href="API.html" title="API"
              >previous</a> |</li>
-        <li><a href="index.html">AvoPlot 1 documentation</a> &raquo;</li>
+        <li><a href="index.html">AvoPlot 13.11 documentation</a> &raquo;</li>
           <li><a href="API.html" >API</a> &raquo;</li> 
       </ul>
     </div>

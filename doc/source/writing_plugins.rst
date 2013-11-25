@@ -130,7 +130,11 @@ In order to use your plugins they will have to be installed. This is done in exa
 
     from avoplot.plugins import setup
 
-This can be used in exactly the same way as the distutils setup function. See the example_plugins_setup.py file in the "examples" folder of the AvoPlot distribution.
+This can be used in exactly the same way as the distutils setup function. See the example_plugins_setup.py file in the "examples" folder of the AvoPlot distribution. To install all the example plugins change directory into AvoPlot/examples folder and run the command:::
+    
+    python example_plugins_setup.py install
+
+Depending on where you installed AvoPlot, you may need administrative rights. You will need to re-start AvoPlot for the changes to take effect. The next time you start AvoPlot you will find new options under the `File->New` menu.
 
 
 A More Advanced Example

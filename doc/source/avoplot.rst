@@ -33,6 +33,14 @@ avoplot Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`ordered_set` Module
+-------------------------
+
+.. automodule:: avoplot.ordered_set
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`persist` Module
 ---------------------
 

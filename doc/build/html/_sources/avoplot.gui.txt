@@ -33,6 +33,30 @@ gui Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`dialog` Module
+--------------------
+
+.. automodule:: avoplot.gui.dialog
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`gridlines` Module
+-----------------------
+
+.. automodule:: avoplot.gui.gridlines
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`linestyle_editor` Module
+------------------------------
+
+.. automodule:: avoplot.gui.linestyle_editor
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`main` Module
 ------------------
 

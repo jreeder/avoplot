@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>gui Package &mdash; AvoPlot 1 documentation</title>
+    <title>gui Package &mdash; AvoPlot 13.11 documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1',
+        VERSION:     '13.11',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="shortcut icon" href="_static/avoplot16.ico"/>
-    <link rel="top" title="AvoPlot 1 documentation" href="index.html" />
+    <link rel="top" title="AvoPlot 13.11 documentation" href="index.html" />
     <link rel="up" title="avoplot Package" href="avoplot.html" />
     <link rel="next" title="plugins Package" href="avoplot.plugins.html" />
     <link rel="prev" title="avoplot Package" href="avoplot.html" /> 
@@ -45,7 +45,7 @@
         <li class="right" >
           <a href="avoplot.html" title="avoplot Package"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">AvoPlot 1 documentation</a> &raquo;</li>
+        <li><a href="index.html">AvoPlot 13.11 documentation</a> &raquo;</li>
           <li><a href="API.html" >API</a> &raquo;</li>
           <li><a href="avoplot.html" accesskey="U">avoplot Package</a> &raquo;</li> 
       </ul>
@@ -59,6 +59,9 @@
 <li><a class="reference internal" href="#module-avoplot.gui.analysis_tools"><tt class="docutils literal"><span class="pre">analysis_tools</span></tt> Module</a></li>
 <li><a class="reference internal" href="#module-avoplot.gui.artwork"><tt class="docutils literal"><span class="pre">artwork</span></tt> Module</a></li>
 <li><a class="reference internal" href="#module-avoplot.gui.control_panel"><tt class="docutils literal"><span class="pre">control_panel</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-avoplot.gui.dialog"><tt class="docutils literal"><span class="pre">dialog</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-avoplot.gui.gridlines"><tt class="docutils literal"><span class="pre">gridlines</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-avoplot.gui.linestyle_editor"><tt class="docutils literal"><span class="pre">linestyle_editor</span></tt> Module</a></li>
 <li><a class="reference internal" href="#module-avoplot.gui.main"><tt class="docutils literal"><span class="pre">main</span></tt> Module</a></li>
 <li><a class="reference internal" href="#module-avoplot.gui.menu"><tt class="docutils literal"><span class="pre">menu</span></tt> Module</a></li>
 <li><a class="reference internal" href="#module-avoplot.gui.nav_panel"><tt class="docutils literal"><span class="pre">nav_panel</span></tt> Module</a></li>
@@ -144,10 +147,19 @@ relevant size subfolder for the requested icon.</p>
 element. Each set of controls (as returned by element.get_control_panels())
 is added as a new tab in the notebook.</p>
 <dl class="method">
+<dt id="avoplot.gui.control_panel.ControlPanel.on_element_add">
+<tt class="descname">on_element_add</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.control_panel.ControlPanel.on_element_add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for element add events. Passes the event through to
+all pages currently in the control panel</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="avoplot.gui.control_panel.ControlPanel.on_element_delete">
 <tt class="descname">on_element_delete</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.control_panel.ControlPanel.on_element_delete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Event handler for element delete events. Removes any control panels 
 associated with the deleted element from the notebook.</p>
+<p>If the element is not the currently selected element, then the event
+gets passed through to all pages currently in the control panel</p>
 </dd></dl>
 
 <dl class="method">
@@ -167,18 +179,198 @@ be a list of AvoPlotControlPanelBase objects.</p>
 </dd></dl>
 
 </div>
+<div class="section" id="module-avoplot.gui.dialog">
+<span id="dialog-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">dialog</span></tt> Module<a class="headerlink" href="#module-avoplot.gui.dialog" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="avoplot.gui.dialog.AvoPlotDialog">
+<em class="property">class </em><tt class="descclassname">avoplot.gui.dialog.</tt><tt class="descname">AvoPlotDialog</tt><big>(</big><em>parent</em>, <em>title</em><big>)</big><a class="headerlink" href="#avoplot.gui.dialog.AvoPlotDialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx._windows.Dialog</span></tt></p>
+<p>Base class for all Dialogs used in the GUI.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-avoplot.gui.gridlines">
+<span id="gridlines-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">gridlines</span></tt> Module<a class="headerlink" href="#module-avoplot.gui.gridlines" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="avoplot.gui.gridlines.GridPropertiesEditor">
+<em class="property">class </em><tt class="descclassname">avoplot.gui.gridlines.</tt><tt class="descname">GridPropertiesEditor</tt><big>(</big><em>parent</em>, <em>subplot</em>, <em>mpl_axis</em><big>)</big><a class="headerlink" href="#avoplot.gui.gridlines.GridPropertiesEditor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#avoplot.gui.dialog.AvoPlotDialog" title="avoplot.gui.dialog.AvoPlotDialog"><tt class="xref py py-class docutils literal"><span class="pre">avoplot.gui.dialog.AvoPlotDialog</span></tt></a></p>
+<dl class="method">
+<dt id="avoplot.gui.gridlines.GridPropertiesEditor.on_close">
+<tt class="descname">on_close</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.gridlines.GridPropertiesEditor.on_close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for close events. Destroys the dialog box.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-avoplot.gui.linestyle_editor">
+<span id="linestyle-editor-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">linestyle_editor</span></tt> Module<a class="headerlink" href="#module-avoplot.gui.linestyle_editor" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="avoplot.gui.linestyle_editor.LineStyleEditorPanel">
+<em class="property">class </em><tt class="descclassname">avoplot.gui.linestyle_editor.</tt><tt class="descname">LineStyleEditorPanel</tt><big>(</big><em>parent, mpl_lines, update_command, linestyles=[LineType(name='', mpl_symbol='None', has_width=False), LineType(name='____', mpl_symbol='-', has_width=True), LineType(name='------', mpl_symbol='--', has_width=True), LineType(name='.-.-.-', mpl_symbol='-.', has_width=True), LineType(name='.......', mpl_symbol=':', has_width=True)]</em><big>)</big><a class="headerlink" href="#avoplot.gui.linestyle_editor.LineStyleEditorPanel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx._windows.Panel</span></tt></p>
+<dl class="method">
+<dt id="avoplot.gui.linestyle_editor.LineStyleEditorPanel.on_line_colour_change">
+<tt class="descname">on_line_colour_change</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.linestyle_editor.LineStyleEditorPanel.on_line_colour_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for line colour change events.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.linestyle_editor.LineStyleEditorPanel.on_linestyle">
+<tt class="descname">on_linestyle</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.linestyle_editor.LineStyleEditorPanel.on_linestyle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for line style change events.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.linestyle_editor.LineStyleEditorPanel.on_linewidth">
+<tt class="descname">on_linewidth</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.linestyle_editor.LineStyleEditorPanel.on_linewidth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for line thickness change events.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.linestyle_editor.LineStyleEditorPanel.update_line_controls">
+<tt class="descname">update_line_controls</tt><big>(</big><em>current_line</em><big>)</big><a class="headerlink" href="#avoplot.gui.linestyle_editor.LineStyleEditorPanel.update_line_controls" title="Permalink to this definition">¶</a></dt>
+<dd><p>If val==True then disables the line properties controls,
+else enables them.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="avoplot.gui.linestyle_editor.LineType">
+<em class="property">class </em><tt class="descclassname">avoplot.gui.linestyle_editor.</tt><tt class="descname">LineType</tt><a class="headerlink" href="#avoplot.gui.linestyle_editor.LineType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">tuple</span></tt></p>
+<p>LineType(name, mpl_symbol, has_width)</p>
+<dl class="attribute">
+<dt id="avoplot.gui.linestyle_editor.LineType.has_width">
+<tt class="descname">has_width</tt><a class="headerlink" href="#avoplot.gui.linestyle_editor.LineType.has_width" title="Permalink to this definition">¶</a></dt>
+<dd><p>itemgetter(item, ...) &#8211;&gt; itemgetter object</p>
+<p>Return a callable object that fetches the given item(s) from its operand.
+After, f=itemgetter(2), the call f(r) returns r[2].
+After, g=itemgetter(2,5,3), the call g(r) returns (r[2], r[5], r[3])</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="avoplot.gui.linestyle_editor.LineType.mpl_symbol">
+<tt class="descname">mpl_symbol</tt><a class="headerlink" href="#avoplot.gui.linestyle_editor.LineType.mpl_symbol" title="Permalink to this definition">¶</a></dt>
+<dd><p>itemgetter(item, ...) &#8211;&gt; itemgetter object</p>
+<p>Return a callable object that fetches the given item(s) from its operand.
+After, f=itemgetter(2), the call f(r) returns r[2].
+After, g=itemgetter(2,5,3), the call g(r) returns (r[2], r[5], r[3])</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="avoplot.gui.linestyle_editor.LineType.name">
+<tt class="descname">name</tt><a class="headerlink" href="#avoplot.gui.linestyle_editor.LineType.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>itemgetter(item, ...) &#8211;&gt; itemgetter object</p>
+<p>Return a callable object that fetches the given item(s) from its operand.
+After, f=itemgetter(2), the call f(r) returns r[2].
+After, g=itemgetter(2,5,3), the call g(r) returns (r[2], r[5], r[3])</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="avoplot.gui.linestyle_editor.MarkerStyleEditorPanel">
+<em class="property">class </em><tt class="descclassname">avoplot.gui.linestyle_editor.</tt><tt class="descname">MarkerStyleEditorPanel</tt><big>(</big><em>parent, mpl_lines, update_command, markers=[MarkerType(bitmap='avoplot_nullbitmap', mpl_symbol='None', has_size=False, has_fill=False, has_edge=False), MarkerType(bitmap='avoplot_marker_point', mpl_symbol='.', has_size=True, has_fill=True, has_edge=True), MarkerType(bitmap='avoplot_marker_plus', mpl_symbol='+', has_size=True, has_fill=False, has_edge=True), MarkerType(bitmap='avoplot_marker_circle', mpl_symbol='o', has_size=True, has_fill=True, has_edge=True), MarkerType(bitmap='avoplot_marker_cross', mpl_symbol='x', has_size=True, has_fill=False, has_edge=True), MarkerType(bitmap='avoplot_marker_uptriangle', mpl_symbol='^', has_size=True, has_fill=True, has_edge=True), MarkerType(bitmap='avoplot_marker_downtriangle', mpl_symbol='v', has_size=True, has_fill=True, has_edge=True), MarkerType(bitmap='avoplot_marker_lefttriangle', mpl_symbol='&lt;', has_size=True, has_fill=True, has_edge=True), MarkerType(bitmap='avoplot_marker_righttriangle', mpl_symbol='&gt;', has_size=True, has_fill=True, has_edge=True), MarkerType(bitmap='avoplot_marker_square', mpl_symbol='s', has_size=True, has_fill=True, has_edge=True), MarkerType(bitmap='avoplot_marker_diamond', mpl_symbol='D', has_size=True, has_fill=True, has_edge=True), MarkerType(bitmap='avoplot_marker_thindiamond', mpl_symbol='d', has_size=True, has_fill=True, has_edge=True), MarkerType(bitmap='avoplot_marker_pentagon', mpl_symbol='p', has_size=True, has_fill=True, has_edge=True), MarkerType(bitmap='avoplot_marker_hexagon', mpl_symbol='h', has_size=True, has_fill=True, has_edge=True), MarkerType(bitmap='avoplot_marker_star', mpl_symbol='*', has_size=True, has_fill=True, has_edge=True), MarkerType(bitmap='avoplot_marker_hline', mpl_symbol='_', has_size=True, has_fill=False, has_edge=True), MarkerType(bitmap='avoplot_marker_vline', mpl_symbol='|', has_size=True, has_fill=False, has_edge=True)]</em><big>)</big><a class="headerlink" href="#avoplot.gui.linestyle_editor.MarkerStyleEditorPanel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx._windows.Panel</span></tt></p>
+<dl class="method">
+<dt id="avoplot.gui.linestyle_editor.MarkerStyleEditorPanel.on_marker">
+<tt class="descname">on_marker</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.linestyle_editor.MarkerStyleEditorPanel.on_marker" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for marker style change events.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.linestyle_editor.MarkerStyleEditorPanel.on_marker_edgecolour">
+<tt class="descname">on_marker_edgecolour</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.linestyle_editor.MarkerStyleEditorPanel.on_marker_edgecolour" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for marker fill colour change events</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.linestyle_editor.MarkerStyleEditorPanel.on_marker_edgewidth">
+<tt class="descname">on_marker_edgewidth</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.linestyle_editor.MarkerStyleEditorPanel.on_marker_edgewidth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for line thickness change events.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.linestyle_editor.MarkerStyleEditorPanel.on_marker_fillcolour">
+<tt class="descname">on_marker_fillcolour</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.linestyle_editor.MarkerStyleEditorPanel.on_marker_fillcolour" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for marker fill colour change events</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.linestyle_editor.MarkerStyleEditorPanel.on_markersize">
+<tt class="descname">on_markersize</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.linestyle_editor.MarkerStyleEditorPanel.on_markersize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for marker size change events</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.linestyle_editor.MarkerStyleEditorPanel.update_marker_controls">
+<tt class="descname">update_marker_controls</tt><big>(</big><em>current_marker</em><big>)</big><a class="headerlink" href="#avoplot.gui.linestyle_editor.MarkerStyleEditorPanel.update_marker_controls" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shows or hides marker property controls depending on which are relevant
+for the currently selected marker type. current_marker should be a 
+MarkerType named tuple.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="avoplot.gui.linestyle_editor.MarkerType">
+<em class="property">class </em><tt class="descclassname">avoplot.gui.linestyle_editor.</tt><tt class="descname">MarkerType</tt><a class="headerlink" href="#avoplot.gui.linestyle_editor.MarkerType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">tuple</span></tt></p>
+<p>MarkerType(bitmap, mpl_symbol, has_size, has_fill, has_edge)</p>
+<dl class="attribute">
+<dt id="avoplot.gui.linestyle_editor.MarkerType.bitmap">
+<tt class="descname">bitmap</tt><a class="headerlink" href="#avoplot.gui.linestyle_editor.MarkerType.bitmap" title="Permalink to this definition">¶</a></dt>
+<dd><p>itemgetter(item, ...) &#8211;&gt; itemgetter object</p>
+<p>Return a callable object that fetches the given item(s) from its operand.
+After, f=itemgetter(2), the call f(r) returns r[2].
+After, g=itemgetter(2,5,3), the call g(r) returns (r[2], r[5], r[3])</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="avoplot.gui.linestyle_editor.MarkerType.has_edge">
+<tt class="descname">has_edge</tt><a class="headerlink" href="#avoplot.gui.linestyle_editor.MarkerType.has_edge" title="Permalink to this definition">¶</a></dt>
+<dd><p>itemgetter(item, ...) &#8211;&gt; itemgetter object</p>
+<p>Return a callable object that fetches the given item(s) from its operand.
+After, f=itemgetter(2), the call f(r) returns r[2].
+After, g=itemgetter(2,5,3), the call g(r) returns (r[2], r[5], r[3])</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="avoplot.gui.linestyle_editor.MarkerType.has_fill">
+<tt class="descname">has_fill</tt><a class="headerlink" href="#avoplot.gui.linestyle_editor.MarkerType.has_fill" title="Permalink to this definition">¶</a></dt>
+<dd><p>itemgetter(item, ...) &#8211;&gt; itemgetter object</p>
+<p>Return a callable object that fetches the given item(s) from its operand.
+After, f=itemgetter(2), the call f(r) returns r[2].
+After, g=itemgetter(2,5,3), the call g(r) returns (r[2], r[5], r[3])</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="avoplot.gui.linestyle_editor.MarkerType.has_size">
+<tt class="descname">has_size</tt><a class="headerlink" href="#avoplot.gui.linestyle_editor.MarkerType.has_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>itemgetter(item, ...) &#8211;&gt; itemgetter object</p>
+<p>Return a callable object that fetches the given item(s) from its operand.
+After, f=itemgetter(2), the call f(r) returns r[2].
+After, g=itemgetter(2,5,3), the call g(r) returns (r[2], r[5], r[3])</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="avoplot.gui.linestyle_editor.MarkerType.mpl_symbol">
+<tt class="descname">mpl_symbol</tt><a class="headerlink" href="#avoplot.gui.linestyle_editor.MarkerType.mpl_symbol" title="Permalink to this definition">¶</a></dt>
+<dd><p>itemgetter(item, ...) &#8211;&gt; itemgetter object</p>
+<p>Return a callable object that fetches the given item(s) from its operand.
+After, f=itemgetter(2), the call f(r) returns r[2].
+After, g=itemgetter(2,5,3), the call g(r) returns (r[2], r[5], r[3])</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
 <div class="section" id="module-avoplot.gui.main">
 <span id="main-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">main</span></tt> Module<a class="headerlink" href="#module-avoplot.gui.main" title="Permalink to this headline">¶</a></h2>
 <p>The main module contains the code for the main frame of the AvoPlot GUI.</p>
-<dl class="class">
-<dt id="avoplot.gui.main.AvoPlotSession">
-<em class="property">class </em><tt class="descclassname">avoplot.gui.main.</tt><tt class="descname">AvoPlotSession</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#avoplot.gui.main.AvoPlotSession" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="avoplot.html#avoplot.core.AvoPlotElementBase" title="avoplot.core.AvoPlotElementBase"><tt class="xref py py-class docutils literal"><span class="pre">avoplot.core.AvoPlotElementBase</span></tt></a></p>
-<p>A session is the &#8220;root&#8221; element for an AvoPlot program instance. It doesn&#8217;t
-really do anything by itself, but provides a parent to any figures that get
-created.</p>
-</dd></dl>
-
 <dl class="class">
 <dt id="avoplot.gui.main.MainFrame">
 <em class="property">class </em><tt class="descclassname">avoplot.gui.main.</tt><tt class="descname">MainFrame</tt><a class="headerlink" href="#avoplot.gui.main.MainFrame" title="Permalink to this definition">¶</a></dt>
@@ -419,17 +611,28 @@ corresponding to the element which has been selected.</p>
 <dl class="method">
 <dt id="avoplot.gui.nav_panel.NavigationPanel.on_rclick_menu_delete">
 <tt class="descname">on_rclick_menu_delete</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.nav_panel.NavigationPanel.on_rclick_menu_delete" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Event handler for the delete option in the right click menu.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.nav_panel.NavigationPanel.on_rclick_menu_export">
+<tt class="descname">on_rclick_menu_export</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.nav_panel.NavigationPanel.on_rclick_menu_export" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for the export option in the right click menu.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="avoplot.gui.nav_panel.NavigationPanel.on_rclick_menu_rename">
 <tt class="descname">on_rclick_menu_rename</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.nav_panel.NavigationPanel.on_rclick_menu_rename" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Event handler for the rename option in the right click menu.</p>
+<p>Opens a dialog box for the user to enter the new element name.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="avoplot.gui.nav_panel.NavigationPanel.on_tree_el_menu">
 <tt class="descname">on_tree_el_menu</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.nav_panel.NavigationPanel.on_tree_el_menu" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Event handler for right click events on elements in the navigation 
+panel - opens a popup menu for the element clicked.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="avoplot.gui.nav_panel.NavigationPanel.on_tree_select_el">
@@ -444,6 +647,8 @@ element (which generates an AvoPlotElementSelect)</p>
 <dt id="avoplot.gui.nav_panel.RightClickMenu">
 <em class="property">class </em><tt class="descclassname">avoplot.gui.nav_panel.</tt><tt class="descname">RightClickMenu</tt><big>(</big><em>nav_panel</em><big>)</big><a class="headerlink" href="#avoplot.gui.nav_panel.RightClickMenu" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx._core.Menu</span></tt></p>
+<p>Popup menu displayed when elements in the navigation panel are
+right clicked.</p>
 </dd></dl>
 
 </div>
@@ -549,12 +754,44 @@ handler for this event - on_rename_element()</p>
 <p>The text module contains classes and functions for editing matplotlib Text 
 objects</p>
 <dl class="class">
+<dt id="avoplot.gui.text.AnimatedText">
+<em class="property">class </em><tt class="descclassname">avoplot.gui.text.</tt><tt class="descname">AnimatedText</tt><big>(</big><em>text_objects</em><big>)</big><a class="headerlink" href="#avoplot.gui.text.AnimatedText" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="avoplot.gui.text.AnimatedText.redraw_text">
+<tt class="descname">redraw_text</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.gui.text.AnimatedText.redraw_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Restores the whole background region from the cache and then draws the 
+animated text objects over the top. You should call this every time you
+change the text and want the changes to be drawn to the screen.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.text.AnimatedText.start_text_animation">
+<tt class="descname">start_text_animation</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.gui.text.AnimatedText.start_text_animation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start the animation of the text. This must be called before you call 
+redraw_text. This creates a cache of the figure background and registers
+a callback to update the cache if the background gets changed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.text.AnimatedText.stop_text_animation">
+<tt class="descname">stop_text_animation</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.gui.text.AnimatedText.stop_text_animation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deletes the background cache and removes the update callback. Should be 
+called whenever you are finished animating the text</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="avoplot.gui.text.FontPropertiesPanel">
-<em class="property">class </em><tt class="descclassname">avoplot.gui.text.</tt><tt class="descname">FontPropertiesPanel</tt><big>(</big><em>parent</em>, <em>text_obj</em><big>)</big><a class="headerlink" href="#avoplot.gui.text.FontPropertiesPanel" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">avoplot.gui.text.</tt><tt class="descname">FontPropertiesPanel</tt><big>(</big><em>parent</em>, <em>text_objects</em><big>)</big><a class="headerlink" href="#avoplot.gui.text.FontPropertiesPanel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx._windows.Panel</span></tt></p>
 <p>Panel to hold the text property editing controls within the 
 TextPropertiesEditor dialog. The Text object to be edited should be passed
 to the constructor.</p>
+<p>Note that this panel does not use blitting methods to get fast text 
+animation because that causes layout problems for certain text objects - 
+e.g. the layout of axis labels and tick-labels are related to each other, 
+and this is not honoured properly if blitting methods are used.</p>
 <dl class="method">
 <dt id="avoplot.gui.text.FontPropertiesPanel.get_font_colour">
 <tt class="descname">get_font_colour</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.gui.text.FontPropertiesPanel.get_font_colour" title="Permalink to this definition">¶</a></dt>
@@ -573,15 +810,78 @@ to the constructor.</p>
 <dd><p>Returns the currently selected font size (integer number of points)</p>
 </dd></dl>
 
+<dl class="method">
+<dt id="avoplot.gui.text.FontPropertiesPanel.get_font_stretch">
+<tt class="descname">get_font_stretch</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.gui.text.FontPropertiesPanel.get_font_stretch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the stretch of the font currently selected</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.text.FontPropertiesPanel.get_font_style">
+<tt class="descname">get_font_style</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.gui.text.FontPropertiesPanel.get_font_style" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the style (&#8216;normal&#8217;, &#8216;italic&#8217; etc.) of the font currently 
+selected</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.text.FontPropertiesPanel.get_font_weight">
+<tt class="descname">get_font_weight</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.gui.text.FontPropertiesPanel.get_font_weight" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the weight of the font currently selected</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.text.FontPropertiesPanel.on_font_colour">
+<tt class="descname">on_font_colour</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.text.FontPropertiesPanel.on_font_colour" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for font colour change events.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.text.FontPropertiesPanel.on_font_selection">
+<tt class="descname">on_font_selection</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.text.FontPropertiesPanel.on_font_selection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for font selection events.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.text.FontPropertiesPanel.on_font_size">
+<tt class="descname">on_font_size</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.text.FontPropertiesPanel.on_font_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for font size change events.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.text.FontPropertiesPanel.on_font_stretch">
+<tt class="descname">on_font_stretch</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.text.FontPropertiesPanel.on_font_stretch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for font stretch (e.g. compressed) change events.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.text.FontPropertiesPanel.on_font_style">
+<tt class="descname">on_font_style</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.text.FontPropertiesPanel.on_font_style" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for font style (e.g. italic) change events.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.text.FontPropertiesPanel.on_font_weight">
+<tt class="descname">on_font_weight</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.text.FontPropertiesPanel.on_font_weight" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for font weight (e.g. bold) change events.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.text.FontPropertiesPanel.redraw_text">
+<tt class="descname">redraw_text</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.gui.text.FontPropertiesPanel.redraw_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Redraws the text - does not use blitting for fast animation because that
+causes layout problems in some cases.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">
 <dt id="avoplot.gui.text.TextPropertiesEditor">
-<em class="property">class </em><tt class="descclassname">avoplot.gui.text.</tt><tt class="descname">TextPropertiesEditor</tt><big>(</big><em>parent</em>, <em>text_obj</em><big>)</big><a class="headerlink" href="#avoplot.gui.text.TextPropertiesEditor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx._windows.Dialog</span></tt></p>
+<em class="property">class </em><tt class="descclassname">avoplot.gui.text.</tt><tt class="descname">TextPropertiesEditor</tt><big>(</big><em>parent</em>, <em>text_objects</em><big>)</big><a class="headerlink" href="#avoplot.gui.text.TextPropertiesEditor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#avoplot.gui.dialog.AvoPlotDialog" title="avoplot.gui.dialog.AvoPlotDialog"><tt class="xref py py-class docutils literal"><span class="pre">avoplot.gui.dialog.AvoPlotDialog</span></tt></a></p>
 <p>Dialog which allows the user to edit the text properties (colour, font etc.)
-of a matplotlib.text.Text object. The Text object to be edited should be 
-passed to the dialog constructor.</p>
+of a set of matplotlib.text.Text object. The Text objects to be edited should be 
+passed to the dialog constructor - which will accept either a single Text 
+object or an iterable of Text objects</p>
 <dl class="method">
 <dt id="avoplot.gui.text.TextPropertiesEditor.apply_to">
 <tt class="descname">apply_to</tt><big>(</big><em>text_obj</em><big>)</big><a class="headerlink" href="#avoplot.gui.text.TextPropertiesEditor.apply_to" title="Permalink to this definition">¶</a></dt>
@@ -684,6 +984,20 @@ the currently selected figure as an image file.</p>
 in all figures accordingly.</p>
 </dd></dl>
 
+<dl class="method">
+<dt id="avoplot.gui.toolbar.MainToolbar.set_pan_state">
+<tt class="descname">set_pan_state</tt><big>(</big><em>state</em><big>)</big><a class="headerlink" href="#avoplot.gui.toolbar.MainToolbar.set_pan_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enables (state = True) or disables (state = False) the pan tool for all
+figures. The zoom tool will be disabled if needed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.toolbar.MainToolbar.set_zoom_state">
+<tt class="descname">set_zoom_state</tt><big>(</big><em>state</em><big>)</big><a class="headerlink" href="#avoplot.gui.toolbar.MainToolbar.set_zoom_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enables (state = True) or disables (state = False) the zoom tool for all
+figures. The pan tool will be disabled if needed.</p>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -691,6 +1005,27 @@ in all figures accordingly.</p>
 <span id="widgets-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">widgets</span></tt> Module<a class="headerlink" href="#module-avoplot.gui.widgets" title="Permalink to this headline">¶</a></h2>
 <p>The widgets module contains a set of convenience widgets for building
 control panels for elements.</p>
+<dl class="class">
+<dt id="avoplot.gui.widgets.BitmapChoice">
+<em class="property">class </em><tt class="descclassname">avoplot.gui.widgets.</tt><tt class="descname">BitmapChoice</tt><big>(</big><em>parent</em>, <em>id=-1</em>, <em>value=u''</em>, <em>pos=wx.Point(-1</em>, <em>-1)</em>, <em>size=wx.Size(-1</em>, <em>-1)</em>, <em>choices=</em><span class="optional">[</span><span class="optional">]</span>, <em>style=0</em>, <em>validator=&lt;wx._core.Validator; proxy of &lt;Swig Object of type 'wxValidator *' at 0x2b9a1f1e5540&gt; &gt;</em>, <em>name=u'comboBox'</em>, <em>bitmaps=</em><span class="optional">[</span><span class="optional">]</span><big>)</big><a class="headerlink" href="#avoplot.gui.widgets.BitmapChoice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx.combo.OwnerDrawnComboBox</span></tt></p>
+<dl class="method">
+<dt id="avoplot.gui.widgets.BitmapChoice.OnDrawItem">
+<tt class="descname">OnDrawItem</tt><big>(</big><em>dc</em>, <em>rect</em>, <em>item</em>, <em>flags</em><big>)</big><a class="headerlink" href="#avoplot.gui.widgets.BitmapChoice.OnDrawItem" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.widgets.BitmapChoice.OnMeasureItem">
+<tt class="descname">OnMeasureItem</tt><big>(</big><em>item</em><big>)</big><a class="headerlink" href="#avoplot.gui.widgets.BitmapChoice.OnMeasureItem" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.widgets.BitmapChoice.OnMeasureItemWidth">
+<tt class="descname">OnMeasureItemWidth</tt><big>(</big><em>item</em><big>)</big><a class="headerlink" href="#avoplot.gui.widgets.BitmapChoice.OnMeasureItemWidth" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 <dl class="class">
 <dt id="avoplot.gui.widgets.ChoiceSetting">
 <em class="property">class </em><tt class="descclassname">avoplot.gui.widgets.</tt><tt class="descname">ChoiceSetting</tt><big>(</big><em>parent</em>, <em>label</em>, <em>current_selection</em>, <em>selections</em>, <em>callback</em><big>)</big><a class="headerlink" href="#avoplot.gui.widgets.ChoiceSetting" title="Permalink to this definition">¶</a></dt>
@@ -706,6 +1041,33 @@ control panels for elements.</p>
 </dd></dl>
 
 <dl class="class">
+<dt id="avoplot.gui.widgets.EditableCheckBox">
+<em class="property">class </em><tt class="descclassname">avoplot.gui.widgets.</tt><tt class="descname">EditableCheckBox</tt><big>(</big><em>parent</em>, <em>label</em>, <em>edit_label='edit'</em><big>)</big><a class="headerlink" href="#avoplot.gui.widgets.EditableCheckBox" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx._core.BoxSizer</span></tt></p>
+<dl class="method">
+<dt id="avoplot.gui.widgets.EditableCheckBox.on_checkbox">
+<tt class="descname">on_checkbox</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.widgets.EditableCheckBox.on_checkbox" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for checkbox events. This should be overridden in the 
+subclass.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.widgets.EditableCheckBox.on_edit_link">
+<tt class="descname">on_edit_link</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.widgets.EditableCheckBox.on_edit_link" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for clicks on the hyperlink. This should be overridden in
+the subclass.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.widgets.EditableCheckBox.set_checked">
+<tt class="descname">set_checked</tt><big>(</big><em>value</em><big>)</big><a class="headerlink" href="#avoplot.gui.widgets.EditableCheckBox.set_checked" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the checkbox to be either checked (value = True), or unchecked 
+(value = False).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="avoplot.gui.widgets.SettingBase">
 <em class="property">class </em><tt class="descclassname">avoplot.gui.widgets.</tt><tt class="descname">SettingBase</tt><big>(</big><em>parent</em>, <em>label</em><big>)</big><a class="headerlink" href="#avoplot.gui.widgets.SettingBase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx._core.BoxSizer</span></tt></p>
@@ -714,13 +1076,39 @@ control panels for elements.</p>
 
 <dl class="class">
 <dt id="avoplot.gui.widgets.TextSetting">
-<em class="property">class </em><tt class="descclassname">avoplot.gui.widgets.</tt><tt class="descname">TextSetting</tt><big>(</big><em>parent</em>, <em>label</em>, <em>text_obj</em>, <em>callback</em><big>)</big><a class="headerlink" href="#avoplot.gui.widgets.TextSetting" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#avoplot.gui.widgets.SettingBase" title="avoplot.gui.widgets.SettingBase"><tt class="xref py py-class docutils literal"><span class="pre">avoplot.gui.widgets.SettingBase</span></tt></a></p>
-<p>A text label next to a wx text entry control.</p>
+<em class="property">class </em><tt class="descclassname">avoplot.gui.widgets.</tt><tt class="descname">TextSetting</tt><big>(</big><em>parent</em>, <em>label</em>, <em>text_obj</em><big>)</big><a class="headerlink" href="#avoplot.gui.widgets.TextSetting" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#avoplot.gui.widgets.SettingBase" title="avoplot.gui.widgets.SettingBase"><tt class="xref py py-class docutils literal"><span class="pre">avoplot.gui.widgets.SettingBase</span></tt></a>, <a class="reference internal" href="#avoplot.gui.text.AnimatedText" title="avoplot.gui.text.AnimatedText"><tt class="xref py py-class docutils literal"><span class="pre">avoplot.gui.text.AnimatedText</span></tt></a></p>
+<p>A text label next to a wx text entry control. The matplotlib Text object
+associated with the control is automatically animated to provide fast 
+redraws when the text is changed.</p>
+<p>A font properties button is displayed next to the text control (if the text
+entry box is not empty) which opens a font properties dialog.</p>
+<dl class="method">
+<dt id="avoplot.gui.widgets.TextSetting.on_focus">
+<tt class="descname">on_focus</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.widgets.TextSetting.on_focus" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for when the control gets focus. Starts the text animation
+(i.e. caches the background).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.widgets.TextSetting.on_text_change">
+<tt class="descname">on_text_change</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.widgets.TextSetting.on_text_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for text change events. Updates the text on the figure and
+redraws it.</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="avoplot.gui.widgets.TextSetting.on_text_prop_button">
 <tt class="descname">on_text_prop_button</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.widgets.TextSetting.on_text_prop_button" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Event handler for clicks on the &#8220;font properties&#8221; button. Opens a font
+properties dialog.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.gui.widgets.TextSetting.on_unfocus">
+<tt class="descname">on_unfocus</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.widgets.TextSetting.on_unfocus" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event handler for when the control loses focus. Stops the text animation</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -748,7 +1136,7 @@ control panels for elements.</p>
         <li class="right" >
           <a href="avoplot.html" title="avoplot Package"
              >previous</a> |</li>
-        <li><a href="index.html">AvoPlot 1 documentation</a> &raquo;</li>
+        <li><a href="index.html">AvoPlot 13.11 documentation</a> &raquo;</li>
           <li><a href="API.html" >API</a> &raquo;</li>
           <li><a href="avoplot.html" >avoplot Package</a> &raquo;</li> 
       </ul>

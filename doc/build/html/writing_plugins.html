@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Writing Plugins &mdash; AvoPlot 1 documentation</title>
+    <title>Writing Plugins &mdash; AvoPlot 13.11 documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1',
+        VERSION:     '13.11',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="shortcut icon" href="_static/avoplot16.ico"/>
-    <link rel="top" title="AvoPlot 1 documentation" href="index.html" />
+    <link rel="top" title="AvoPlot 13.11 documentation" href="index.html" />
     <link rel="next" title="API" href="API.html" />
     <link rel="prev" title="A First Plot" href="a_first_plot.html" /> 
   </head>
@@ -44,7 +44,7 @@
         <li class="right" >
           <a href="a_first_plot.html" title="A First Plot"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">AvoPlot 1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">AvoPlot 13.11 documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar">
@@ -184,7 +184,10 @@
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">avoplot.plugins</span> <span class="kn">import</span> <span class="n">setup</span>
 </pre></div>
 </div>
-<p>This can be used in exactly the same way as the distutils setup function. See the example_plugins_setup.py file in the &#8220;examples&#8221; folder of the AvoPlot distribution.</p>
+<p>This can be used in exactly the same way as the distutils setup function. See the example_plugins_setup.py file in the &#8220;examples&#8221; folder of the AvoPlot distribution. To install all the example plugins change directory into AvoPlot/examples folder and run the command::</p>
+<div class="highlight-python"><pre>python example_plugins_setup.py install</pre>
+</div>
+<p>Depending on where you installed AvoPlot, you may need administrative rights. You will need to re-start AvoPlot for the changes to take effect. The next time you start AvoPlot you will find new options under the <cite>File-&gt;New</cite> menu.</p>
 </div>
 <div class="section" id="a-more-advanced-example">
 <h2>A More Advanced Example<a class="headerlink" href="#a-more-advanced-example" title="Permalink to this headline">¶</a></h2>
@@ -213,7 +216,7 @@
         <li class="right" >
           <a href="a_first_plot.html" title="A First Plot"
              >previous</a> |</li>
-        <li><a href="index.html">AvoPlot 1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">AvoPlot 13.11 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
