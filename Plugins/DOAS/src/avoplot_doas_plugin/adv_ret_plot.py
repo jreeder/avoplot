@@ -16,6 +16,7 @@
 #along with AvoPlot.  If not, see <http://www.gnu.org/licenses/>.
 import wx
 import os.path
+import numpy
 
 from avoplot.persist import PersistentStorage
 from avoplot.plugins import AvoPlotPluginSimple
@@ -128,8 +129,8 @@ class DOASAdvRetPlugin(AvoPlotPluginSimple):
             return False
         
         data_series = DOASAdvRetData(os.path.basename(filename),
-                                       xdata=times, 
-                                       ydata=cas)
+                                       xdata=numpy.array(times), 
+                                       ydata=numpy.array(cas))
         
         subplot.add_data_series(data_series)
         

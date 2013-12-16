@@ -35,6 +35,7 @@ from avoplot import subplots
 from avoplot import series
 from avoplot import controls
 from avoplot import figure
+from avoplot import data_selection
 import avoplot.gui
 from spectrometers import SpectrometerManager
 
@@ -211,11 +212,15 @@ class SO2TimeSeries(series.XYDataSeries):
         self.__pending_callafter_finshed.set()
         self._found_dark_event = threading.Event()
         
+        self.filenames = []
+        
         #call the super class's init method, passing the directory name as
         #the name of our series
         super(SO2TimeSeries,self).__init__(os.path.basename(dir_name),xdata=[],ydata=[])
         
         self.loader_thread = threading.Thread(target=self._load_spectra)
+        
+        self.add_control_panel(RatioTimeSeriesControlPanel(self))
         
         
         
@@ -283,6 +288,10 @@ class SO2TimeSeries(series.XYDataSeries):
             times.append(s.capture_time)    
             ratios.append(ratio_calc.get_ratio(s))
             
+            #TODO - this doesn't work for recursive dir searches - need a way to 
+            #get the full path to the spectrum file
+            self.filenames.append(os.path.join(self.dir_name, s.filename)) #TODO - is this really threadsafe?
+           
             #try to read a sequence number from filename (this might not be possible
             #since the filename might not contain a sequence number - in that case
             #we just create a list of numbers from 0)
@@ -302,6 +311,7 @@ class SO2TimeSeries(series.XYDataSeries):
                 self.times = times[:]
                 self.seq_numbers = seq_nums[:]
                 self.ratios = ratios[:]
+                
                 wx.CallAfter(self.async_set_xy_data)
                 
                 #request that the subplot gets redrawn
@@ -309,7 +319,12 @@ class SO2TimeSeries(series.XYDataSeries):
 
                     
         #again, don't bother waiting for pending CallAfter calls, just let them fail
-
+   
+    
+    def get_filenames(self):
+        return numpy.array(self.filenames) #return a copy of the data
+    
+    
     def set_xdata_to_times(self):
         if self.xaxis_format == 'times':
             return
@@ -345,10 +360,57 @@ class SO2TimeSeries(series.XYDataSeries):
             self.__pending_callafter_finshed.set()
         
              
-    
     @staticmethod
     def get_supported_subplot_type():
         return SO2TimeSubplot
+
+
+
+class RatioTimeSeriesControlPanel(controls.AvoPlotControlPanelBase):
+    def __init__(self, series):
+        
+        self.series = series
+        super(RatioTimeSeriesControlPanel, self).__init__('DOAS')
+    
+    
+    def setup(self, parent):
+        
+        super(RatioTimeSeriesControlPanel, self).setup(parent)
+        
+        self.range_select = data_selection.DataRangeSelectionPanel(self, self.series)
+        
+        
+        self.coadd_button = wx.Button(self, wx.ID_ANY, "Average Spectra")
+        
+        self.Add(self.range_select, 0 , wx.ALIGN_CENTER_HORIZONTAL)
+        self.Add(self.coadd_button, 0 , wx.ALIGN_CENTER_HORIZONTAL)
+        
+        wx.EVT_BUTTON(self, self.coadd_button.GetId(), self.on_coadd)
+        
+    
+    def on_coadd(self, evnt):
+        
+        #get the filenames in the selection
+        mask = self.range_select.get_selection()
+        
+        selected_idxs = numpy.where(mask)
+        filenames = self.series.get_filenames()[selected_idxs]
+        
+        filename = wx.FileSelector("Choose output file", flags=wx.FD_SAVE)
+        
+        if filename == "":
+            return
+        
+        wx.BeginBusyCursor()
+        wx.Yield()
+        try:
+            loader = SpectrumIO()
+            spectra = [loader.load(f) for f in filenames]
+            mean_spec = spectrum_maths.mean(spectra)
+            loader.save(mean_spec, filename, 'SpectraSuite Tab-delimited')
+            
+        finally:
+            wx.EndBusyCursor()
 
 
 

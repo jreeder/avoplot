@@ -127,6 +127,18 @@ class AvoPlotFigure(core.AvoPlotElementBase, wx.ScrolledWindow):
         self.SetAutoLayout(True)
     
     
+    def enable_pan_and_zoom_tools(self, val):
+        """
+        If val == True, then enables the pan and zoom tools for the figure (in 
+        fact for all open figures). If val == False, then disables them.
+        """
+        
+        toolbar = self.parent.toolbar
+        
+        toolbar.set_pan_state(val)
+        toolbar.set_zoom_state(val)
+        
+    
     def _destroy(self):
         """
         Overrides the base class method in order to call self.Destroy() to 

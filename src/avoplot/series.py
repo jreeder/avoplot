@@ -18,7 +18,6 @@ import wx
 import os
 import numpy
 from datetime import datetime
-from matplotlib.widgets import SpanSelector
 
 import math
 import scipy.optimize
@@ -29,6 +28,7 @@ from avoplot import controls
 from avoplot import core
 from avoplot import subplots
 from avoplot import figure
+from avoplot import data_selection
 from avoplot.gui import linestyle_editor
 from avoplot.persist import PersistentStorage
 
@@ -180,7 +180,7 @@ class XYDataSeries(DataSeriesBase):
         super(XYDataSeries, self).__init__(name)
         self.set_xy_data(xdata, ydata)
         self.add_control_panel(XYSeriesControls(self))
-        #self.add_control_panel(XYSeriesFittingControls(self))
+        self.add_control_panel(XYSeriesFittingControls(self))
           
           
     @staticmethod    
@@ -195,7 +195,9 @@ class XYDataSeries(DataSeriesBase):
     def set_xy_data(self, xdata=None, ydata=None):
         """
         Sets the x and y values of the data series. Note that you need to call
-        the update() method to draw the changes to the screen.
+        the update() method to draw the changes to the screen. Note that xdata 
+        and ydata may be masked arrays (numpy.ma.masked_array) but only the 
+        unmasked values will be stored.
         """
         if xdata is None and ydata is None:
             xdata = numpy.array([])
@@ -210,8 +212,15 @@ class XYDataSeries(DataSeriesBase):
         else:
             assert len(xdata) == len(ydata)
         
-        self.__xdata = xdata
-        self.__ydata = ydata
+        if numpy.ma.is_masked(xdata):
+            self.__xdata = numpy.array(xdata)[numpy.where(numpy.logical_not(xdata.mask))]
+        else:
+            self.__xdata = numpy.array(xdata)
+            
+        if numpy.ma.is_masked(ydata):
+            self.__ydata = numpy.array(ydata)[numpy.where(numpy.logical_not(ydata.mask))]
+        else:
+            self.__ydata = numpy.array(ydata)
         
         if self.is_plotted():
             #update the the data in the plotted line
@@ -352,46 +361,37 @@ class XYSeriesFittingControls(controls.AvoPlotControlPanelBase):
         """
         super(XYSeriesFittingControls, self).setup(parent)
         
-        select_button = wx.Button(self, -1, "Select")
-        self.Add(select_button)
-        wx.EVT_BUTTON(self, select_button.GetId(), self.on_select)
+        data_selection_static_sizer = wx.StaticBoxSizer(wx.StaticBox(self, wx.ID_ANY, 'Fit range'), wx.VERTICAL)
         
-        self.min_txt = wx.StaticText(self, -1, "Min: ")
-        self.max_txt = wx.StaticText(self, -1, "Max: ")
+        self.selection_panel = data_selection.DataRangeSelectionPanel(self, self.series)
         
+        data_selection_static_sizer.Add(self.selection_panel,1, wx.EXPAND)
+        self.Add(data_selection_static_sizer, 0, wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, border=5)
         
+        fit_type_static_sizer = wx.StaticBoxSizer(wx.StaticBox(self, wx.ID_ANY, 'Fit type'), wx.VERTICAL)
         
-        self.Add(self.min_txt)
-        self.Add(self.max_txt)
+        self.fit_type = wx.Choice(self, wx.ID_ANY, choices=['Gaussian'])
+        fit_type_static_sizer.Add(self.fit_type,1, wx.ALIGN_RIGHT)
+        self.Add(fit_type_static_sizer, 0, wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, border=5)
         
         fit_button = wx.Button(self, -1, "Fit")
-        self.Add(fit_button)
+        self.Add(fit_button, 0 , wx.ALIGN_CENTER_HORIZONTAL)
         wx.EVT_BUTTON(self, fit_button.GetId(), self.on_fit)
         
         self.span = None
     
-    def on_select(self, evnt):
-        ax = self.series.get_subplot().get_mpl_axes()
-        if self.span is None:
-            self.span = SpanSelector(ax, self.onselect, 'horizontal', useblit=True)
-        else:
-            self.span.visible = True
             
     def on_fit(self, evnt):
-        x,y = self.series.get_data()
-        min_idx = numpy.where(x >= self.min_selection)[0][0]
-        max_idx = numpy.where(x <= self.max_selection)[0][-1]
         
-        fit_x_data, fit_y_data, gaussian_params = fit_gaussian(x[min_idx:max_idx], y[min_idx:max_idx])
+        mask = self.selection_panel.get_selection()
+        selected_idxs = numpy.where(mask)
+        raw_x, raw_y = self.series.get_data()
+        
+        fit_x_data, fit_y_data, gaussian_params = fit_gaussian(raw_x[selected_idxs], raw_y[selected_idxs])
         
         FitData(self.series, fit_x_data, fit_y_data, gaussian_params)
-        
-    def onselect(self, vmin, vmax):
-        self.min_selection = vmin
-        self.max_selection = vmax
-        self.min_txt.SetLabel("Min: %s"%(self.min_selection))
-        self.max_txt.SetLabel("Max: %s"%(self.max_selection))
-        self.span.visible = False
+        self.series.update()
+
 
 class FitData(XYDataSeries):
     def __init__(self, s, xdata, ydata, gaussian_params):
@@ -404,6 +404,7 @@ class FitData(XYDataSeries):
     @staticmethod
     def get_supported_subplot_type():
         return AvoPlotXYSubplot
+    
     
 class FitDataCtrl(controls.AvoPlotControlPanelBase):
     """

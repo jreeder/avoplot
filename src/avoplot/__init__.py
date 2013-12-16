@@ -27,7 +27,7 @@ matplotlib.use('WXAgg')
 ####################################################################
 #                     Program Information
 ####################################################################
-VERSION = "13.11" #year.month of release
+VERSION = "13.12" #year.month of release
 
 AUTHOR = 'Nial Peters'
 
@@ -66,19 +66,6 @@ SRC_FILE_HEADER = ('#%s\n\nThis file is part of %s.\n\n%s'
 
 ####################################################################
 
-#attempt to import the build_info module - this is dynamically generated at 
-#install time and contains information about where the various files got 
-#installed to.
-try:
-    import build_info
-
-except ImportError:
-    
-    raise ImportError("Failed to import avoplot.build_info module. "
-                      "There is a problem with your installation. Try "
-                      "re-running the installer.")
-
-
 def get_avoplot_rw_dir():
     """
     Returns the path used by AvoPlot for things like caching settings,
@@ -96,11 +83,9 @@ def get_avoplot_rw_dir():
 def get_avoplot_sys_dir():
     """
     Returns the path used by AvoPlot to store user independent 
-    files, e.g. icons. On Linux at least this will probably be 
-    something like /usr/local/share/AvoPlot
+    files
     """
-    assert build_info.DATA_DIR is not None
-    return os.path.join(build_info.DATA_DIR, PROG_SHORT_NAME)
+    return __path__[0]
 
 
 def get_avoplot_icons_dir():
@@ -133,7 +118,6 @@ call_on_idle.idle_q = collections.deque()
 try:
     os.makedirs(get_avoplot_rw_dir())
     
-    #TODO - why is this sometimes created owned by root, with no rw permissions
 except OSError:
     #dir already exists
     pass

@@ -16,7 +16,7 @@
 #along with AvoPlot.  If not, see <http://www.gnu.org/licenses/>.
 
 import wx
-from wx import aui
+from wx.lib.agw import aui
 from avoplot import core
 """
 The control panel holds all the controls for the currently selected element.
@@ -34,19 +34,27 @@ class ControlPanel(aui.AuiNotebook):
         super(ControlPanel, self).__init__(parent, id=wx.ID_ANY, 
                                            style=wx.NB_TOP|wx.CLIP_CHILDREN)
         self._current_element = None
+        self.__layouts = {}
+        
         core.EVT_AVOPLOT_ELEM_SELECT(self, self.on_element_select)
         core.EVT_AVOPLOT_ELEM_DELETE(self, self.on_element_delete)
         core.EVT_AVOPLOT_ELEM_ADD(self, self.on_element_add)
        
        
-    def set_control_panels(self, control_panels):
+    def set_control_panels(self, element):
         """
         Sets the control panels shown in the notebook. 'control_panels' should
         be a list of AvoPlotControlPanelBase objects.
         """
+        control_panels = element.get_control_panels()
+        
         self.Freeze()
         self.Show(False)
         if self._current_element is not None:
+            
+            #store the control panel layout for this element
+            layout = self.SavePerspective()
+            self.__layouts[self._current_element.get_avoplot_id()] = layout
             while self.GetPageCount():
                 # get rid of the old pages and reparent them back to whatever
                 #window was their parent before they were added to the notebook
@@ -63,7 +71,9 @@ class ControlPanel(aui.AuiNotebook):
             
             self.AddPage(p, p.get_name())
 
-        
+        if self.__layouts.has_key(element.get_avoplot_id()):
+            print "loading previous perspective"
+            self.LoadPerspective(self.__layouts[element.get_avoplot_id()])
         self.Thaw()
         
         #send a size event to force redraw of window contents - this is only
@@ -100,6 +110,11 @@ class ControlPanel(aui.AuiNotebook):
             for i in range(self.GetPageCount()):
                 p = self.GetPage(i)
                 wx.PostEvent(p, evnt)
+        
+        try:
+            self.__layouts.pop(el.get_avoplot_id())
+        except KeyError:
+            pass
     
     
     def on_element_add(self, evnt):
@@ -121,7 +136,7 @@ class ControlPanel(aui.AuiNotebook):
         el = evnt.element
 
         if el != self._current_element: 
-            self.set_control_panels(el.get_control_panels())
+            self.set_control_panels(el)
             self._current_element = el
         
         #pass the event through to all the pages in the control panel
