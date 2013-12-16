@@ -39,7 +39,25 @@ class ControlPanel(aui.AuiNotebook):
         core.EVT_AVOPLOT_ELEM_SELECT(self, self.on_element_select)
         core.EVT_AVOPLOT_ELEM_DELETE(self, self.on_element_delete)
         core.EVT_AVOPLOT_ELEM_ADD(self, self.on_element_add)
-       
+    
+        aui.EVT_AUINOTEBOOK_PAGE_CHANGING(self, self.GetId(), self.on_page_changing)
+        aui.EVT_AUINOTEBOOK_PAGE_CHANGED(self, self.GetId(), self.on_page_changed)
+        
+        
+    def on_page_changing(self, evnt):
+        page_idx = self.GetSelection()
+        page  = self.GetPage(page_idx)
+        page.on_control_panel_inactive()
+        print "disactivated page ",page.get_name()
+        evnt.Skip()
+    
+    def on_page_changed(self, evnt):
+        page_idx = self.GetSelection()
+        page  = self.GetPage(page_idx)
+        page.on_control_panel_active()
+        print "activated page ",page.get_name()
+        evnt.Skip()
+    
        
     def set_control_panels(self, element):
         """
@@ -59,6 +77,11 @@ class ControlPanel(aui.AuiNotebook):
                 # get rid of the old pages and reparent them back to whatever
                 #window was their parent before they were added to the notebook
                 p = self.GetPage(0)
+                
+                #need to call this explicitly, since we remove the page rather
+                #then changing it
+                p.on_control_panel_inactive()
+                
                 self.RemovePage(0)
                 p.Show(False)
                 p.Reparent(p.old_parent)
@@ -111,6 +134,7 @@ class ControlPanel(aui.AuiNotebook):
                 p = self.GetPage(i)
                 wx.PostEvent(p, evnt)
         
+        #remove any stored layouts relating to this element.
         try:
             self.__layouts.pop(el.get_avoplot_id())
         except KeyError:

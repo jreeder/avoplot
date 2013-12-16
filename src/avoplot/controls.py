@@ -48,6 +48,26 @@ class AvoPlotControlPanelBase(wx.ScrolledWindow):
         self.__is_initialised = True
     
     
+    def on_control_panel_active(self):
+        """
+        This method will be called automatically each time the control panel 
+        becomes the active control panel (i.e. the user selects it, it has
+        focus). This can be overridden by subclasses to perform needed actions
+        on control panel activation (e.g. enabling tools etc.)
+        """
+        pass
+    
+    
+    def on_control_panel_inactive(self):
+        """
+        This method will be called automatically each time the control panel
+        stops being the active control panel (i.e. the user selects a different
+        one). This can be overridden by subclasses to perform needed actions
+        on control panel de-activation (e.g. disabling tools etc.)
+        """
+        pass
+    
+    
     def on_display(self):
         """
         This method will be called each time the control panel is displayed i.e.

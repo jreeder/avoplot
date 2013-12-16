@@ -391,6 +391,21 @@ class XYSeriesFittingControls(controls.AvoPlotControlPanelBase):
         
         FitData(self.series, fit_x_data, fit_y_data, gaussian_params)
         self.series.update()
+    
+    
+    def on_control_panel_active(self):
+        """
+        This gets called automatically when the control panel is selected.
+        """
+        self.selection_panel.enable_selection()
+    
+    
+    def on_control_panel_inactive(self):
+        """
+        This gets called automatically when the control panel is un-selected.
+        """
+        print "disabled selection tool"
+        self.selection_panel.disable_selection()
 
 
 class FitData(XYDataSeries):

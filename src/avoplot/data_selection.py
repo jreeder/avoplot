@@ -59,11 +59,13 @@ class DataRangeSelectionPanel(wx.Panel):
         vsizer.Fit(self)
     
     
-    def on_display(self):
-        """
-        This gets called automatically when the control panel is displayed.
-        """
-        self.selection_tool.enable_selection()
+    
+    def disable_selection(self):
+        self.selection_tool.disable_selection()
+    
+    
+    def enable_selection(self):
+        self.selection_tool.enable_selection() 
         
     
     def __disable_all_except(self, button_to_keep):
@@ -101,6 +103,11 @@ class DataRangeSelectionPanel(wx.Panel):
         """
         Callback handler for the "horizontal select" button.
         """
+        if not self.h_select_button.GetValue():
+            self.all_select_button.SetValue(True)
+            self.on_allselect(None)
+            return
+        
         self.__disable_all_except(self.h_select_button)
         self.selection_tool = HorizontalSelectionTool(self.series)
         self.selection_tool.enable_selection()
@@ -110,6 +117,11 @@ class DataRangeSelectionPanel(wx.Panel):
         """
         Callback handler for the "vertical select" button.
         """
+        if not self.v_select_button.GetValue():
+            self.all_select_button.SetValue(True)
+            self.on_allselect(None)
+            return
+        
         self.__disable_all_except(self.v_select_button)
         self.selection_tool = VerticalSelectionTool(self.series)
         self.selection_tool.enable_selection()
@@ -119,6 +131,11 @@ class DataRangeSelectionPanel(wx.Panel):
         """
         Callback handler for the "rectangular select" button.
         """
+        if not self.rect_select_button.GetValue():
+            self.all_select_button.SetValue(True)
+            self.on_allselect(None)
+            return
+        
         self.__disable_all_except(self.rect_select_button)
             
         
@@ -149,6 +166,9 @@ class SelectionToolBase:
         and clears any current selection.
         """
         pass 
+    
+    def enable_selection(self):
+        pass
 
 
 
@@ -183,6 +203,7 @@ class SpanSelector:
         self.cids=[]
 
         self.rects = []
+        self.cursor_line = None
         self.background = None
         self.pressv = None
 
@@ -190,7 +211,6 @@ class SpanSelector:
         self.buttonDown = False
         self.prev = (0, 0)
         
-        #self.enable_selection()
         
         
     def enable_selection(self):
@@ -206,6 +226,15 @@ class SpanSelector:
         #disable the pan and zoom controls
         self.subplot.get_figure().enable_pan_and_zoom_tools(False)
         
+        #create the cursor line
+        if self.direction == 'vertical':
+            self.cursor_line = self.ax.axhline(self.ax.get_ybound()[0], linewidth=1, color=self.rect_colour,
+                                               animated=True)
+            
+        else:
+            self.cursor_line = self.ax.axvline(self.ax.get_xbound()[0], linewidth=1, color=self.rect_colour,
+                                               animated=True)
+        
 
     def disable_selection(self):
         """
@@ -217,6 +246,9 @@ class SpanSelector:
         self.cids = []
         self.visible = False
         self.clear_selection()
+        if self.cursor_line is not None:
+            self.cursor_line.remove()
+            self.cursor_line = None
         
   
     def on_draw(self, evnt):
@@ -240,8 +272,7 @@ class SpanSelector:
         return  (self.figure.is_zoomed() or
                  self.figure.is_panned() or
                  event.inaxes!=self.ax or 
-                 not self.visible or 
-                 event.button !=1)
+                 not self.visible)
 
 
     def on_click(self, event):
@@ -249,7 +280,7 @@ class SpanSelector:
         Callback handler for mouse click events in the axis. Creates a new
         selection rectangle.
         """
-        if self.ignore(event): 
+        if self.ignore(event) or event.button !=1: 
             return
         
         self.buttonDown = True
@@ -274,16 +305,22 @@ class SpanSelector:
         
         self.rects.append(Rectangle((0,0), w, h,
                             transform=trans,
-                            visible=True,
+                            visible=False,
                             facecolor=self.rect_colour,
-                            alpha=0.35
+                            alpha=0.35,
+                            animated=True
                             ))
+        
+        self.ax.add_patch(self.rects[-1])
             
 
     def clear_selection(self):
         """
         Clear the current selection
         """
+        for r in self.rects:
+            r.remove()
+            
         self.rects = []
         self.update()
         
@@ -326,7 +363,7 @@ class SpanSelector:
         """
         Event handler for mouse click release events.
         """
-        if self.pressv is None or (self.ignore(event) and not self.buttonDown): 
+        if self.pressv is None or (self.ignore(event) and not self.buttonDown) or event.button !=1:
             return
         
         self.buttonDown = False
@@ -354,6 +391,10 @@ class SpanSelector:
         
         for r in self.rects:
             self.ax.draw_artist(r)
+            
+        if self.cursor_line is not None:
+            self.ax.draw_artist(self.cursor_line)
+            
         self.canvas.blit(self.ax.bbox)
 
 
@@ -361,18 +402,34 @@ class SpanSelector:
         """
         Event handler for mouse move events.
         """
-        if self.pressv is None or self.ignore(event): 
+        if self.ignore(event):
+            if self.cursor_line.get_visible():
+                self.cursor_line.set_visible(False)
+                self.update()
             return
+        
+        if self.background is None:
+            self.update_background()    
+  
+        self.cursor_line.set_visible(True)
         
         x, y = event.xdata, event.ydata
         self.prev = x, y
-        if self.direction == 'horizontal':
-            v = x
-        else:
+        if self.direction == 'vertical':
             v = y
+            self.cursor_line.set_ydata([y,y])
+        else:
+            v = x
+            self.cursor_line.set_xdata([x,x])
 
+        if self.pressv is None:
+            #if the button is not pressed then nothing else to do
+            self.update()
+            return
+        
         minv, maxv = v, self.pressv
         cur_rect = self.rects[-1]
+        cur_rect.set_visible(True)
         
         if minv>maxv: minv, maxv = maxv, minv
         if self.direction == 'horizontal':
