@@ -328,12 +328,26 @@ class SO2TimeSeries(series.XYDataSeries):
     def set_xdata_to_times(self):
         if self.xaxis_format == 'times':
             return
+        
+        ax = self.get_subplot().get_mpl_axes()
+        ax.relim()
+        ax.autoscale(enable=True)
+        ax.autoscale_view()
+        ax.xaxis.axis_date()
+        
         self.xaxis_format = 'times'
         self.set_xy_data(self.times, self.ratios)
+        
         
     def set_xdata_to_seq_nums(self):
         if self.xaxis_format == 'seq_numbers':
             return
+        
+        ax = self.get_subplot().get_mpl_axes()
+        ax.relim()
+        ax.autoscale(enable=True)
+        ax.autoscale_view()
+        
         self.xaxis_format = 'seq_numbers'
         self.set_xy_data( self.seq_numbers, self.ratios)
     
@@ -341,6 +355,12 @@ class SO2TimeSeries(series.XYDataSeries):
     def set_xdata_to_index(self):
         if self.xaxis_format == 'index':
             return
+        
+        ax = self.get_subplot().get_mpl_axes()
+        ax.relim()
+        ax.autoscale(enable=True)
+        ax.autoscale_view()
+        
         self.xaxis_format = 'index'
         self.set_xy_data( range(len(self.ratios)), self.ratios)
     
@@ -387,7 +407,21 @@ class RatioTimeSeriesControlPanel(controls.AvoPlotControlPanelBase):
         
         wx.EVT_BUTTON(self, self.coadd_button.GetId(), self.on_coadd)
         
+        
+    def on_control_panel_active(self):
+        """
+        This gets called automatically when the control panel is selected.
+        """
+        self.range_select.enable_selection()
     
+    
+    def on_control_panel_inactive(self):
+        """
+        This gets called automatically when the control panel is un-selected.
+        """
+        self.range_select.disable_selection()
+        
+        
     def on_coadd(self, evnt):
         
         #get the filenames in the selection

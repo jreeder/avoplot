@@ -404,7 +404,6 @@ class XYSeriesFittingControls(controls.AvoPlotControlPanelBase):
         """
         This gets called automatically when the control panel is un-selected.
         """
-        print "disabled selection tool"
         self.selection_panel.disable_selection()
 
 

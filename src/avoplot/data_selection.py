@@ -1,3 +1,20 @@
+#Copyright (C) Nial Peters 2013
+#
+#This file is part of AvoPlot.
+#
+#AvoPlot is free software: you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+#
+#AvoPlot is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+#
+#You should have received a copy of the GNU General Public License
+#along with AvoPlot.  If not, see <http://www.gnu.org/licenses/>.
+
 from matplotlib.patches import Rectangle
 from matplotlib.transforms import blended_transform_factory
 from matplotlib.colors import colorConverter
@@ -50,7 +67,7 @@ class DataRangeSelectionPanel(wx.Panel):
         
         
         self.all_select_button.SetValue(True)
-        self.selection_tool = EntireSeriesSelection(self.series)
+        self.selection_tool = EntireSeriesSelectionTool(self.series)
         
         vsizer.AddSpacer(5)
         vsizer.Add(hsizer, 0, wx.ALIGN_CENTER_HORIZONTAL)
@@ -95,7 +112,7 @@ class DataRangeSelectionPanel(wx.Panel):
         Callback handler for the "select all" button.
         """
         self.__disable_all_except(self.all_select_button)
-        self.selection_tool = EntireSeriesSelection(self.series)
+        self.selection_tool = EntireSeriesSelectionTool(self.series)
         self.selection_tool.enable_selection()
     
     
@@ -137,7 +154,8 @@ class DataRangeSelectionPanel(wx.Panel):
             return
         
         self.__disable_all_except(self.rect_select_button)
-            
+        self.selection_tool = RectSelectionTool(self.series)
+        self.selection_tool.enable_selection()   
         
 
 def get_selection_box_colour(series):
@@ -172,7 +190,7 @@ class SelectionToolBase:
 
 
 
-class EntireSeriesSelection(SelectionToolBase):
+class EntireSeriesSelectionTool(SelectionToolBase):
     """
     Tool for selecting the entire series.
     """
@@ -196,16 +214,18 @@ class SpanSelector:
         
         self.rect_colour = get_selection_box_colour(series)
         
-        assert direction in ['horizontal', 'vertical'], 'Must choose horizontal or vertical for direction'
+        assert direction in ['horizontal', 'vertical', 'rectangular'], 'Must choose horizontal, vertical or rectangular for direction'
         self.direction = direction
 
         self.current_selection = []
         self.cids=[]
 
         self.rects = []
-        self.cursor_line = None
+        self.cursor_hline = None
+        self.cursor_vline = None
         self.background = None
-        self.pressv = None
+        self.press_x = None
+        self.press_y = None
 
         # Needed when dragging out of axes
         self.buttonDown = False
@@ -227,12 +247,12 @@ class SpanSelector:
         self.subplot.get_figure().enable_pan_and_zoom_tools(False)
         
         #create the cursor line
-        if self.direction == 'vertical':
-            self.cursor_line = self.ax.axhline(self.ax.get_ybound()[0], linewidth=1, color=self.rect_colour,
+        if self.direction in ('vertical', 'rectangular'):
+            self.cursor_hline = self.ax.axhline(self.ax.get_ybound()[0], linewidth=1, color=self.rect_colour,
                                                animated=True)
             
-        else:
-            self.cursor_line = self.ax.axvline(self.ax.get_xbound()[0], linewidth=1, color=self.rect_colour,
+        if self.direction in ('horizontal', 'rectangular'):
+            self.cursor_vline = self.ax.axvline(self.ax.get_xbound()[0], linewidth=1, color=self.rect_colour,
                                                animated=True)
         
 
@@ -245,10 +265,22 @@ class SpanSelector:
                 self.canvas.mpl_disconnect(cid)
         self.cids = []
         self.visible = False
+        
+        #remove the cursor lines from the subplot
+        if self.cursor_hline is not None:
+            self.cursor_hline.remove()
+            self.cursor_hline = None
+        
+        if self.cursor_vline is not None:
+            self.cursor_vline.remove()
+            self.cursor_vline = None
+        
+        #remove any current selection
         self.clear_selection()
-        if self.cursor_line is not None:
-            self.cursor_line.remove()
-            self.cursor_line = None
+        
+        #since the on_draw callback is now diasbled - need to clear the 
+        #background cache
+        self.background = None
         
   
     def on_draw(self, evnt):
@@ -291,18 +323,23 @@ class SpanSelector:
         if self.background is None:
             self.update_background()
         
+        self.press_x = event.xdata
+        self.press_y = event.ydata
+        
         if self.direction == 'horizontal':
-            self.pressv = event.xdata
             
             trans = blended_transform_factory(self.ax.transData, self.ax.transAxes)
             w,h = 0,1
                  
-        else:
+        elif self.direction == 'vertical':
             #vertical selection
-            self.pressv = event.ydata
             trans = blended_transform_factory(self.ax.transAxes, self.ax.transData)
             w,h = 1,0
         
+        else:
+            w,h, = 0,1
+            trans = blended_transform_factory(self.ax.transData, self.ax.transData)
+            
         self.rects.append(Rectangle((0,0), w, h,
                             transform=trans,
                             visible=False,
@@ -334,26 +371,36 @@ class SpanSelector:
         """    
         xdata, ydata = self.series.get_data()
         selection_mask = numpy.zeros(len(xdata),dtype='int')
-       
-        if self.direction == 'horizontal':
-            #if xdata are datetimes, then need to convert them to numbers
-            #first
-            if len(xdata)>0 and type(xdata[0]) is datetime.datetime:
-                xdata = numpy.array([date2num(d) for d in xdata])
-            
-            for min_sel, max_sel in self.current_selection:
-                tmp_mask = numpy.where(numpy.logical_and(xdata >= min_sel, 
-                                                         xdata <= max_sel))
+        
+        #if xdata are datetimes, then need to convert them to numbers
+        #first
+        if len(xdata)>0 and type(xdata[0]) is datetime.datetime:
+            xdata = numpy.array([date2num(d) for d in xdata])
+        
+        #if ydata are datetimes, then need to convert them to numbers
+        #first
+        if len(ydata)>0 and type(ydata[0]) is datetime.datetime:
+            ydata = numpy.array([date2num(d) for d in ydata])
+        
+        if self.direction == 'rectangular':
+            for xmin_sel, ymin_sel, xmax_sel, ymax_sel in self.current_selection:
+                tmp_mask = numpy.where(numpy.logical_and(numpy.logical_and(xdata >= xmin_sel, 
+                                                                           xdata <= xmax_sel),
+                                                         numpy.logical_and(ydata >= ymin_sel,
+                                                                           ydata <= ymax_sel)))
+
                 selection_mask[tmp_mask] = 1
-        else:
-            #if ydata are datetimes, then need to convert them to numbers
-            #first
-            if len(ydata)>0 and type(ydata[0]) is datetime.datetime:
-                ydata = numpy.array([date2num(d) for d in ydata])
                 
-            for min_sel, max_sel in self.current_selection:
-                tmp_mask = numpy.where(numpy.logical_and(ydata >= min_sel, 
-                                                         ydata <= max_sel))
+        elif self.direction == 'horizontal':
+            for xmin_sel, ymin_sel, xmax_sel, ymax_sel in self.current_selection:
+                tmp_mask = numpy.where(numpy.logical_and(xdata >= xmin_sel, 
+                                                         xdata <= xmax_sel))
+                selection_mask[tmp_mask] = 1
+        
+        else:
+            for xmin_sel, ymin_sel, xmax_sel, ymax_sel in self.current_selection:
+                tmp_mask = numpy.where(numpy.logical_and(ydata >= ymin_sel, 
+                                                         ydata <= ymax_sel))
                 selection_mask[tmp_mask] = 1
         
         return selection_mask
@@ -363,23 +410,23 @@ class SpanSelector:
         """
         Event handler for mouse click release events.
         """
-        if self.pressv is None or (self.ignore(event) and not self.buttonDown) or event.button !=1:
+        if self.press_x is None or (self.ignore(event) and not self.buttonDown) or event.button !=1:
             return
         
         self.buttonDown = False
 
-        vmin = self.pressv
-        if self.direction == 'horizontal':
-            vmax = event.xdata or self.prev[0]
-        else:
-            vmax = event.ydata or self.prev[1]
+        xmin = self.press_x
+        ymin = self.press_y    
+        xmax = event.xdata or self.prev[0]
+        ymax = event.ydata or self.prev[1]
 
-        if vmin>vmax: 
-            vmin, vmax = vmax, vmin
+        xmin,xmax = sorted([xmin, xmax])
+        ymin,ymax = sorted([ymin, ymax])
         
-        self.current_selection.append((vmin, vmax))
+        self.current_selection.append((xmin, ymin, xmax, ymax))
 
-        self.pressv = None
+        self.press_x = None
+        self.press_y = None
 
 
     def update(self):
@@ -392,8 +439,11 @@ class SpanSelector:
         for r in self.rects:
             self.ax.draw_artist(r)
             
-        if self.cursor_line is not None:
-            self.ax.draw_artist(self.cursor_line)
+        if self.cursor_hline is not None:
+            self.ax.draw_artist(self.cursor_hline)
+        
+        if self.cursor_vline is not None:
+            self.ax.draw_artist(self.cursor_vline)
             
         self.canvas.blit(self.ax.bbox)
 
@@ -403,41 +453,52 @@ class SpanSelector:
         Event handler for mouse move events.
         """
         if self.ignore(event):
-            if self.cursor_line.get_visible():
-                self.cursor_line.set_visible(False)
+            update_flag = False
+            if self.cursor_hline is not None and self.cursor_hline.get_visible():
+                self.cursor_hline.set_visible(False)
+                update_flag = True
+                
+            if self.cursor_vline is not None and self.cursor_vline.get_visible():
+                self.cursor_vline.set_visible(False)
+                update_flag = True
+                
+            if update_flag:
                 self.update()
             return
         
         if self.background is None:
             self.update_background()    
-  
-        self.cursor_line.set_visible(True)
         
         x, y = event.xdata, event.ydata
         self.prev = x, y
-        if self.direction == 'vertical':
-            v = y
-            self.cursor_line.set_ydata([y,y])
-        else:
-            v = x
-            self.cursor_line.set_xdata([x,x])
+        
+        if self.cursor_hline is not None:
+            self.cursor_hline.set_visible(True)
+            self.cursor_hline.set_ydata([y,y])
+            
+        if self.cursor_vline is not None:
+            self.cursor_vline.set_visible(True)
+            self.cursor_vline.set_xdata([x,x])
+        
 
-        if self.pressv is None:
+        if self.press_x is None:
             #if the button is not pressed then nothing else to do
             self.update()
             return
         
-        minv, maxv = v, self.pressv
+        min_x, max_x = sorted([x,self.press_x])
+        min_y, max_y = sorted([y, self.press_y])
+
         cur_rect = self.rects[-1]
         cur_rect.set_visible(True)
         
-        if minv>maxv: minv, maxv = maxv, minv
-        if self.direction == 'horizontal':
-            cur_rect.set_x(minv)
-            cur_rect.set_width(maxv-minv)
-        else:
-            cur_rect.set_y(minv)
-            cur_rect.set_height(maxv-minv)
+        if self.direction in ('horizontal', 'rectangular'):
+            cur_rect.set_x(min_x)
+            cur_rect.set_width(max_x-min_x)
+            
+        if self.direction in ('vertical', 'rectangular'):
+            cur_rect.set_y(min_y)
+            cur_rect.set_height(max_y-min_y)
 
         self.update()
 
@@ -461,4 +522,11 @@ class VerticalSelectionTool(SpanSelector, SelectionToolBase):
         SelectionToolBase.__init__(self, series)
         SpanSelector.__init__(self, series, 'vertical')
         
-        
+
+class RectSelectionTool(SpanSelector, SelectionToolBase):
+    def __init__(self, series):
+        """
+        Tool for selecting rectangular regions of data series.
+        """        
+        SelectionToolBase.__init__(self, series)
+        SpanSelector.__init__(self, series, 'rectangular')
