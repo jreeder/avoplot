@@ -212,15 +212,21 @@ class XYDataSeries(DataSeriesBase):
         else:
             assert len(xdata) == len(ydata)
         
+        #if either of the arrays are masked - then skip the masked values
         if numpy.ma.is_masked(xdata):
-            self.__xdata = numpy.array(xdata)[numpy.where(numpy.logical_not(xdata.mask))]
+            xmask = xdata.mask
         else:
-            self.__xdata = numpy.array(xdata)
+            xmask = numpy.zeros(xdata.shape)
             
         if numpy.ma.is_masked(ydata):
-            self.__ydata = numpy.array(ydata)[numpy.where(numpy.logical_not(ydata.mask))]
+            ymask = ydata.mask
         else:
-            self.__ydata = numpy.array(ydata)
+            ymask = numpy.zeros(ydata.shape)
+        
+        data_mask = numpy.logical_not(numpy.logical_and(xmask, ymask))
+        data_idxs = numpy.where(data_mask)
+        self.__xdata = numpy.array(xdata)[data_idxs]
+        self.__ydata = numpy.array(ydata)[data_idxs]
         
         if self.is_plotted():
             #update the the data in the plotted line
