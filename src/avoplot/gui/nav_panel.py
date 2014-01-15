@@ -208,7 +208,7 @@ class NavigationPanel(wx.ScrolledWindow):
         for the element which has been added and all its children (recursively).
         """
         el = evnt.element
-        print 'nav_panel on_el_add: %s',el.get_name()
+
         parent_id = el.get_parent_element().get_avoplot_id()
         if self.__el_id_mapping.has_key(parent_id):
             parent_node = self.__el_id_mapping[parent_id]

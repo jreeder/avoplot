@@ -27,13 +27,12 @@ import wx
 
 class MetaCallMyInit(type):
     """
-    Metaclass which ensures that a class's my_init() and setup_controls() 
-    methods get called once, after it's __init__ method has returned.
+    Metaclass which ensures that a class's my_init() 
+    method gets called once, after it's __init__ method has returned.
     """
     def __call__(self, *args, **kw):
         obj=type.__call__(self, *args, **kw)
         obj.my_init()
-        obj.setup_controls(obj.get_parent_element())
         return obj
 
 

@@ -118,7 +118,7 @@ class DataSeriesBase(core.AvoPlotElementBase):
         self.__plotted = True
         
         self._mpl_lines = self.plot(subplot)
-        self.setup_controls(subplot.get_figure())
+        #self.setup_controls(subplot.get_figure())
     
     
     def add_subseries(self, series):

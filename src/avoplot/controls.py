@@ -40,7 +40,7 @@ class AvoPlotControlPanelBase(wx.ScrolledWindow):
         #we know who our parent is)
         super(AvoPlotControlPanelBase, self).__init__(parent, wx.ID_ANY)
         
-        self.old_parent = parent
+        
         self.SetScrollRate(2, 2)
         self.SetSizer(self.__sizer)
         self.__sizer.Fit(self)

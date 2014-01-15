@@ -17,6 +17,7 @@
 
 import wx
 from wx.lib.agw import aui
+
 from avoplot import core
 """
 The control panel holds all the controls for the currently selected element.
@@ -48,14 +49,12 @@ class ControlPanel(aui.AuiNotebook):
         page_idx = self.GetSelection()
         page  = self.GetPage(page_idx)
         page.on_control_panel_inactive()
-        print "disactivated page ",page.get_name()
         evnt.Skip()
     
     def on_page_changed(self, evnt):
         page_idx = self.GetSelection()
         page  = self.GetPage(page_idx)
         page.on_control_panel_active()
-        print "activated page ",page.get_name()
         evnt.Skip()
     
        
@@ -84,18 +83,18 @@ class ControlPanel(aui.AuiNotebook):
                 
                 self.RemovePage(0)
                 p.Show(False)
-                p.Reparent(p.old_parent)
         
         #reverse the order so that plugin-defined panels appear first
         for p in reversed(control_panels):
             #AuiNotebook requires that any pages have the notebook as a parent -
             #so reparent all the panels to make it so!
-            p.Reparent(self)
+            if not p.is_initialised():
+                p.setup(self)
             
             self.AddPage(p, p.get_name())
+            
 
         if self.__layouts.has_key(element.get_avoplot_id()):
-            print "loading previous perspective"
             self.LoadPerspective(self.__layouts[element.get_avoplot_id()])
         self.Thaw()
         
@@ -127,7 +126,7 @@ class ControlPanel(aui.AuiNotebook):
                 p = self.GetPage(0)
                 self.RemovePage(0)
                 p.Show(False)
-                p.Reparent(p.old_parent)
+            
             self._current_element = None
         else:
             for i in range(self.GetPageCount()):

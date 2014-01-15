@@ -117,7 +117,6 @@ class AvoPlotFigure(core.AvoPlotElementBase, wx.ScrolledWindow):
         self._mpl_figure.set_facecolor((1, 1, 1))
         
         self.add_control_panel(FigureControls(self))
-        self.setup_controls(self)
         
         #do the layout 
         self.SetSizer(self.v_sizer)

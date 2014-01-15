@@ -22,6 +22,7 @@ import wx
 from wx import aui
 from matplotlib.backends import backend_wx
 import sys
+import os
 import warnings
 
 import avoplot
@@ -261,7 +262,9 @@ class AvoPlotApp(wx.App):
             f, args, kwargs = avoplot.call_on_idle.idle_q.popleft()
             f(*args, **kwargs)
     
+    
     def MainLoop(self):
+
         super(AvoPlotApp, self).MainLoop()
         
         #execute any pending on_idle events.

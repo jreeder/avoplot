@@ -104,7 +104,6 @@ class _AvoPlotRemoteInstance:
         #check if the figure has been closed by the user by seeing if it still
         #exists in the session (the parent element for all figures)
         if not self._cur_avoplot_fig in parent.session.get_child_elements():
-            print "set fig to None"
             self._cur_avoplot_fig = None
         
         if self._cur_avoplot_fig is None:
@@ -151,7 +150,6 @@ class _AvoPlotRemoteInstance:
                 cmd = self.__connection.recv()
             
             except EOFError:
-                print "end of connection"
                 return
             
             #try:

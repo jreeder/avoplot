@@ -141,9 +141,9 @@ class AvoPlotElementBase(object):
         """
         Returns a list of control panel objects (instances of 
         avoplot.controls.AvoPlotControlPanelBase) that relate to the element.
+        
+        Note that the control_panel objects returned may not be initialised yet.
         """
-        for cp in self.__control_panels:
-            assert cp.is_initialised()
         
         return self.__control_panels
        
@@ -154,16 +154,6 @@ class AvoPlotElementBase(object):
         subclasses).
         """
         return self.__child_elements
-    
-    
-    def setup_controls(self, parent):
-        """
-        Calls the setup method of all the control panels associated with this
-        element. parent should be the parent window for the controls.
-        """
-        for cp in self.__control_panels:
-            assert not cp.is_initialised()
-            cp.setup(parent)
     
     
     def get_name(self):
