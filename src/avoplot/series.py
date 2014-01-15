@@ -216,12 +216,12 @@ class XYDataSeries(DataSeriesBase):
         if numpy.ma.is_masked(xdata):
             xmask = xdata.mask
         else:
-            xmask = numpy.zeros(xdata.shape)
+            xmask = numpy.zeros(len(xdata))
             
         if numpy.ma.is_masked(ydata):
             ymask = ydata.mask
         else:
-            ymask = numpy.zeros(ydata.shape)
+            ymask = numpy.zeros(len(ydata))
         
         data_mask = numpy.logical_not(numpy.logical_and(xmask, ymask))
         data_idxs = numpy.where(data_mask)
