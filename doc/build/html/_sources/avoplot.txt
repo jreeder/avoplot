@@ -25,10 +25,26 @@ avoplot Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`data_selection` Module
+----------------------------
+
+.. automodule:: avoplot.data_selection
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`figure` Module
 --------------------
 
 .. automodule:: avoplot.figure
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`fitting` Module
+---------------------
+
+.. automodule:: avoplot.fitting
     :members:
     :undoc-members:
     :show-inheritance:
@@ -45,6 +61,14 @@ avoplot Package
 ---------------------
 
 .. automodule:: avoplot.persist
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`pyplot` Module
+--------------------
+
+.. automodule:: avoplot.pyplot
     :members:
     :undoc-members:
     :show-inheritance:
