@@ -19,6 +19,7 @@ from matplotlib.backends.backend_wx import _load_bitmap as load_matplotlib_bitma
 
 from avoplot import core
 from avoplot import figure
+from avoplot.gui import menu
 
 class MainToolbar(wx.ToolBar):
     """
@@ -142,7 +143,7 @@ class MainToolbar(wx.ToolBar):
         lower_left_pos = (bar_pos[0]+self.GetToolSeparation()*(tool_index+1)+tool_size[0]*tool_index, bar_pos[1]+tool_size[1]+self.GetToolSeparation())#-tool_size[1])
 
         menu_pos = (lower_left_pos[0]-bar_pos[0],lower_left_pos[1]-bar_pos[1])
-        self.PopupMenu(self.parent.menu.new_menu, menu_pos)
+        self.PopupMenu(menu.create_the_New_menu(self.parent), menu_pos)
 
         
     def on_home(self, evnt):

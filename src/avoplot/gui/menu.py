@@ -163,37 +163,8 @@ class MainMenu(wx.MenuBar):
         """
         file_menu = wx.Menu()
         
-        #create submenu for creating new plots of different types.
-        new_submenu = wx.Menu()      
-        sub_menus = {}
-        
-        #get the entries from the plugins
-        for p in avoplot.plugins.get_plugins().values():
-            labels = p.get_menu_entry_labels()
-            if not labels:
-                continue #this plugin does not have menu entries
-            
-            cur_submenu = new_submenu
-            cur_submenu_dict = sub_menus
-            
-            for i in range(len(labels)-1):
-                
-                if not cur_submenu_dict.has_key(labels[i]):
-                    cur_submenu_dict[labels[i]] = ({},wx.Menu())
-                    cur_submenu.AppendSubMenu(cur_submenu_dict[labels[i]][1], 
-                                              labels[i]) 
-                    
-                cur_submenu = cur_submenu_dict[labels[i]][1]
-                cur_submenu_dict = cur_submenu_dict[labels[i]][0]
-            
-            #now add the menu entry
-            entry = cur_submenu.Append(-1, labels[-1], 
-                                           p.get_menu_entry_tooltip())
-            wx.EVT_MENU(self.parent,entry.GetId(), p.create_new)
-        
-     
-        self.new_menu = new_submenu      
-        file_menu.AppendSubMenu(new_submenu, "New")
+        self.new_menu = create_the_New_menu(self.parent)    
+        file_menu.AppendSubMenu(self.new_menu, "New")
         
         #save controls
         self.save_data_entry = file_menu.Append(-1, "&Export Data", "Save the current "
@@ -337,6 +308,46 @@ class MainMenu(wx.MenuBar):
         wx.AboutBox(about_info)
         
         
+def create_the_New_menu(parent):
+    """
+    Creates and returns a new wxMenu object which contains the "File->New" 
+    entries. These are read from the plugins that are currently registered.
+    
+    The relevant event handlers for the menu entries are also registered by this
+    function.
+    """
+    #create submenu for creating new plots of different types.
+    menu = wx.Menu()      
+    sub_menus = {}
+    
+    #get the menu entries from the plugins
+    for p in avoplot.plugins.get_plugins().values():
+        labels = p.get_menu_entry_labels()
+        if not labels:
+            continue #this plugin does not have menu entries
+        
+        cur_submenu = menu
+        cur_submenu_dict = sub_menus
+        
+        for i in range(len(labels)-1):
+            
+            if not cur_submenu_dict.has_key(labels[i]):
+                cur_submenu_dict[labels[i]] = ({},wx.Menu())
+                cur_submenu.AppendSubMenu(cur_submenu_dict[labels[i]][1], 
+                                          labels[i]) 
+                
+            cur_submenu = cur_submenu_dict[labels[i]][1]
+            cur_submenu_dict = cur_submenu_dict[labels[i]][0]
+        
+        #register the plugin's create_new method as the event handler for
+        #this entry
+        entry = cur_submenu.Append(-1, labels[-1], 
+                                       p.get_menu_entry_tooltip())
+        wx.EVT_MENU(parent,entry.GetId(), p.create_new)
+    
+ 
+    return menu
+
         
         
 class TabRightClickMenu(wx.Menu):
