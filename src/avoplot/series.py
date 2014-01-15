@@ -223,7 +223,7 @@ class XYDataSeries(DataSeriesBase):
         else:
             ymask = numpy.zeros(len(ydata))
         
-        data_mask = numpy.logical_not(numpy.logical_and(xmask, ymask))
+        data_mask = numpy.logical_not(numpy.logical_or(xmask, ymask))
         data_idxs = numpy.where(data_mask)
         self.__xdata = numpy.array(xdata)[data_idxs]
         self.__ydata = numpy.array(ydata)[data_idxs]
