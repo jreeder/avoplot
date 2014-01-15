@@ -22,6 +22,7 @@ import wx
 from wx import aui
 from matplotlib.backends import backend_wx
 import sys
+import warnings
 
 import avoplot
 from avoplot import core
@@ -30,7 +31,10 @@ from avoplot.gui import toolbar
 from avoplot.gui import plots_panel
 from avoplot.gui import control_panel
 from avoplot.gui import nav_panel
+from avoplot.gui import artwork
 from avoplot import persist
+import avoplot.plugins
+
 
 
 class MainFrame(wx.Frame):
@@ -41,7 +45,7 @@ class MainFrame(wx.Frame):
     def __init__(self):
         wx.Frame.__init__(self, None, wx.ID_ANY, avoplot.PROG_SHORT_NAME)
     
-    def launch(self):
+    def launch(self, start_hidden=False):
         """
         Create all the GUI elements and show the main window. Note that this 
         needs to be separate from the __init__ method, since we need set the top
@@ -130,7 +134,8 @@ class MainFrame(wx.Frame):
         except KeyError:
             pass
         
-        self.Show()
+        if not start_hidden:
+            self.Show()
     
     
     def on_pane_close(self, evnt):
@@ -219,9 +224,64 @@ class MainFrame(wx.Frame):
         Adds a figure element (an avoplot.figure.AvoPlotFigureBase instance) to 
         the current session.
         """
-        figure.finalise()
+        figure.finalise(self)
         figure.set_status_bar(self.statbar)
         figure.set_parent_element(self.session)
         figure.set_selected()
 
+
+
+def display_warning(message, category, filename, *args):
+    """
+    Displays a warning message in a wx.MessageBox. This is designed to 
+    override the warnings module's show_warning function.
+    """
+    wx.MessageBox(str(message), avoplot.PROG_SHORT_NAME, wx.ICON_ERROR)
+
+
+
+class AvoPlotApp(wx.App):
+    """
+    wx app for the AvoPlot program. Overrides the OnInit method to do some 
+    startup tasks.
+    """
+    def __init__(self, options, args, start_hidden=False):
+        self.options = options
+        self.args = args
+        self.start_hidden = start_hidden
+        self.main_frame = None
+        
+        super(AvoPlotApp, self).__init__()
+        
+        self.Bind(wx.EVT_IDLE, self.on_idle)
+    
+    
+    def on_idle(self, evnt):
+        while avoplot.call_on_idle.idle_q:
+            f, args, kwargs = avoplot.call_on_idle.idle_q.popleft()
+            f(*args, **kwargs)
+    
+    def MainLoop(self):
+        super(AvoPlotApp, self).MainLoop()
+        
+        #execute any pending on_idle events.
+        self.on_idle(None)
+    
+    
+    def OnInit(self):
+        #setup warnings module to display messages in a wx.MessageBox
+        warnings.showwarning = display_warning
+        
+        #register our art provider to serve the AvoPlot icons
+        wx.ArtProvider.Insert(artwork.AvoplotArtProvider())
+        
+        #load all available plugins
+        avoplot.plugins.load_all_plugins()
+        
+        #launch the GUI!
+        self.main_frame = MainFrame()
+        self.SetTopWindow(self.main_frame)
+        self.main_frame.launch(start_hidden=self.start_hidden)
+        
+        return True
   

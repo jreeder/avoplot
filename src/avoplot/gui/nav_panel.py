@@ -208,6 +208,7 @@ class NavigationPanel(wx.ScrolledWindow):
         for the element which has been added and all its children (recursively).
         """
         el = evnt.element
+        print 'nav_panel on_el_add: %s',el.get_name()
         parent_id = el.get_parent_element().get_avoplot_id()
         if self.__el_id_mapping.has_key(parent_id):
             parent_node = self.__el_id_mapping[parent_id]
@@ -234,9 +235,12 @@ class NavigationPanel(wx.ScrolledWindow):
         Creates tree items recursively for all child elements below element, and 
         also adds a tree item for element to parent_node.
         """
-        node = self.tree.AppendItem(parent_node, element.get_name(), 
-                                    data=wx.TreeItemData(element))
-        self.__el_id_mapping[element.get_avoplot_id()] = node
+        if not self.__el_id_mapping.has_key(element.get_avoplot_id()):
+            node = self.tree.AppendItem(parent_node, element.get_name(), 
+                                        data=wx.TreeItemData(element))
+            self.__el_id_mapping[element.get_avoplot_id()] = node
+        else:
+            node = self.__el_id_mapping[element.get_avoplot_id()]
         
         for c in element.get_child_elements():
             self._add_all_child_nodes(node, c)

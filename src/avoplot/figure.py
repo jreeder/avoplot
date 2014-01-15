@@ -66,9 +66,7 @@ class FigureControls(controls.AvoPlotControlPanelBase):
         self.Add(cs, 0 , wx.ALIGN_RIGHT| wx.LEFT | wx.RIGHT, border=10)
         
 
-        
-    
-    
+
     def on_bkgd_colour_change(self, evnt):
         """
         Event handler for background colour selections.
@@ -93,7 +91,7 @@ class FigureControls(controls.AvoPlotControlPanelBase):
 class AvoPlotFigure(core.AvoPlotElementBase, wx.ScrolledWindow):
     """
     The AvoPlotFigure class represents a single plot tab in the plotting window.
-    The parent argument should be the plotting window.
+    The parent argument should be the main (top-level) window.
     """
     def __init__(self, parent, name):
         core.AvoPlotElementBase.__init__(self, name)       
@@ -102,7 +100,7 @@ class AvoPlotFigure(core.AvoPlotElementBase, wx.ScrolledWindow):
         
         self._is_zoomed = False
         self._is_panned = False
-
+        
         #set up the scroll bars in case the figure gets too small
         wx.ScrolledWindow.__init__(self, parent, wx.ID_ANY)
         self.SetScrollRate(2, 2)
@@ -172,7 +170,7 @@ class AvoPlotFigure(core.AvoPlotElementBase, wx.ScrolledWindow):
         return self._is_panned
         
         
-    def finalise(self):
+    def finalise(self, parent):
         """
         Creates the canvas for the figure to be drawn into. This is done here
         rather than in __init__ so that we have the option of vetoing the 
