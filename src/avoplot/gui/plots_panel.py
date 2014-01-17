@@ -16,7 +16,7 @@
 #along with AvoPlot.  If not, see <http://www.gnu.org/licenses/>.
 
 import wx
-from wx import aui
+from wx.lib.agw import aui
 
 from avoplot import figure
 from avoplot import core
@@ -92,6 +92,7 @@ class PlotsPanel(aui.AuiNotebook):
         """
         el = evnt.element
         if isinstance(el, figure.AvoPlotFigure):
+            
             self.AddPage(el, el.get_name())
     
     
@@ -153,8 +154,15 @@ class PlotsPanel(aui.AuiNotebook):
         a popup menu allowing the user to close the tab, split the tab and 
         rename the tab.
         """
+        
+        #this is a little bit convoluted because you can't use self.GetPage()
+        #to get the tab that was clicked on - because it breaks if the 
+        #notebook has been split or the tabs have been rearranged
+        
+        tab_control = evnt.GetEventObject()
         idx = evnt.GetSelection()
-        fig = self.GetPage(idx)
+        fig = tab_control.GetWindowFromIdx(idx)
+        
         fig.set_selected()
         self.PopupMenu(self._tab_menu)
     
@@ -203,34 +211,39 @@ class PlotsPanel(aui.AuiNotebook):
         #infinite event loop
         self.Unbind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED)
         
-        self.Freeze()
-
-        # remember the tab now selected
-        nowSelected = self.GetSelection()
-        # select first tab as destination
-        self.SetSelection(0)
-        # iterate all other tabs
-        for idx in xrange(1, self.GetPageCount()):
-            # get win reference
-            win = self.GetPage(idx)
-            # get tab title
-            title = self.GetPageText(idx)
-            # get page bitmap
-            bmp = self.GetPageBitmap(idx)
-            # remove from notebook
-            self.RemovePage(idx)
-            # re-add in the same position so it will tab
-            self.InsertPage(idx, win, title, False, bmp)
-        
-        # restore orignial selected tab
-        self.SetSelection(nowSelected)
-
-        self.Thaw()
+        self.UnSplit()
         
         self.Bind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.on_tab_change)
         
-        #send a size event to force redraw of window contents - this is only
-        #really needed in windows
-        self.SendSizeEvent()
+#        
+#        self.Freeze()
+#
+#        # remember the tab now selected
+#        nowSelected = self.GetSelection()
+#        # select first tab as destination
+#        self.SetSelection(0)
+#        # iterate all other tabs
+#        for idx in xrange(1, self.GetPageCount()):
+#            # get win reference
+#            win = self.GetPage(idx)
+#            # get tab title
+#            title = self.GetPageText(idx)
+#            # get page bitmap
+#            bmp = self.GetPageBitmap(idx)
+#            # remove from notebook
+#            self.RemovePage(idx)
+#            # re-add in the same position so it will tab
+#            self.InsertPage(idx, win, title, False, bmp)
+#        
+#        # restore orignial selected tab
+#        self.SetSelection(nowSelected)
+#
+#        self.Thaw()
+#        
+#        self.Bind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.on_tab_change)
+#        
+#        #send a size event to force redraw of window contents - this is only
+#        #really needed in windows
+#        self.SendSizeEvent()
         
         

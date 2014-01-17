@@ -133,7 +133,8 @@ class AvoPlotElementBase(object):
         method should make sure that they call the base class's method too.
         """
         for p in self.get_control_panels():
-            p.Destroy()
+            if p.is_initialised():
+                p.Destroy()
         self.__control_panels = []
         
     

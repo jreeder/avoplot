@@ -214,8 +214,21 @@ class AvoPlotPluginBase(object):
         """
         Returns the parent window to be used for windows created by the plugin.
         (This will be the main AvoPlot window)
+        
+        Do not use this method to get the parent for Figure objects - see 
+        get_figure_parent() instead.
         """
-        return wx.GetApp().GetTopWindow() 
+        return wx.GetApp().GetTopWindow()
+    
+    
+    def get_figure_parent(self):
+        """
+        Use this method to get the parent window for any figures you create.
+        
+        Figures have to parented by the plots_panel (since it is an AGW 
+        notebook), therefore we cannot use the main window as the parent.
+        """
+        return self.get_parent().plots_panel
 
 
     def set_menu_entry(self, labels, tooltip):
@@ -265,7 +278,7 @@ class AvoPlotPluginSimple(AvoPlotPluginBase):
         show_figure() to add the new figure to the main window.
         """
         #create the new figure object
-        fig = AvoPlotFigure(self.get_parent(), "New Figure")
+        fig = AvoPlotFigure(self.get_figure_parent(), "New Figure")
                 
         #figure out what type of subplot we need, based on what data
         #types the plugin supports
