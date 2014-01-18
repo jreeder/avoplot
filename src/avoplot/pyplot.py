@@ -74,7 +74,10 @@ class _AvoPlotRemoteInstance:
         self._cmd_method_mapping = {
                                     'plot': self._plot,
                                     'show': self._show,
-                                    'figure': self._figure
+                                    'figure': self._figure,
+                                    'xlabel': self._xlabel,
+                                    'ylabel': self._ylabel,
+                                    'title': self._title
                                     }
         
         self._cur_avoplot_fig = None
@@ -128,9 +131,11 @@ class _AvoPlotRemoteInstance:
             not self._cur_avoplot_subplot in self._cur_avoplot_fig.get_child_elements()):
             self._cur_avoplot_subplot = None
         
+        #if there is no current subplot, then create one in the current figure
         if self._cur_avoplot_subplot is None:
             subplot = subplots.AvoPlotXYSubplot(self._get_cur_avoplot_fig(), 'Subplot')
             self._cur_avoplot_subplot = subplot
+        
         return self._cur_avoplot_subplot
     
     
@@ -171,16 +176,13 @@ class _AvoPlotRemoteInstance:
     def __execute_command(self, cmd):
  
         func = self._cmd_method_mapping[cmd.cmd_name]
-        func(cmd.args, cmd.kwargs)
-        
-        
-        #warnings.warn("Hello!")       
+        func(cmd.args, cmd.kwargs)      
     
     
     def _plot(self, args, kwargs):
         subplot = self._get_cur_avoplot_subplot()
         
-        for xdata, ydata, fmt_str in split_plot_args(args):
+        for xdata, ydata, fmt_str in _split_plot_args(args):
             
             series = _PyplotXYDataSeries((fmt_str,), kwargs, xdata=xdata, ydata=ydata)
             subplot.add_data_series(series)
@@ -196,9 +198,28 @@ class _AvoPlotRemoteInstance:
         fig = avoplot.figure.AvoPlotFigure(parent,'Figure')
         parent.add_figure(fig)
         self._cur_avoplot_fig = fig
+    
+    
+    def _xlabel(self, args, kwargs):
+        subplot = self._get_cur_avoplot_subplot()
+        ax = subplot.get_mpl_axes()
+        ax.set_xlabel(*args, **kwargs)
+    
+    
+    def _ylabel(self, args, kwargs):
+        subplot = self._get_cur_avoplot_subplot()
+        ax = subplot.get_mpl_axes()
+        ax.set_ylabel(*args, **kwargs)
+    
+    
+    def _title(self, args, kwargs):
+        subplot = self._get_cur_avoplot_subplot()
+        ax = subplot.get_mpl_axes()
+        ax.set_title(*args, **kwargs)
 
 
-def split_plot_args(args):
+
+def _split_plot_args(args):
     split_args = []
     tmp = []
     for a in args:
@@ -334,3 +355,16 @@ def show():
 def figure(*args, **kwargs):
     __avoplot_remote_instance_proxy.send_command('figure', args, kwargs)
 
+
+def xlabel(s, *args, **kwargs):
+    __avoplot_remote_instance_proxy.send_command('xlabel', (s,) + args, kwargs)
+    
+
+def ylabel(s, *args, **kwargs):
+    __avoplot_remote_instance_proxy.send_command('ylabel', (s,) + args, kwargs)
+    
+
+def title(s, *args, **kwargs):    
+    __avoplot_remote_instance_proxy.send_command('title', (s,) + args, kwargs)
+    
+    
