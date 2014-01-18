@@ -46,12 +46,21 @@ class ControlPanel(aui.AuiNotebook):
         
         
     def on_page_changing(self, evnt):
+        """
+        Event handler for page changing events. Calls the on_control_panel_inactive()
+        method on the control panel that is being de-selected.
+        """
         page_idx = self.GetSelection()
         page  = self.GetPage(page_idx)
         page.on_control_panel_inactive()
         evnt.Skip()
     
+    
     def on_page_changed(self, evnt):
+        """
+        Event handler for page changed events. Calls the on_control_panel_active()
+        method on the control panel that has been newly selected.
+        """
         page_idx = self.GetSelection()
         page  = self.GetPage(page_idx)
         page.on_control_panel_active()
@@ -73,8 +82,7 @@ class ControlPanel(aui.AuiNotebook):
             layout = self.SavePerspective()
             self.__layouts[self._current_element.get_avoplot_id()] = layout
             while self.GetPageCount():
-                # get rid of the old pages and reparent them back to whatever
-                #window was their parent before they were added to the notebook
+                # get rid of the old pages 
                 p = self.GetPage(0)
                 
                 #need to call this explicitly, since we remove the page rather
@@ -93,9 +101,13 @@ class ControlPanel(aui.AuiNotebook):
             
             self.AddPage(p, p.get_name())
             
-
-        if self.__layouts.has_key(element.get_avoplot_id()):
+        #only load the saved perspective if there are actually some control panels
+        #to arrange. Otherwise when the session element gets selected 
+        #(e.g. when the final figure gets closed) then this will try to load an
+        #invalid perspective
+        if control_panels and self.__layouts.has_key(element.get_avoplot_id()):
             self.LoadPerspective(self.__layouts[element.get_avoplot_id()])
+        
         self.Thaw()
         
         #send a size event to force redraw of window contents - this is only

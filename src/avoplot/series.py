@@ -180,7 +180,7 @@ class XYDataSeries(DataSeriesBase):
         super(XYDataSeries, self).__init__(name)
         self.set_xy_data(xdata, ydata)
         self.add_control_panel(XYSeriesControls(self))
-        self.add_control_panel(XYSeriesFittingControls(self))
+        #self.add_control_panel(XYSeriesFittingControls(self))
           
           
     @staticmethod    
