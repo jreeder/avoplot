@@ -257,6 +257,17 @@ class XYSubplotControls(controls.AvoPlotControlPanelBase):
         self.Add(y_axis_ctrls_szr, 0, wx.EXPAND|wx.ALL, border=5)        
     
     
+    def on_display(self):
+        """
+        On Windows, parts of the control panel do not draw correctly unless you
+        send a size event - so we do that here.
+        
+        This is called automatically when the control panel is displayed (see
+        baseclass docstring).
+        """
+        self.SendSizeEvent()
+    
+    
     def on_bkgd_colour(self, evnt):
         """
         Event handler for the background colour selector.

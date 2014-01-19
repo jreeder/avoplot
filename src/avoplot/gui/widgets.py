@@ -188,7 +188,12 @@ class TextSetting(SettingBase, text.AnimatedText):
         self.redraw_text()
 
         if evnt.GetString():
-            self.prop_button.Show(True)
+            if not self.prop_button.IsShown():
+                self.prop_button.Show(True)
+                
+                #need to explicitly redraw the window area containing the button
+                #otherwise it remains hidden (only a problem on Windows)
+                self.parent.Refresh(rect=self.prop_button.GetRect())
         else:
             self.prop_button.Show(False)
     
