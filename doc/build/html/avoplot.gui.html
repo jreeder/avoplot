@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>gui Package &mdash; AvoPlot 13.12 documentation</title>
+    <title>gui Package &mdash; AvoPlot 14.01 documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '13.12',
+        VERSION:     '14.01',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="shortcut icon" href="_static/avoplot16.ico"/>
-    <link rel="top" title="AvoPlot 13.12 documentation" href="index.html" />
+    <link rel="top" title="AvoPlot 14.01 documentation" href="index.html" />
     <link rel="up" title="avoplot Package" href="avoplot.html" />
     <link rel="next" title="plugins Package" href="avoplot.plugins.html" />
     <link rel="prev" title="avoplot Package" href="avoplot.html" /> 
@@ -45,7 +45,7 @@
         <li class="right" >
           <a href="avoplot.html" title="avoplot Package"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">AvoPlot 13.12 documentation</a> &raquo;</li>
+        <li><a href="index.html">AvoPlot 14.01 documentation</a> &raquo;</li>
           <li><a href="API.html" >API</a> &raquo;</li>
           <li><a href="avoplot.html" accesskey="U">avoplot Package</a> &raquo;</li> 
       </ul>
@@ -172,12 +172,16 @@ panels for the newly selected element to the notebook.</p>
 <dl class="method">
 <dt id="avoplot.gui.control_panel.ControlPanel.on_page_changed">
 <tt class="descname">on_page_changed</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.control_panel.ControlPanel.on_page_changed" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Event handler for page changed events. Calls the on_control_panel_active()
+method on the control panel that has been newly selected.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="avoplot.gui.control_panel.ControlPanel.on_page_changing">
 <tt class="descname">on_page_changing</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.gui.control_panel.ControlPanel.on_page_changing" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Event handler for page changing events. Calls the on_control_panel_inactive()
+method on the control panel that is being de-selected.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="avoplot.gui.control_panel.ControlPanel.set_control_panels">
@@ -604,6 +608,15 @@ the currently selected one.</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="avoplot.gui.menu.create_the_New_menu">
+<tt class="descclassname">avoplot.gui.menu.</tt><tt class="descname">create_the_New_menu</tt><big>(</big><em>parent</em><big>)</big><a class="headerlink" href="#avoplot.gui.menu.create_the_New_menu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates and returns a new wxMenu object which contains the &#8220;File-&gt;New&#8221; 
+entries. These are read from the plugins that are currently registered.</p>
+<p>The relevant event handlers for the menu entries are also registered by this
+function.</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="avoplot.gui.menu.get_subplot_right_click_menu">
 <tt class="descclassname">avoplot.gui.menu.</tt><tt class="descname">get_subplot_right_click_menu</tt><big>(</big><em>subplot</em><big>)</big><a class="headerlink" href="#avoplot.gui.menu.get_subplot_right_click_menu" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a wx.Menu object which is relevant for the subplot which was passed
@@ -697,7 +710,7 @@ right clicked.</p>
 <dl class="class">
 <dt id="avoplot.gui.plots_panel.PlotsPanel">
 <em class="property">class </em><tt class="descclassname">avoplot.gui.plots_panel.</tt><tt class="descname">PlotsPanel</tt><big>(</big><em>parent</em><big>)</big><a class="headerlink" href="#avoplot.gui.plots_panel.PlotsPanel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx.aui.AuiNotebook</span></tt></p>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx.lib.agw.aui.auibook.AuiNotebook</span></tt></p>
 <p>AuiNotebook for displaying figures in. Multiple figures may be viewed 
 simultaneously by splitting the notebook.</p>
 <dl class="method">
@@ -1047,7 +1060,7 @@ figures. The pan tool will be disabled if needed.</p>
 control panels for elements.</p>
 <dl class="class">
 <dt id="avoplot.gui.widgets.BitmapChoice">
-<em class="property">class </em><tt class="descclassname">avoplot.gui.widgets.</tt><tt class="descname">BitmapChoice</tt><big>(</big><em>parent</em>, <em>id=-1</em>, <em>value=u''</em>, <em>pos=wx.Point(-1</em>, <em>-1)</em>, <em>size=wx.Size(-1</em>, <em>-1)</em>, <em>choices=</em><span class="optional">[</span><span class="optional">]</span>, <em>style=0</em>, <em>validator=&lt;wx._core.Validator; proxy of &lt;Swig Object of type 'wxValidator *' at 0x2b2ed4ad6540&gt; &gt;</em>, <em>name=u'comboBox'</em>, <em>bitmaps=</em><span class="optional">[</span><span class="optional">]</span><big>)</big><a class="headerlink" href="#avoplot.gui.widgets.BitmapChoice" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">avoplot.gui.widgets.</tt><tt class="descname">BitmapChoice</tt><big>(</big><em>parent</em>, <em>id=-1</em>, <em>value=u''</em>, <em>pos=wx.Point(-1</em>, <em>-1)</em>, <em>size=wx.Size(-1</em>, <em>-1)</em>, <em>choices=</em><span class="optional">[</span><span class="optional">]</span>, <em>style=0</em>, <em>validator=&lt;wx._core.Validator; proxy of &lt;Swig Object of type 'wxValidator *' at 0x2af74e9ae540&gt; &gt;</em>, <em>name=u'comboBox'</em>, <em>bitmaps=</em><span class="optional">[</span><span class="optional">]</span><big>)</big><a class="headerlink" href="#avoplot.gui.widgets.BitmapChoice" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx.combo.OwnerDrawnComboBox</span></tt></p>
 <dl class="method">
 <dt id="avoplot.gui.widgets.BitmapChoice.OnDrawItem">
@@ -1176,7 +1189,7 @@ properties dialog.</p>
         <li class="right" >
           <a href="avoplot.html" title="avoplot Package"
              >previous</a> |</li>
-        <li><a href="index.html">AvoPlot 13.12 documentation</a> &raquo;</li>
+        <li><a href="index.html">AvoPlot 14.01 documentation</a> &raquo;</li>
           <li><a href="API.html" >API</a> &raquo;</li>
           <li><a href="avoplot.html" >avoplot Package</a> &raquo;</li> 
       </ul>

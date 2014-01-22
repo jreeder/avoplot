@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>plugins Package &mdash; AvoPlot 13.12 documentation</title>
+    <title>plugins Package &mdash; AvoPlot 14.01 documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '13.12',
+        VERSION:     '14.01',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="shortcut icon" href="_static/avoplot16.ico"/>
-    <link rel="top" title="AvoPlot 13.12 documentation" href="index.html" />
+    <link rel="top" title="AvoPlot 14.01 documentation" href="index.html" />
     <link rel="up" title="avoplot Package" href="avoplot.html" />
     <link rel="next" title="avoplot_fromfile_plugin Package" href="avoplot.plugins.avoplot_fromfile_plugin.html" />
     <link rel="prev" title="gui Package" href="avoplot.gui.html" /> 
@@ -45,7 +45,7 @@
         <li class="right" >
           <a href="avoplot.gui.html" title="gui Package"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">AvoPlot 13.12 documentation</a> &raquo;</li>
+        <li><a href="index.html">AvoPlot 14.01 documentation</a> &raquo;</li>
           <li><a href="API.html" >API</a> &raquo;</li>
           <li><a href="avoplot.html" accesskey="U">avoplot Package</a> &raquo;</li> 
       </ul>
@@ -112,6 +112,14 @@ that are provided by this plugin.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="avoplot.plugins.AvoPlotPluginBase.get_figure_parent">
+<tt class="descname">get_figure_parent</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.plugins.AvoPlotPluginBase.get_figure_parent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use this method to get the parent window for any figures you create.</p>
+<p>Figures have to parented by the plots_panel (since it is an AGW 
+notebook), therefore we cannot use the main window as the parent.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="avoplot.plugins.AvoPlotPluginBase.get_menu_entry_labels">
 <tt class="descname">get_menu_entry_labels</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.plugins.AvoPlotPluginBase.get_menu_entry_labels" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a list of menu entry labels (strings) for this plugin.</p>
@@ -130,6 +138,8 @@ get_menu_entry_labels()[-1] is the label for the actual menu entry</p>
 <tt class="descname">get_parent</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.plugins.AvoPlotPluginBase.get_parent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the parent window to be used for windows created by the plugin.
 (This will be the main AvoPlot window)</p>
+<p>Do not use this method to get the parent for Figure objects - see 
+get_figure_parent() instead.</p>
 </dd></dl>
 
 <dl class="method">
@@ -294,7 +304,7 @@ get_plugin_install_path()).</p>
         <li class="right" >
           <a href="avoplot.gui.html" title="gui Package"
              >previous</a> |</li>
-        <li><a href="index.html">AvoPlot 13.12 documentation</a> &raquo;</li>
+        <li><a href="index.html">AvoPlot 14.01 documentation</a> &raquo;</li>
           <li><a href="API.html" >API</a> &raquo;</li>
           <li><a href="avoplot.html" >avoplot Package</a> &raquo;</li> 
       </ul>

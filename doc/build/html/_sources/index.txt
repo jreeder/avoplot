@@ -14,6 +14,7 @@ Contents:
    installation
    a_first_plot
    writing_plugins
+   pyplot
    
 .. toctree::
    :maxdepth: 1

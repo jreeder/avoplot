@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>avoplot Package &mdash; AvoPlot 13.12 documentation</title>
+    <title>avoplot Package &mdash; AvoPlot 14.01 documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '13.12',
+        VERSION:     '14.01',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="shortcut icon" href="_static/avoplot16.ico"/>
-    <link rel="top" title="AvoPlot 13.12 documentation" href="index.html" />
+    <link rel="top" title="AvoPlot 14.01 documentation" href="index.html" />
     <link rel="up" title="API" href="API.html" />
     <link rel="next" title="gui Package" href="avoplot.gui.html" />
     <link rel="prev" title="API" href="API.html" /> 
@@ -45,7 +45,7 @@
         <li class="right" >
           <a href="API.html" title="API"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">AvoPlot 13.12 documentation</a> &raquo;</li>
+        <li><a href="index.html">AvoPlot 14.01 documentation</a> &raquo;</li>
           <li><a href="API.html" accesskey="U">API</a> &raquo;</li> 
       </ul>
     </div>
@@ -269,6 +269,7 @@ subclasses).</p>
 <tt class="descname">get_control_panels</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.core.AvoPlotElementBase.get_control_panels" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a list of control panel objects (instances of 
 avoplot.controls.AvoPlotControlPanelBase) that relate to the element.</p>
+<p>Note that the control_panel objects returned may not be initialised yet.</p>
 </dd></dl>
 
 <dl class="method">
@@ -306,13 +307,6 @@ element&#8217;s name will be updated using set_name().</p>
 <dt id="avoplot.core.AvoPlotElementBase.set_selected">
 <tt class="descname">set_selected</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.core.AvoPlotElementBase.set_selected" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates an AvoPlotElementSelectEvent for the element.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="avoplot.core.AvoPlotElementBase.setup_controls">
-<tt class="descname">setup_controls</tt><big>(</big><em>parent</em><big>)</big><a class="headerlink" href="#avoplot.core.AvoPlotElementBase.setup_controls" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calls the setup method of all the control panels associated with this
-element. parent should be the parent window for the controls.</p>
 </dd></dl>
 
 <dl class="method">
@@ -785,8 +779,18 @@ used for storing settings across program restarts.</p>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="avoplot.pyplot.split_plot_args">
-<tt class="descclassname">avoplot.pyplot.</tt><tt class="descname">split_plot_args</tt><big>(</big><em>args</em><big>)</big><a class="headerlink" href="#avoplot.pyplot.split_plot_args" title="Permalink to this definition">¶</a></dt>
+<dt id="avoplot.pyplot.title">
+<tt class="descclassname">avoplot.pyplot.</tt><tt class="descname">title</tt><big>(</big><em>s</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#avoplot.pyplot.title" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="avoplot.pyplot.xlabel">
+<tt class="descclassname">avoplot.pyplot.</tt><tt class="descname">xlabel</tt><big>(</big><em>s</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#avoplot.pyplot.xlabel" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="avoplot.pyplot.ylabel">
+<tt class="descclassname">avoplot.pyplot.</tt><tt class="descname">ylabel</tt><big>(</big><em>s</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#avoplot.pyplot.ylabel" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -1165,8 +1169,8 @@ a PopupMenu for adding new data series to the subplot.</p>
 <dt id="avoplot.subplots.MetaCallMyInit">
 <em class="property">class </em><tt class="descclassname">avoplot.subplots.</tt><tt class="descname">MetaCallMyInit</tt><a class="headerlink" href="#avoplot.subplots.MetaCallMyInit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">type</span></tt></p>
-<p>Metaclass which ensures that a class&#8217;s my_init() and setup_controls() 
-methods get called once, after it&#8217;s __init__ method has returned.</p>
+<p>Metaclass which ensures that a class&#8217;s my_init() 
+method gets called once, after it&#8217;s __init__ method has returned.</p>
 </dd></dl>
 
 <dl class="class">
@@ -1196,6 +1200,15 @@ instance.</p>
 <dt id="avoplot.subplots.XYSubplotControls.on_bkgd_colour">
 <tt class="descname">on_bkgd_colour</tt><big>(</big><em>evnt</em><big>)</big><a class="headerlink" href="#avoplot.subplots.XYSubplotControls.on_bkgd_colour" title="Permalink to this definition">¶</a></dt>
 <dd><p>Event handler for the background colour selector.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="avoplot.subplots.XYSubplotControls.on_display">
+<tt class="descname">on_display</tt><big>(</big><big>)</big><a class="headerlink" href="#avoplot.subplots.XYSubplotControls.on_display" title="Permalink to this definition">¶</a></dt>
+<dd><p>On Windows, parts of the control panel do not draw correctly unless you
+send a size event - so we do that here.</p>
+<p>This is called automatically when the control panel is displayed (see
+baseclass docstring).</p>
 </dd></dl>
 
 <dl class="method">
@@ -1268,7 +1281,7 @@ instance.</p>
         <li class="right" >
           <a href="API.html" title="API"
              >previous</a> |</li>
-        <li><a href="index.html">AvoPlot 13.12 documentation</a> &raquo;</li>
+        <li><a href="index.html">AvoPlot 14.01 documentation</a> &raquo;</li>
           <li><a href="API.html" >API</a> &raquo;</li> 
       </ul>
     </div>
