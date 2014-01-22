@@ -31,4 +31,5 @@ The example below shows how to create a simple figure using AvoPlot's scripting 
     #the script exits though
     print 'Script finished (but your plot will stay open).'
 
+
 .. _matplotlib: http://matplotlib.org/
