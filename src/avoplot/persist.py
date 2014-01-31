@@ -17,7 +17,7 @@
 
 import atexit
 import os.path
-import cPickle
+import json
 
 import avoplot
 
@@ -44,7 +44,7 @@ class __PersistentStorage:
         #if we can't
         try:
             with open(self.__cache_file,"rb") as ifp:
-                self.__settings = cPickle.load(ifp)
+                self.__settings = json.load(ifp)
         
         except:
             self.__settings = {}
@@ -56,7 +56,7 @@ class __PersistentStorage:
         """
         try:
             with open(self.__cache_file,"wb") as ofp:
-                cPickle.dump(self.__settings, ofp)
+                json.dump(self.__settings, ofp)
         except Exception,e:
             print e.args
             pass

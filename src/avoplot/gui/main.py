@@ -209,7 +209,7 @@ class MainFrame(wx.Frame):
         self.persistant.set_value('main_frame_maximised', self.IsMaximized())
         
         if not self.IsMaximized():
-            self.persistant.set_value('main_frame_size', self.GetSize())
+            self.persistant.set_value('main_frame_size', self.GetSizeTuple())
         
         #save the state of the manager so that the panels will restore to 
         #the same size etc.
