@@ -40,6 +40,8 @@ class MainToolbar(wx.ToolBar):
 
         #plot navigation tools
         self.home_tool = self.AddTool(-1, wx.ArtProvider.GetBitmap(wx.ART_GO_HOME, wx.ART_TOOLBAR),shortHelpString="Return to initial zoom setting")
+        self.back_tool =  self.AddTool(-1, load_matplotlib_bitmap('back.png'), shortHelpString="Back")
+        self.forward_tool = self.AddTool(-1, load_matplotlib_bitmap('forward.png'), shortHelpString="Forward")
         self.zoom_tool = self.AddCheckTool(-1, load_matplotlib_bitmap('zoom_to_rect.png'), shortHelp="Zoom selection")
         self.pan_tool = self.AddCheckTool(-1, load_matplotlib_bitmap('move.png'),shortHelp='Pan',longHelp='Pan with left, zoom with right')
         self.AddSeparator()
@@ -56,6 +58,8 @@ class MainToolbar(wx.ToolBar):
         wx.EVT_TOOL(self.parent, self.new_tool.GetId(), self.on_new)
         wx.EVT_TOOL(self.parent, self.save_tool.GetId(), self.on_save_plot)        
         wx.EVT_TOOL(self.parent, self.home_tool.GetId(), self.on_home)
+        wx.EVT_TOOL(self.parent, self.back_tool.GetId(), self.on_back)
+        wx.EVT_TOOL(self.parent, self.forward_tool.GetId(), self.on_forward)
         wx.EVT_TOOL(self.parent, self.zoom_tool.GetId(), self.on_zoom)
         wx.EVT_TOOL(self.parent, self.pan_tool.GetId(), self.on_pan)
    
@@ -119,6 +123,8 @@ class MainToolbar(wx.ToolBar):
         """
         self.EnableTool(self.save_tool.GetId(),state)
         self.EnableTool(self.home_tool.GetId(),state)
+        self.EnableTool(self.back_tool.GetId(),state)
+        self.EnableTool(self.forward_tool.GetId(),state)
         self.EnableTool(self.pan_tool.GetId(),state)
         self.EnableTool(self.zoom_tool.GetId(),state)
 
@@ -154,7 +160,25 @@ class MainToolbar(wx.ToolBar):
         if self.__active_figure is not None:
             self.__active_figure.go_home()
  
+ 
+    def on_back(self, evnt):
+        """
+        Event handler for 'back' tool events. Returns the figure to its previous
+        view.
+        """
+        if self.__active_figure is not None:
+            self.__active_figure.back()
+            
     
+    def on_forward(self, evnt):
+        """
+        Event handler for 'forward' tool events. Returns the figure to its next
+        view.
+        """
+        if self.__active_figure is not None:
+            self.__active_figure.forward()
+    
+            
     def on_zoom(self,evnt):
         """
         Event handler for zoom tool toggle events. Enables or disables zooming

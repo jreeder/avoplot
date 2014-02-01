@@ -130,7 +130,7 @@ class AvoPlotFigure(core.AvoPlotElementBase, wx.ScrolledWindow):
         fact for all open figures). If val == False, then disables them.
         """
         
-        toolbar = self.parent.toolbar
+        toolbar = wx.GetApp().GetTopWindow().toolbar
         
         toolbar.set_pan_state(val)
         toolbar.set_zoom_state(val)
@@ -250,6 +250,20 @@ class AvoPlotFigure(core.AvoPlotElementBase, wx.ScrolledWindow):
         self.tb.zoom()
     
     
+    def back(self):
+        """
+        Returns the figure to its previous view.
+        """
+        self.tb.back()
+    
+    
+    def forward(self):
+        """
+        Returns the figure to its next view.
+        """    
+        self.tb.forward()
+    
+    
     def pan(self):
         """
         Toggles the pan/zoom functionality for the figure.
@@ -268,5 +282,4 @@ class AvoPlotFigure(core.AvoPlotElementBase, wx.ScrolledWindow):
             self.tb.save_figure(None)
         except NotImplementedError:
             self.tb.save(None)
-
 
