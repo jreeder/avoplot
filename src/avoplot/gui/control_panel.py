@@ -35,7 +35,8 @@ class ControlPanel(aui.AuiNotebook):
         super(ControlPanel, self).__init__(parent, id=wx.ID_ANY, 
                                            style=wx.NB_TOP|wx.CLIP_CHILDREN)
         self._current_element = None
-        self.__layouts = {}
+        self.__layouts = {} #stores the layout of the control panels (keys are IDs)
+        self.__selections = {} #stores the last page selected (keys are IDS)
         
         core.EVT_AVOPLOT_ELEM_SELECT(self, self.on_element_select)
         core.EVT_AVOPLOT_ELEM_DELETE(self, self.on_element_delete)
@@ -81,6 +82,13 @@ class ControlPanel(aui.AuiNotebook):
             #store the control panel layout for this element
             layout = self.SavePerspective()
             self.__layouts[self._current_element.get_avoplot_id()] = layout
+            
+            #store which page is currently selectied, so that we can restore
+            #the selection when this element is selected in the future (note
+            #that the current selection is not part of the layout information)
+            sel = self.GetSelection()
+            self.__selections[self._current_element.get_avoplot_id()] = sel
+            
             while self.GetPageCount():
                 # get rid of the old pages 
                 p = self.GetPage(0)
@@ -107,6 +115,12 @@ class ControlPanel(aui.AuiNotebook):
         #invalid perspective
         if control_panels and self.__layouts.has_key(element.get_avoplot_id()):
             self.LoadPerspective(self.__layouts[element.get_avoplot_id()])
+        
+        #Restore the user's previous page selection.
+        if (len(control_panels) > 1 and 
+            self.__selections.has_key(element.get_avoplot_id())):
+            
+            self.SetSelection(self.__selections[element.get_avoplot_id()])
         
         self.Thaw()
         
