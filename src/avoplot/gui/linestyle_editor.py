@@ -117,7 +117,24 @@ class LineStyleEditorPanel(wx.Panel):
         line_ctrls_szr.Add(self.line_colour_picker, 0 ,
                           wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_LEFT)
         wx.EVT_COLOURPICKER_CHANGED(self, self.line_colour_picker.GetId(), self.on_line_colour_change)
-    
+        
+        #line opacity
+        line_alpha = mpl_lines[0].get_alpha()
+        if not line_alpha:
+            line_alpha = 1.0
+        self.line_alpha_ctrl = floatspin.FloatSpin(self, -1,min_val=0.0, max_val=1.0,
+                                                   value=line_alpha, increment=0.1, 
+                                                   digits=1)
+        self.line_alpha_txt = wx.StaticText(self, wx.ID_ANY, "Opacity:")
+        
+        line_ctrls_szr.Add(self.line_alpha_txt, 0,
+                           wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_RIGHT)
+        line_ctrls_szr.Add(self.line_alpha_ctrl, 0 ,
+                          wx.ALIGN_CENTRE_VERTICAL | wx.ALIGN_LEFT)
+        
+        floatspin.EVT_FLOATSPIN(self, self.line_alpha_ctrl.GetId(), self.on_line_alpha_change)
+        
+        
         #set the line selection to that of the data
         #it is possible that the line will have been set to something that
         #avoplot does not yet support - if so, default to None and issue warning
@@ -139,6 +156,15 @@ class LineStyleEditorPanel(wx.Panel):
         self.parent.SendSizeEvent()
         self.parent.Refresh()
         
+    
+    def on_line_alpha_change(self, evnt):
+        """
+        Event handler for line opacity change events.
+        """
+        for l in self.mpl_lines:
+            l.set_alpha(self.line_alpha_ctrl.GetValue())
+        self.update_command()
+    
         
     def on_line_colour_change(self, evnt):
         """
@@ -180,6 +206,8 @@ class LineStyleEditorPanel(wx.Panel):
         #show/hide the colour and width controls
         self.line_colour_picker.Show(current_line.has_width)
         self.line_colour_picker_txt.Show(current_line.has_width)
+        self.line_alpha_ctrl.Show(current_line.has_width)
+        self.line_alpha_txt.Show(current_line.has_width)
         self.line_weight_ctrl.Show(current_line.has_width)
         self.line_weight_ctrl_txt.Show(current_line.has_width)
         
