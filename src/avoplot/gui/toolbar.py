@@ -40,8 +40,8 @@ class MainToolbar(wx.ToolBar):
 
         #plot navigation tools
         self.home_tool = self.AddTool(-1, wx.ArtProvider.GetBitmap(wx.ART_GO_HOME, wx.ART_TOOLBAR),shortHelpString="Return to initial zoom setting")
-        self.back_tool =  self.AddTool(-1, load_matplotlib_bitmap('back.png'), shortHelpString="Back")
-        self.forward_tool = self.AddTool(-1, load_matplotlib_bitmap('forward.png'), shortHelpString="Forward")
+        self.back_tool =  self.AddTool(-1, load_matplotlib_bitmap('back.png'), shortHelpString="Previous zoom setting")
+        self.forward_tool = self.AddTool(-1, load_matplotlib_bitmap('forward.png'), shortHelpString="Next zoom setting")
         self.zoom_tool = self.AddCheckTool(-1, load_matplotlib_bitmap('zoom_to_rect.png'), shortHelp="Zoom selection")
         self.pan_tool = self.AddCheckTool(-1, load_matplotlib_bitmap('move.png'),shortHelp='Pan',longHelp='Pan with left, zoom with right')
         self.AddSeparator()
@@ -103,17 +103,25 @@ class MainToolbar(wx.ToolBar):
         if isinstance(el, figure.AvoPlotFigure):
             self.__all_figures.remove(el)
             if not self.__all_figures:
+                self.__active_figure = None
                 self.enable_plot_tools(False)
-    
+                
     
     def on_element_select(self, evnt):
         """
-        Event handler for element select events. Just keeps track of what the 
-        curretly selected element is.
+        Event handler for element select events. Keeps track of what the 
+        currently selected element is and updates the state of the history 
+        buttons.
         """
         el = evnt.element
         if isinstance(el, figure.AvoPlotFigure):
             self.__active_figure = el
+            
+            #set the history button update handler so that the history buttons
+            #get enabled/disabled at the correct times
+            self.__active_figure.tb.set_history_buttons = self.update_history_buttons
+            
+            self.update_history_buttons()
         
     
     
@@ -123,10 +131,12 @@ class MainToolbar(wx.ToolBar):
         """
         self.EnableTool(self.save_tool.GetId(),state)
         self.EnableTool(self.home_tool.GetId(),state)
-        self.EnableTool(self.back_tool.GetId(),state)
-        self.EnableTool(self.forward_tool.GetId(),state)
+        #self.EnableTool(self.back_tool.GetId(),state)
+        #self.EnableTool(self.forward_tool.GetId(),state)
         self.EnableTool(self.pan_tool.GetId(),state)
         self.EnableTool(self.zoom_tool.GetId(),state)
+        
+        self.update_history_buttons()
 
    
     
@@ -232,5 +242,21 @@ class MainToolbar(wx.ToolBar):
         """
         if self.__active_figure is not None:
             self.__active_figure.save_figure_as_image()
+    
+    
+    def update_history_buttons(self):
+        """
+        Enables/disables the next- and prev-view buttons depending on whether
+        there are views to go forward or back to.
+        """
+        if self.__active_figure is not None:
+            current_mpl_toolbar = self.__active_figure.tb
+            can_backward = (current_mpl_toolbar._views._pos > 0)  
+            can_forward = (current_mpl_toolbar._views._pos < len(current_mpl_toolbar._views._elements) - 1)
+        else:
+            can_backward = False
+            can_forward = False
             
+        self.EnableTool(self.back_tool.GetId(),can_backward)
+        self.EnableTool(self.forward_tool.GetId(),can_forward)
         
