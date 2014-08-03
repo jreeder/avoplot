@@ -23,6 +23,8 @@ import datetime
 import time
 import numpy
 import re
+import matplotlib.ticker
+import matplotlib.dates
 
 from doas.io import SpectrumIO
 from doas import spec_dir
@@ -330,10 +332,12 @@ class SO2TimeSeries(series.XYDataSeries):
             return
         
         ax = self.get_subplot().get_mpl_axes()
+        loc = matplotlib.dates.AutoDateLocator()
+        ax.xaxis.set_major_locator(loc)
+        ax.xaxis.set_major_formatter(matplotlib.dates.AutoDateFormatter(loc))
         ax.relim()
         ax.autoscale(enable=True)
         ax.autoscale_view()
-        ax.xaxis.axis_date()
         
         self.xaxis_format = 'times'
         self.set_xy_data(self.times, self.ratios)
@@ -344,6 +348,8 @@ class SO2TimeSeries(series.XYDataSeries):
             return
         
         ax = self.get_subplot().get_mpl_axes()
+        ax.xaxis.set_major_locator(matplotlib.ticker.AutoLocator())
+        ax.xaxis.set_major_formatter(matplotlib.ticker.ScalarFormatter())
         ax.relim()
         ax.autoscale(enable=True)
         ax.autoscale_view()
@@ -357,6 +363,8 @@ class SO2TimeSeries(series.XYDataSeries):
             return
         
         ax = self.get_subplot().get_mpl_axes()
+        ax.xaxis.set_major_locator(matplotlib.ticker.AutoLocator())
+        ax.xaxis.set_major_formatter(matplotlib.ticker.ScalarFormatter())
         ax.relim()
         ax.autoscale(enable=True)
         ax.autoscale_view()
