@@ -19,6 +19,8 @@ from multiprocessing import connection
 import subprocess
 import threading
 import sys
+import traceback
+from StringIO import StringIO
 
 import wx
 import avoplot.gui.main
@@ -64,9 +66,20 @@ class _AvoPlotPyplotCommand:
 
 
 class _RemoteException:
-    def __init__(self, exception):
-        self.exception = exception
-
+    def __init__(self, type_, value, tb):
+        self.ex = type_("".join(traceback.format_exception(*sys.exc_info())))
+        
+        self.type = type_
+        self.value = value
+        
+        s = StringIO()
+        traceback.print_tb(tb, file=s)
+        
+        self.traceback_str = s.getvalue()
+    
+    def raise_exc(self):
+        raise self.type, ''.join([str(self.value), self.traceback_str])
+        #raise self.type, "".join(["", self.traceback_str]), None 
 
 
 class _AvoPlotRemoteInstance:
@@ -161,6 +174,10 @@ class _AvoPlotRemoteInstance:
             try:
                 wx.MutexGuiEnter()
                 self.__execute_command(cmd)
+            except:
+                remote_ex = _RemoteException(*sys.exc_info())
+                self.__connection.send(remote_ex)
+                continue
             finally:
                 wx.MutexGuiLeave()
             
@@ -283,9 +300,8 @@ class _AvoPlotRemoteInstanceProxy:
             response = self.__connection.recv()
             
             if isinstance(response, _RemoteException):
-                print response
-                print response.exception
-                raise response.exception
+                response.raise_exc()
+               
             
             if response != CMD_RECV_ACKNOWLEDGEMENT:
                 raise CommunicationError('Unexpected response from AvoPlot '
