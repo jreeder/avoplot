@@ -289,15 +289,24 @@ class XYDataSeries(DataSeriesBase):
             xdata, ydata = self.get_data()
             
             with open(path, 'w') as fp:
-                for i in range(len(xdata)):
-                    if isinstance(xdata[0], datetime):
-                        fp.write("%s\t%f\n" %(str(xdata[i]), ydata[i]))
-                        #yfloat = []
-                        #for i in ydata:
-                        #    yfloat.append(time.mktime(ydata[i].timetuple()))
-                        #fp.write("%f\t%f\n" %(xdata[i], yfloat[i]))
+                
+                if isinstance(xdata[0], datetime):
+                    if isinstance(ydata[0], datetime):
+                        for i in range(len(xdata)):                   
+                            fp.write("%s\t%s\n" %(str(xdata[i]), str(ydata[i])))
+                        
                     else:
-                        fp.write("%f\t%f\n" %(xdata[i], ydata[i]))
+                        for i in range(len(xdata)):                   
+                            fp.write("%s\t%f\n" %(str(xdata[i]), ydata[i]))
+                
+                else:
+                    if isinstance(ydata[0], datetime):
+                        for i in range(len(xdata)):                 
+                            fp.write("%f\t%s\n" %(xdata[i], str(ydata[i])))
+
+                    else:
+                        for i in range(len(xdata)): 
+                            fp.write("%f\t%f\n" %(xdata[i], ydata[i]))
 
         
         export_dialog.Destroy()            

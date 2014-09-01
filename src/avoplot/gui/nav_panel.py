@@ -35,11 +35,8 @@ class RightClickMenu(wx.Menu):
         delete_entry = self.Append(-1, 'Delete', 'Delete the element')
         wx.EVT_MENU(nav_panel,delete_entry.GetId(), nav_panel.on_rclick_menu_delete)
         
-        
-        #disabled pending testing and debugging - in particular needs to be able
-        #to deal with series that have datetimes in them.
-        #self.export_entry = self.Append(-1, 'Export data', 'Export series to a text file')
-        #wx.EVT_MENU(nav_panel,self.export_entry.GetId(), nav_panel.on_rclick_menu_export)
+        self.export_entry = self.Append(-1, 'Export data', 'Export series to a text file')
+        wx.EVT_MENU(nav_panel,self.export_entry.GetId(), nav_panel.on_rclick_menu_export)
 
 
 
