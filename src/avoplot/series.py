@@ -28,6 +28,7 @@ from avoplot import controls
 from avoplot import core
 from avoplot import subplots
 from avoplot import figure
+from avoplot import fitting
 from avoplot import data_selection
 from avoplot.gui import linestyle_editor
 from avoplot.persist import PersistentStorage
@@ -349,17 +350,54 @@ class XYSeriesControls(controls.AvoPlotControlPanelBase):
         self.linestyle_ctrl_panel.SendSizeEvent()
 
 
-################################################################
-#
-#  Everything below here is experimental and under development!
-#
-#
-################################################################
+
+class FitDataSeries(XYDataSeries):
+    def __init__(self, s, xdata, ydata, fit_params):
+        super(FitDataSeries, self).__init__(s.get_name() + ' Fit', xdata, ydata)
+        self.fit_params = fit_params
+        self.add_control_panel(FitParamsCtrl(self))
+        
+        s.add_subseries(self)
+    
+    @staticmethod
+    def get_supported_subplot_type():
+        return AvoPlotXYSubplot
+
+class FitParamsCtrl(controls.AvoPlotControlPanelBase):
+    """
+    Control panel to display the best fit parameters of a FitDataSeries
+    """
+    def __init__(self, series):
+        #call the parent class's __init__ method, passing it the name that we
+        #want to appear on the control panels tab.
+        super(FitParamsCtrl, self).__init__("Fit Parameters")
+        
+        #store the data series object that this control panel is associated with, 
+        #so that we can access it later
+        self.series = series
+        
+        self.fit_params = series.fit_params
+    
+    
+    def setup(self, parent):
+        super(FitParamsCtrl, self).setup(parent)
+        
+        label_text = wx.StaticText(self, -1, self.fit_params[0][0]+':')
+        self.Add(label_text, 0, wx.ALIGN_TOP|wx.ALL,border=10)
+        
+        for name, value in self.fit_params[1:]:
+            label_text = wx.StaticText(self, -1, ''.join(["   ",name,": ","%0.3e"%value]))
+            self.Add(label_text, 0, wx.ALIGN_TOP|wx.ALL,border=5)
+        
+        
+    
+
 
 class XYSeriesFittingControls(controls.AvoPlotControlPanelBase):
     def __init__(self, series):
         super(XYSeriesFittingControls, self).__init__("Fitting")
         self.series = series
+        self.__current_tool_idx = 0
     
     def setup(self, parent):
         """
@@ -376,15 +414,20 @@ class XYSeriesFittingControls(controls.AvoPlotControlPanelBase):
         
         fit_type_static_sizer = wx.StaticBoxSizer(wx.StaticBox(self, wx.ID_ANY, 'Fit type'), wx.VERTICAL)
         
-        self.fit_type = wx.Choice(self, wx.ID_ANY, choices=['Gaussian'])
+        self.fit_type = wx.Choice(self, wx.ID_ANY, choices=[ft.name for ft in fitting.get_fitting_tools()])
         fit_type_static_sizer.Add(self.fit_type,1, wx.ALIGN_RIGHT)
         self.Add(fit_type_static_sizer, 0, wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, border=5)
         
         fit_button = wx.Button(self, -1, "Fit")
         self.Add(fit_button, 0 , wx.ALIGN_CENTER_HORIZONTAL)
         wx.EVT_BUTTON(self, fit_button.GetId(), self.on_fit)
+        wx.EVT_CHOICE(self, self.fit_type.GetId(), self.on_tool_choice)
         
         self.span = None
+    
+    
+    def on_tool_choice(self, evnt):
+        self.__current_tool_idx = self.fit_type.GetCurrentSelection()
     
             
     def on_fit(self, evnt):
@@ -393,9 +436,12 @@ class XYSeriesFittingControls(controls.AvoPlotControlPanelBase):
         selected_idxs = numpy.where(mask)
         raw_x, raw_y = self.series.get_data()
         
-        fit_x_data, fit_y_data, gaussian_params = fit_gaussian(raw_x[selected_idxs], raw_y[selected_idxs])
+        fitting_tool = fitting.get_fitting_tools()[self.__current_tool_idx]
         
-        FitData(self.series, fit_x_data, fit_y_data, gaussian_params)
+        fit_x_data, fit_y_data, fit_params = fitting_tool.fit(raw_x[selected_idxs], 
+                                                              raw_y[selected_idxs])
+        
+        FitDataSeries(self.series, fit_x_data, fit_y_data, fit_params)
         self.series.update()
     
     
@@ -411,114 +457,4 @@ class XYSeriesFittingControls(controls.AvoPlotControlPanelBase):
         This gets called automatically when the control panel is un-selected.
         """
         self.selection_panel.disable_selection()
-
-
-class FitData(XYDataSeries):
-    def __init__(self, s, xdata, ydata, gaussian_params):
-        super(FitData, self).__init__(s.get_name() + ' Fit', xdata, ydata)
-        self.gaussian_params = gaussian_params
-        self.add_control_panel(FitDataCtrl(self))
-        
-        s.add_subseries(self)
-    
-    @staticmethod
-    def get_supported_subplot_type():
-        return AvoPlotXYSubplot
-    
-    
-class FitDataCtrl(controls.AvoPlotControlPanelBase):
-    """
-    Control panel where the buttons to draw backgrounds will appear
-    """
-    def __init__(self, series):
-        #call the parent class's __init__ method, passing it the name that we
-        #want to appear on the control panels tab.
-        super(FitDataCtrl, self).__init__("Fit Parameters")
-        
-        #store the data series object that this control panel is associated with, 
-        #so that we can access it later
-        self.series = series
-        
-        self.gaussian_params = series.gaussian_params
-    
-    
-    def setup(self, parent):
-        super(FitDataCtrl, self).setup(parent)
-        
-        gaussian_params = self.gaussian_params
-        
-        label_text = wx.StaticText(self, -1, "Gaussian Parameters:")
-        amplitude_text = wx.StaticText(self, -1, "Amplitude: " + str(gaussian_params.amplitude))
-        mean_text = wx.StaticText(self, -1, "Mean: " + str(gaussian_params.mean))
-        sigma_text = wx.StaticText(self, -1, "Sigma: " + str(gaussian_params.sigma))
-        fwhm_text = wx.StaticText(self, -1, "FWHM: " + str(2.0 * math.sqrt(2.0 * math.log(2.0)) *gaussian_params.sigma))
-        y_offset_text = wx.StaticText(self, -1, "Y Offset: " + str(gaussian_params.y_offset))
-        
-        self.Add(label_text, 0, wx.ALIGN_TOP|wx.ALL,border=10)
-        self.Add(amplitude_text, 0, wx.ALIGN_TOP|wx.ALL,border=5)
-        self.Add(mean_text, 0, wx.ALIGN_TOP|wx.ALL,border=5)
-        self.Add(sigma_text, 0, wx.ALIGN_TOP|wx.ALL,border=5)
-        self.Add(fwhm_text, 0, wx.ALIGN_TOP|wx.ALL,border=5)
-        self.Add(y_offset_text, 0, wx.ALIGN_TOP|wx.ALL,border=5)
-
-GaussianParameters = collections.namedtuple('GaussianParameters',['amplitude','mean','sigma','y_offset'])
-
-        
-def fit_gaussian(xdata, ydata, amplitude_guess=None, mean_guess=None, sigma_guess=None, y_offset_guess=None, plot_fit=True):
-    """
-    Fits a gaussian to some data using a least squares fit method. Returns a named tuple
-    of best fit parameters (amplitude, mean, sigma, y_offset).
-     
-    Initial guess values for the fit parameters can be specified as kwargs. Otherwise they
-    are estimated from the data.
-     
-    If plot_fit=True then the fit curve is plotted over the top of the raw data and displayed.
-    """
-
-    if len(xdata) != len(ydata):
-        raise ValueError, "Lengths of xdata and ydata must match"
-     
-    if len(xdata) < 4:
-        raise ValueError, "xdata and ydata need to contain at least 4 elements each"
-     
-    # guess some fit parameters - unless they were specified as kwargs
-    if amplitude_guess is None:
-        amplitude_guess = max(ydata)
-     
-    if mean_guess is None:
-        weights = ydata - numpy.average(ydata)
-        weights[numpy.where(weights <0)]=0 
-        mean_guess = numpy.average(xdata,weights=weights)
-                    
-    #use the y value furthest from the maximum as a guess of y offset 
-    if y_offset_guess is None:
-        data_midpoint = (xdata[-1] + xdata[0])/2.0
-        if mean_guess > data_midpoint:
-            yoffset_guess = ydata[0]        
-        else:
-            yoffset_guess = ydata[-1]
- 
-    #find width at half height as estimate of sigma        
-    if sigma_guess is None:      
-        variance = numpy.dot(numpy.abs(ydata), (xdata-mean_guess)**2)/numpy.abs(ydata).sum()  # Fast and numerically precise    
-        sigma_guess = math.sqrt(variance)
-     
-     
-    #put guess params into an array ready for fitting
-    p0 = numpy.array([amplitude_guess, mean_guess, sigma_guess, yoffset_guess])
- 
-    #define the gaussian function and associated error function
-    fitfunc = lambda p, x: p[0]*numpy.exp(-(x-p[1])**2/(2.0*p[2]**2)) + p[3]
-    errfunc = lambda p, x, y: fitfunc(p,x)-y
-    
-    # do the fitting
-    p1, success = scipy.optimize.leastsq(errfunc, p0, args=(xdata,ydata))
- 
-    if success not in (1,2,3,4):
-        raise RuntimeError, "Could not fit Gaussian to data."
-    
-    xdata = numpy.linspace(xdata[0], xdata[-1], 2000)
-    fit_y_data = [fitfunc(p1, i) for i in xdata]
-     
-    return xdata, fit_y_data, GaussianParameters(*p1)   
         

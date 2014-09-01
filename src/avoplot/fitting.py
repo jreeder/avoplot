@@ -17,7 +17,12 @@
 import numpy
 import math
 import scipy.optimize
+import scipy.stats
 import collections
+
+
+def get_fitting_tools():
+    return __fitting_tools
 
 
 class FittingError(Exception):
@@ -44,7 +49,29 @@ class FittingToolBase:
         raise NotImplementedError("Subclasses should override the fit method of FittingToolBase")
 
 
-GaussianParameters = collections.namedtuple('GaussianParameters',['amplitude','mean','sigma','y_offset'])
+class LinearFittingTool(FittingToolBase):
+    def __init__(self):
+        FittingToolBase.__init__(self, 'Linear')
+    
+    def fit(self, xdata, ydata):
+        if len(xdata) != len(ydata):
+            raise FittingError("Lengths of xdata and ydata must match")
+        
+        slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(xdata, ydata)
+        
+        fit_params = [("Linear Regression Results",''),
+                      ("Gradient", slope),
+                      ("Intercept",intercept),
+                      ("R^2", r_value**2),
+                      ("P value", p_value),
+                      ("Std. Error", std_err)
+                      ]
+        
+        fit_y_data = slope * xdata + intercept
+        
+        return xdata, fit_y_data, fit_params
+
+
 
 class GaussianFittingTool(FittingToolBase):
     def __init__(self):
@@ -52,10 +79,11 @@ class GaussianFittingTool(FittingToolBase):
     
     
     def fit(self, xdata, ydata):
-        self.fit_gaussian(xdata, ydata)
+        return self.fit_gaussian(xdata, ydata)
     
         
-    def fit_gaussian(self, xdata, ydata, amplitude_guess=None, mean_guess=None, sigma_guess=None, y_offset_guess=None, plot_fit=True):
+    def fit_gaussian(self, xdata, ydata, amplitude_guess=None, mean_guess=None, 
+                     sigma_guess=None, y_offset_guess=None, plot_fit=True):
         """
         Fits a gaussian to some data using a least squares fit method. Returns a named tuple
         of best fit parameters (amplitude, mean, sigma, y_offset).
@@ -67,10 +95,10 @@ class GaussianFittingTool(FittingToolBase):
         """
     
         if len(xdata) != len(ydata):
-            raise ValueError, "Lengths of xdata and ydata must match"
+            raise FittingError("Lengths of xdata and ydata must match")
          
         if len(xdata) < 4:
-            raise ValueError, "xdata and ydata need to contain at least 4 elements each"
+            raise FittingError("xdata and ydata need to contain at least 4 elements each")
          
         # guess some fit parameters - unless they were specified as kwargs
         if amplitude_guess is None:
@@ -106,10 +134,26 @@ class GaussianFittingTool(FittingToolBase):
         p1, success = scipy.optimize.leastsq(errfunc, p0, args=(xdata,ydata))
      
         if success not in (1,2,3,4):
-            raise RuntimeError, "Could not fit Gaussian to data."
+            raise FittingError("Could not fit Gaussian to data.")
         
         xdata = numpy.linspace(xdata[0], xdata[-1], 2000)
         fit_y_data = [fitfunc(p1, i) for i in xdata]
          
-        return xdata, fit_y_data, GaussianParameters(*p1)   
+        fit_params = [
+                      ('Gaussian Fit Parameters',''),
+                      ('Amplitude', p1[0]),
+                      ('Mean',p1[1]),
+                      ('Std. Dev.', p1[2]),
+                      ('FWHM', 2.0 * math.sqrt(2.0 * math.log(2.0)) *p1[2]),
+                      ('Y-offset', p1[3])
+                      ]
         
+        return xdata, fit_y_data, fit_params   
+
+
+
+
+
+#all tools defined in this module must be added to this list in order to be
+#accessible to AvoPlot
+__fitting_tools = [LinearFittingTool(),GaussianFittingTool()]        
