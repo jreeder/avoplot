@@ -287,7 +287,7 @@ class FontPropertiesPanel(wx.Panel):
         self.mpl_figure = text_objects[0].get_figure()
         
         hsizer = wx.BoxSizer(wx.HORIZONTAL)
-        grid_sizer = wx.FlexGridSizer(5, 2, vgap=5)
+        grid_sizer = wx.FlexGridSizer(cols=2, vgap=5)
         
         #create a list of available truetype fonts on this system
         self.avail_fonts = sorted(list(set([f.name for f in matplotlib.font_manager.fontManager.ttflist])))

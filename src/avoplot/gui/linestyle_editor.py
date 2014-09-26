@@ -86,7 +86,8 @@ class LineStyleEditorPanel(wx.Panel):
             self.__line_symbol_to_idx_map[m.mpl_symbol] = i
             self.__line_name_to_idx_map[m.name] = i
         
-        line_ctrls_szr = wx.FlexGridSizer(3, 2, vgap=5, hgap=2)
+        line_ctrls_szr = wx.FlexGridSizer(cols=2, vgap=5, hgap=2)
+        
                
         #line style
         line_ctrls_szr.Add(wx.StaticText(self, wx.ID_ANY, "Style:"), 0,
@@ -240,7 +241,7 @@ class MarkerStyleEditorPanel(wx.Panel):
             self.__marker_symbol_to_idx_map[m.mpl_symbol] = i
             #self.__marker_name_to_idx_map[m.name] = i
 
-        marker_ctrls_szr = wx.FlexGridSizer(5, 2, vgap=5, hgap=2)
+        marker_ctrls_szr = wx.FlexGridSizer(cols=2, vgap=5, hgap=2)
         
         #marker style
         #TODO - better way to include NullBitmap here (this is a quick hack for now)
