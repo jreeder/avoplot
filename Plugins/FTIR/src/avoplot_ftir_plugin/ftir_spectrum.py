@@ -127,6 +127,8 @@ class BackgroundCalcCtrl(controls.AvoPlotControlPanelBase):
         #store the data series object that this control panel is associated with, 
         #so that we can access it later
         self.series = series
+        
+        self.wavenumber, self.absorbance = self.series.get_data()
     
     def define_data(self):
         wavenumber = self.wavenumber
