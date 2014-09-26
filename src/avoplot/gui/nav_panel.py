@@ -143,17 +143,16 @@ class NavigationPanel(wx.ScrolledWindow):
         el_id = self.__el_id_mapping[self.__current_selection_id]
         el = self.tree.GetPyData(el_id).GetData()
         
-        #disabled pending full implementation of series export
-#        if not isinstance(el, series.XYDataSeries):
-#            if self._rclick_menu.export_entry in self._rclick_menu.GetMenuItems():
-#                self._rclick_menu.RemoveItem(self._rclick_menu.export_entry)
-#            self.PopupMenu(self._rclick_menu)
-#        else:
-#            if self._rclick_menu.export_entry not in self._rclick_menu.GetMenuItems(): 
-#                self._rclick_menu.InsertItem(self._rclick_menu.GetMenuItemCount(),
-#                                              self._rclick_menu.export_entry)
-#            self.PopupMenu(self._rclick_menu)
-        self.PopupMenu(self._rclick_menu)
+        if not hasattr(el, 'export'):
+            if self._rclick_menu.export_entry in self._rclick_menu.GetMenuItems():
+                self._rclick_menu.RemoveItem(self._rclick_menu.export_entry)
+            self.PopupMenu(self._rclick_menu)
+        else:
+            if self._rclick_menu.export_entry not in self._rclick_menu.GetMenuItems(): 
+                self._rclick_menu.InsertItem(self._rclick_menu.GetMenuItemCount(),
+                                              self._rclick_menu.export_entry)
+            self.PopupMenu(self._rclick_menu)
+        
     
     def on_tree_select_el(self, evnt):
         """
