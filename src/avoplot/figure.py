@@ -97,6 +97,7 @@ class AvoPlotFigure(core.AvoPlotElementBase, wx.ScrolledWindow):
         core.AvoPlotElementBase.__init__(self, name)       
         self.parent = parent
         self.canvas = None
+        self.tb = None
         
         self._is_zoomed = False
         self._is_panned = False
@@ -271,7 +272,18 @@ class AvoPlotFigure(core.AvoPlotElementBase, wx.ScrolledWindow):
         self._is_zoomed = False
         self._is_panned = not self._is_panned
         self.tb.pan()
-
+        
+        
+    def clear_zoom_history(self):
+        """
+        Clears the zoom history - therefore disabling the zoom buttons.
+        """
+        if self.tb is not None:
+            self.tb._views._elements = []
+            self.tb._views._pos = 0
+        
+            wx.GetApp().GetTopWindow().toolbar.update_history_buttons()
+    
     
     def save_figure_as_image(self):
         """

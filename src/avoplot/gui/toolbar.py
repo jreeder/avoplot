@@ -243,7 +243,8 @@ class MainToolbar(wx.ToolBar):
         if self.__active_figure is not None:
             self.__active_figure.save_figure_as_image()
     
-    
+        
+        
     def update_history_buttons(self):
         """
         Enables/disables the next- and prev-view buttons depending on whether

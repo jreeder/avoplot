@@ -243,6 +243,12 @@ class XYDataSeries(DataSeriesBase):
         """
         return (self.__xdata, self.__ydata)
     
+    def get_length(self):
+        """
+        Returns the number of data points in the series. 
+        series.get_length() is equivalent to len(series.get_data()[0])
+        """
+        return len(self.__xdata)
     
     def get_data(self):
         """
@@ -265,6 +271,7 @@ class XYDataSeries(DataSeriesBase):
         """
         plots the x,y data into the subplot as a line plot.
         """
+
         return subplot.get_mpl_axes().plot(*self.get_data())
     
     
@@ -404,7 +411,7 @@ class FitParamsCtrl(controls.AvoPlotControlPanelBase):
 
 class XYSeriesFittingControls(controls.AvoPlotControlPanelBase):
     def __init__(self, series):
-        super(XYSeriesFittingControls, self).__init__("Fitting")
+        super(XYSeriesFittingControls, self).__init__("Maths")
         self.series = series
         self.__current_tool_idx = 0
     
@@ -414,26 +421,54 @@ class XYSeriesFittingControls(controls.AvoPlotControlPanelBase):
         """
         super(XYSeriesFittingControls, self).setup(parent)
         
-        data_selection_static_sizer = wx.StaticBoxSizer(wx.StaticBox(self, wx.ID_ANY, 'Fit range'), wx.VERTICAL)
+        data_selection_static_sizer = wx.StaticBoxSizer(wx.StaticBox(self, wx.ID_ANY, 'Data selection'), wx.VERTICAL)
         
         self.selection_panel = data_selection.DataRangeSelectionPanel(self, self.series)
         
         data_selection_static_sizer.Add(self.selection_panel,1, wx.EXPAND)
         self.Add(data_selection_static_sizer, 0, wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, border=5)
         
-        fit_type_static_sizer = wx.StaticBoxSizer(wx.StaticBox(self, wx.ID_ANY, 'Fit type'), wx.VERTICAL)
+        fit_type_static_sizer = wx.StaticBoxSizer(wx.StaticBox(self, wx.ID_ANY, 'Fitting'), wx.VERTICAL)
         
         self.fit_type = wx.Choice(self, wx.ID_ANY, choices=[ft.name for ft in fitting.get_fitting_tools()])
         fit_type_static_sizer.Add(self.fit_type,1, wx.ALIGN_RIGHT)
+        fit_button = wx.Button(self, -1, "Fit")
+        fit_type_static_sizer.Add(fit_button, 0, wx.ALIGN_BOTTOM | wx.ALIGN_CENTER_HORIZONTAL)
         self.Add(fit_type_static_sizer, 0, wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, border=5)
         
-        fit_button = wx.Button(self, -1, "Fit")
-        self.Add(fit_button, 0 , wx.ALIGN_CENTER_HORIZONTAL)
         wx.EVT_BUTTON(self, fit_button.GetId(), self.on_fit)
         wx.EVT_CHOICE(self, self.fit_type.GetId(), self.on_tool_choice)
         
+        stats_static_sizer = wx.StaticBoxSizer(wx.StaticBox(self, wx.ID_ANY, 'Statistics'), wx.VERTICAL)
+        self.samples_txt = wx.StaticText(self, wx.ID_ANY, "\tNum. Samples:")
+        self.mean_txt = wx.StaticText(self, wx.ID_ANY, "\tMean:")
+        self.stddev_txt = wx.StaticText(self, wx.ID_ANY, "\tStd. Dev.:")
+        stats_static_sizer.Add(self.samples_txt, 0, wx.ALIGN_LEFT)
+        stats_static_sizer.Add(self.mean_txt, 0, wx.ALIGN_LEFT)
+        stats_static_sizer.Add(self.stddev_txt, 0, wx.ALIGN_LEFT)
+        self.calc_button = wx.Button(self, wx.ID_ANY, "Calculate")
+        stats_static_sizer.Add(self.calc_button, 0, wx.ALIGN_CENTER_HORIZONTAL)
+        self.Add(stats_static_sizer, 0, wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, border=5)
+        
+        wx.EVT_BUTTON(self, self.calc_button.GetId(), self.on_calculate)
+        
         self.span = None
     
+    def on_calculate(self, evnt):
+        mask = self.selection_panel.get_selection()
+        selected_idxs = numpy.where(mask)
+        raw_x, raw_y = self.series.get_data()
+        
+        n_samples = len(selected_idxs[0])
+        self.samples_txt.SetLabel("\tNum. Samples: %d"%n_samples)
+        
+        if n_samples > 0: #if not an empty selection
+            self.mean_txt.SetLabel("\tMean: %e"%numpy.mean(raw_y[selected_idxs]))
+            self.stddev_txt.SetLabel("\tStd. Dev.: %e"%numpy.std(raw_y[selected_idxs]))
+        else:
+            self.mean_txt.SetLabel("\tMean:")
+            self.stddev_txt.SetLabel("\tStd. Dev.:")
+        
     
     def on_tool_choice(self, evnt):
         self.__current_tool_idx = self.fit_type.GetCurrentSelection()

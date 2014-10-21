@@ -22,10 +22,34 @@ from avoplot.persist import PersistentStorage
 from avoplot.plugins import AvoPlotPluginSimple
 from avoplot.subplots import AvoPlotXYSubplot
 from avoplot.series import XYDataSeries
+from avoplot import controls
 
 from doas.io import SpectrumIO, UnableToLoad
 
 plugin_is_GPL_compatible = True
+
+
+class DOASSpectrumControlPanel(controls.AvoPlotControlPanelBase):
+    def __init__(self, series):
+        
+        self.series = series
+        super(DOASSpectrumControlPanel, self).__init__('DOAS')
+    
+    
+    def setup(self, parent):
+        
+        super(DOASSpectrumControlPanel, self).setup(parent)
+        
+        normalise_button = wx.Button(self, wx.ID_ANY,"Normalise")
+        
+        wx.EVT_BUTTON(self, normalise_button.GetId(), self.on_normalise)
+        
+        self.Add(normalise_button,0,wx.ALIGN_CENTER)
+    
+    
+    def on_normalise(self, evnt):
+        self.series.normalise_intensities()
+        self.series.update()
 
 
 class DOASSpectrumSubplot(AvoPlotXYSubplot):
@@ -37,9 +61,24 @@ class DOASSpectrumSubplot(AvoPlotXYSubplot):
 
 #define new data series type for DOAS data
 class DOASSpectrumData(XYDataSeries):
+    def __init__(self, *args, **kwargs):
+        super(DOASSpectrumData, self).__init__(*args, **kwargs)
+        self.add_control_panel(DOASSpectrumControlPanel(self))
+        
     @staticmethod
     def get_supported_subplot_type():
         return DOASSpectrumSubplot
+    
+    def normalise_intensities(self):
+        """
+        Rescales all the intensities such that the maximum is at 65535 and the 
+        minimum is at 0. This overwrites the original y-data of the series and 
+        is therefore NOT a reversible operation.
+        """
+        x,y = self.get_raw_data()
+        y = y - y.min()
+        y = (y / y.max()) * 65535
+        self.set_xy_data(x, y)
 
 
 class DOASSpectrumPlugin(AvoPlotPluginSimple):
@@ -50,20 +89,22 @@ class DOASSpectrumPlugin(AvoPlotPluginSimple):
     
     
     def plot_into_subplot(self, subplot):
-        spec = self.load_spectrum()
-        if spec is None:
+        loaded_spectra = self.load_spectrum_files()
+        
+        if not loaded_spectra:
             return False
         
-        data_series = DOASSpectrumData(os.path.basename(spec.filename),
-                                       xdata=spec.wavelengths, 
-                                       ydata=spec.counts)
-        
-        subplot.add_data_series(data_series)
+        for spec in loaded_spectra:
+            data_series = DOASSpectrumData(os.path.basename(spec.filename),
+                                           xdata=spec.wavelengths, 
+                                           ydata=spec.counts)
+            
+            subplot.add_data_series(data_series)
         
         return True
     
     
-    def load_spectrum(self):
+    def load_spectrum_files(self):
         persist = PersistentStorage()
         
         try:
@@ -72,19 +113,27 @@ class DOASSpectrumPlugin(AvoPlotPluginSimple):
             last_path_used = ""
         
         #get filename to open
-        spectrum_file = wx.FileSelector("Choose spectrum file to open", 
-                                        default_path=last_path_used)
-        if spectrum_file == "":
-            return None
+        fd = wx.FileDialog(self.get_parent(), "Choose spectrum file(s) to open", 
+                           defaultDir=last_path_used, style=wx.FD_MULTIPLE | wx.FD_OPEN)
         
-        persist.set_value("doas_spectra_dir", os.path.dirname(spectrum_file))
+        if fd.ShowModal() != wx.ID_OK:
+            return []
+        
+        spectrum_files = fd.GetPaths()
+        
+        if not spectrum_files:
+            return []
+        
+        persist.set_value("doas_spectra_dir", os.path.dirname(spectrum_files[0]))
         
         loader = SpectrumIO()
-        try:        
-            return loader.load(spectrum_file)
-        except Exception,e:
-            print e.args
-            wx.MessageBox("Unable to load spectrum file \'%s\'. "
-                          "Unrecognised file format."%spectrum_file, 
-                          "AvoPlot", wx.ICON_ERROR)
-            return None
+        spectra = []
+        for filename in spectrum_files:
+            try:        
+                spectra.append(loader.load(filename))
+            except Exception,e:
+                print e.args
+                wx.MessageBox("Unable to load spectrum file \'%s\'. "
+                              "Unrecognised file format."%filename, 
+                              "AvoPlot", wx.ICON_ERROR)
+        return spectra
