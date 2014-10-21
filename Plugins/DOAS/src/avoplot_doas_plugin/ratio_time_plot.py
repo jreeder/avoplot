@@ -38,6 +38,7 @@ from avoplot import series
 from avoplot import controls
 from avoplot import figure
 from avoplot import data_selection
+import avoplot
 import avoplot.gui
 from spectrometers import SpectrometerManager
 
@@ -45,6 +46,8 @@ from std_ops.os_ import find_files
 
 plugin_is_GPL_compatible = True
 
+def invalid_user_input(message):
+        wx.MessageBox(message, avoplot.PROG_SHORT_NAME, wx.ICON_ERROR)
 
 #define new subplot type for SO2 time series plots
 class SO2TimeSubplot(subplots.AvoPlotXYSubplot):
