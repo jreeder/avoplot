@@ -193,6 +193,11 @@ class XYDataSeries(DataSeriesBase):
         return AvoPlotXYSubplot
     
     
+    def copy(self):
+        x,y = self.get_data()
+        return XYDataSeries(self.get_name(), xdata=x, ydata=y)
+    
+    
     def set_xy_data(self, xdata=None, ydata=None):
         """
         Sets the x and y values of the data series. Note that you need to call
@@ -443,9 +448,13 @@ class XYSeriesFittingControls(controls.AvoPlotControlPanelBase):
         self.samples_txt = wx.StaticText(self, wx.ID_ANY, "\tNum. Samples:")
         self.mean_txt = wx.StaticText(self, wx.ID_ANY, "\tMean:")
         self.stddev_txt = wx.StaticText(self, wx.ID_ANY, "\tStd. Dev.:")
+        self.min_txt = wx.StaticText(self, wx.ID_ANY, "\tMin. Value:")
+        self.max_txt = wx.StaticText(self, wx.ID_ANY, "\tMax. Value:")
         stats_static_sizer.Add(self.samples_txt, 0, wx.ALIGN_LEFT)
         stats_static_sizer.Add(self.mean_txt, 0, wx.ALIGN_LEFT)
         stats_static_sizer.Add(self.stddev_txt, 0, wx.ALIGN_LEFT)
+        stats_static_sizer.Add(self.min_txt, 0, wx.ALIGN_LEFT)
+        stats_static_sizer.Add(self.max_txt, 0, wx.ALIGN_LEFT)
         self.calc_button = wx.Button(self, wx.ID_ANY, "Calculate")
         stats_static_sizer.Add(self.calc_button, 0, wx.ALIGN_CENTER_HORIZONTAL)
         self.Add(stats_static_sizer, 0, wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, border=5)
@@ -465,10 +474,14 @@ class XYSeriesFittingControls(controls.AvoPlotControlPanelBase):
         if n_samples > 0: #if not an empty selection
             self.mean_txt.SetLabel("\tMean: %e"%numpy.mean(raw_y[selected_idxs]))
             self.stddev_txt.SetLabel("\tStd. Dev.: %e"%numpy.std(raw_y[selected_idxs]))
+            self.min_txt.SetLabel("\tMin. Value: %e"%numpy.min(raw_y[selected_idxs]))
+            self.max_txt.SetLabel("\tMax. Value: %e"%numpy.max(raw_y[selected_idxs]))
+            
         else:
             self.mean_txt.SetLabel("\tMean:")
             self.stddev_txt.SetLabel("\tStd. Dev.:")
-        
+            self.min_txt.SetLabel("\tMin. Value:")
+            self.max_txt.SetLabel("\tMax. Value:")
     
     def on_tool_choice(self, evnt):
         self.__current_tool_idx = self.fit_type.GetCurrentSelection()
