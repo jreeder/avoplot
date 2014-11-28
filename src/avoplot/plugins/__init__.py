@@ -248,6 +248,13 @@ class AvoPlotPluginBase(object):
         
         self._menu_entry_labels = labels
         self._menu_entry_tooltip = tooltip
+    
+    
+    def show_figure(self, fig, select=True):
+        """
+        Adds the figure object into the main AvoPlot window as a new tab.
+        """
+        self.get_parent().add_figure(fig)
 
 
 
@@ -262,13 +269,6 @@ class AvoPlotPluginSimple(AvoPlotPluginBase):
             raise RuntimeError("Plugins subclassed from AvoPlotPluginSimple "
                                "must define a plot_into_subplot(subplot)"
                                " method")
-        
-         
-    def show_figure(self, fig, select=True):
-        """
-        Adds the figure object into the main AvoPlot window as a new tab.
-        """
-        self.get_parent().add_figure(fig)
     
     
     def create_new(self, evnt):
@@ -345,6 +345,13 @@ class AvoPlotPluginInstaller(install):
         self.install_scripts = get_plugin_install_path()
         
         install.finalize_options(self)
+        
+        #if we are using a customised builder (with a different build_base, then
+        #make sure that information gets passed through to the installer
+        src_cmd_obj = self.distribution.get_command_obj('build')
+        src_cmd_obj.ensure_finalized()
+        
+        self.build_lib = src_cmd_obj.build_lib
  
 
 
@@ -360,9 +367,12 @@ def setup(*args, **kwargs):
         if kwargs['cmdclass'].has_key('install'):  
             raise RuntimeError("Cannot override cmdclass install entry when "
                                "installing AvoPlot plugins.")
+        
+    else:    
+        kwargs['cmdclass'] = {}
     
     #call the distutils setup function with our customised installer
-    kwargs['cmdclass'] = {'install':AvoPlotPluginInstaller}
+    kwargs['cmdclass']['install'] = AvoPlotPluginInstaller
     dist_utils_setup(*args, **kwargs)
 
         
