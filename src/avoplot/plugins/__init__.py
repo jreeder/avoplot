@@ -75,6 +75,12 @@ def register(plugin):
                                 "for details." %(plugin.name,
                                                  avoplot.PROG_SHORT_NAME))
     
+    #check that a plugin with this name is not already registered
+    if __plotting_plugins.has_key(plugin.name):
+        raise PluginImportError("Failed to register plugin \'%s\'. A plugin "
+                                "with the same name is already"
+                                " registered."%plugin.name)
+    
     __plotting_plugins[plugin.name] = plugin
     
     
