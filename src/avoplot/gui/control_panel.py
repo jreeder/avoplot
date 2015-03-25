@@ -32,8 +32,16 @@ class ControlPanel(aui.AuiNotebook):
     is added as a new tab in the notebook.
     """
     def __init__(self,parent):
+        
+        #remove the close buttons from the tabs - there is no way to restore
+        #controlpanel tabs that get closed.
+        style = aui.AUI_NB_DEFAULT_STYLE & ~(aui.AUI_NB_CLOSE_BUTTON |
+                                             aui.AUI_NB_CLOSE_ON_ACTIVE_TAB |
+                                             aui.AUI_NB_CLOSE_ON_ALL_TABS)
+        
         super(ControlPanel, self).__init__(parent, id=wx.ID_ANY, 
-                                           style=wx.NB_TOP|wx.CLIP_CHILDREN)
+                                           agwStyle=style)
+        
         self._current_element = None
         self.__layouts = {} #stores the layout of the control panels (keys are IDs)
         self.__selections = {} #stores the last page selected (keys are IDS)
@@ -67,28 +75,40 @@ class ControlPanel(aui.AuiNotebook):
         page.on_control_panel_active()
         evnt.Skip()
     
+    
+    def reset_control_panels(self):
+        """
+        Resets the control panels shown in the notebook to those for the 
+        currently selected element.
+        """
+        if self._current_element is not None:
+            self.set_control_panels(self._current_element, force=True)
+    
        
-    def set_control_panels(self, element):
+    def set_control_panels(self, element, force=False):
         """
         Sets the control panels shown in the notebook. 'control_panels' should
         be a list of AvoPlotControlPanelBase objects.
         """
+        currently_visible = self.IsShown()
+
         control_panels = element.get_control_panels()
         
         self.Freeze()
         self.Show(False)
+
         if self._current_element is not None:
             
             #store the control panel layout for this element
             layout = self.SavePerspective()
             self.__layouts[self._current_element.get_avoplot_id()] = layout
             
-            #store which page is currently selectied, so that we can restore
+            #store which page is currently selected, so that we can restore
             #the selection when this element is selected in the future (note
             #that the current selection is not part of the layout information)
             sel = self.GetSelection()
             self.__selections[self._current_element.get_avoplot_id()] = sel
-            
+
             while self.GetPageCount():
                 # get rid of the old pages 
                 p = self.GetPage(0)
@@ -108,7 +128,7 @@ class ControlPanel(aui.AuiNotebook):
                 p.setup(self)
             
             self.AddPage(p, p.get_name())
-            
+
         #only load the saved perspective if there are actually some control panels
         #to arrange. Otherwise when the session element gets selected 
         #(e.g. when the final figure gets closed) then this will try to load an
@@ -131,8 +151,9 @@ class ControlPanel(aui.AuiNotebook):
         #perform any operations needed prior to display
         for p in reversed(control_panels):
             p.on_display() 
-            
-        self.Show(True)
+        
+        if currently_visible or force:    
+            self.Show(True)
     
     
     def on_element_delete(self, evnt):

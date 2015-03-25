@@ -160,7 +160,9 @@ class MainFrame(wx.Frame):
         """
         p = self._mgr.GetPane(self.ctrl_panel)    
         p.Show(evnt.state)
+        self.ctrl_panel.reset_control_panels()
         self._mgr.Update()
+        
         
         
     def on_show_nav_panel(self, evnt):
